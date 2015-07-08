@@ -1,0 +1,458 @@
+#+TITLE: Emacs Init File for Mac OSX
+#+AUTHOR: DRMRD
+#+OPTIONS: toc:nil num:nil ^:nil
+#+STARTUP: indent
+
+* General Information
+** What should go into init.org?
+The init.org file is loaded at startup, rather than on demand. Hence
+it should contain any and all Emacs settings that you'd like loaded
+every session. Accordingly, good examples of what code this file
+should contain are
+
+- Loading packages that are used in all major modes
+- Emacs customizations that affect the editor's UI
+- All global settings. These include globally-defined keybindings,
+  the default major mode for new files, etc.
+- Global theme customizations
+
+** Emacs Configuration Files Hierarchy
+At present, init.org loads files written by me from three places:
+*** ~/.emacs.d/
+Adding libraries to the root .emacs.d directory should ONLY happen if
+they implement/customize features affecting all major modes by default
+AND contain too much code for this file.
+
+A good use case for such a file is indentation.org, which contains
+settings for all global tweaks to how indentation and filling are done
+in Emacs.
+
+Eventually, it may very well be that I stop doing this entirely,
+loading these configuration files from, e.g., a .emacs.d/lib/global
+subdirectory, to help avoid namespace collisions with third party
+packages.
+
+*** ~/workspace/elisp [[*NOTE:%20This%20folder%20should%20be%20considered%20OBSOLETE.][(OBSOLETE)]]
+This is the old location for storing .el files. It should be replaced
+by literate programming .org files in the folder ~/.emacs.d/lib/
+
+init.org loads all .el files in this directory, unless told to do
+otherwise.
+
+**** DONE List any exceptions to this loading rule here.
+This is considered done, since the folder is obsolete.
+**** TODO NOTE: This folder should be considered OBSOLETE.
+No new elisp libraries should be added here. Due to some undesirable
+effects of the code in these old .el files, the original directory has
+been renamed elisp.bak. Any configuration files/settings needed that
+are in elisp.bak should be integrated into org files in the .emacs.d
+directory.
+
+*** ~/.emacs.d/lib
+The new folder for storing .org files, intended to contain libraries
+meant for customizing, e.g., specific major modes (in ways that go
+beyond the scope of this file). For instance, the file [[~/workspace/elisp/emacs_latex.el][emacs_latex.el]]
+from the folder ~/workspace/elisp is being converted into a human
+readable .org file [[~/.emacs.d/lib/latex.org][latex.org]] in this new directory.
+
+init.org loads all .org files in this directory by default, unless
+told to do otherwise.
+
+This is also the location best suited for large functions or
+collections thereof whose contents is appropriate for init.org but
+would add hundreds or thousands of lines of code unnecessarily.
+
+**** TODO List all libraries of the latter type here
+**** TODO List any libraries in ~/.emacs.d/lib/ not loaded by default here.
+
+**** Rules for creating new libraries in .emacs.d/lib/
+***** For Customizing a Major Mode:
+- Add a new bullet in the [[*Major%20Mode%20Customization][Major Mode Customization]] section below
+  containing the name of the mode or (for multiple, related modes) the
+  relevant environment name (e.g. [[*LaTeX%20Modes][LaTeX Modes]] is used below when
+  loading libraries for all TeX-related packages.)
+- There should be a single configuration file for each bullet in [[*Major%20Mode%20Customization][Major
+  Mode Customization]], typically of the form bullet_title.org. That
+  file should then load any relevant packages.
+****** What To Do When a Major Mode Configuration Library Gets Too Big
+- Keep the bullet_title.org file
+- Create a ~/.emacs.d/lib/bullet_title subdirectory
+- Add libraries to this subdirectory and load them from bullet_title.org
+* Notes on Aquamacs Configuration Oddities
+Since Aquamacs is obnoxious, my .emacs and .emacs.d files were
+originally found in
+    
+    ~/Library/Preferences/Aquamacs Emacs/Preferences.el
+and
+
+    ~/Library/Preferences/Aquamacs Emacs/
+
+respectively. Now that I'm using this Literate Emacs Init file,
+there's no need to store them there, and Preferences.el simply loads
+org-babel and points it here.
+
+When opened Aquamacs loads elisp code contained in the following files:
+
+    ~/.emacs
+    ~/Library/Preferences/Aquamacs Emacs/Preferences.el
+    ~/Library/Preferences/Aquamacs Emacs/customizations.el
+
+where the last file is automatically written when you "Save Options"
+in an Aquamacs menu. The advantage to using the god-awfully-located
+Preferences.el file is that it overrides automatically-generated
+customizations like code in .emacs should but doesn't.
+
+Aquamacs will also find libraries contained in
+
+    ~/Library/Preferences/Aquamacs Emacs/Preferences.el
+
+which is why I originally moved mine there from "~/.emacs.d".
+* Global Settings 
+** Personal Information
+*** Email Address
+#+BEGIN_SRC emacs-lisp
+  (setq user-mail-address "moore@math.osu.edu")
+#+END_SRC
+** Setting up Package Manager and Default Repositories
+Load Package, load all default packages, and link to all standard
+package repositories.
+
+We first ensure that the Package package for package management
+(that's a mouthful!) has been loaded. Then we call package-initialize,
+which loads all packages specified in the variable
+package-load-list. After loading the default packages, we redefine the
+package-archives list to include ELPA, GNU, MELPA, and Marmalade.
+
+#+srcname: package-startup
+#+begin_src emacs-lisp
+  (require 'package)
+  (package-initialize)
+  (setq package-archives
+  '(("ELPA" . "http://tromey.com/elpa/")
+    ("gnu" . "http://elpa.gnu.org/packages/")
+    ("melpa" . "http://melpa.milkbox.net/packages/")
+    ("marmalade" . "http://marmalade-repo.org/packages/")))
+#+end_src
+
+** Loading Other Customization Files
+We now add several directories to the load-path. The directory
+~/workspace/elisp is a git repository containing some older
+configuration file, which I should probably just incorporate into this
+file and/or other org files in .emacs.d. The second directory is
+~/.emacs.d itself, which I thought was loaded by default but
+apparently not in all Emacs versions (or at least not in Aquamacs it
+seems).
+
+#+srcname: custom-load-paths
+#+begin_src emacs-lisp
+  (add-to-list 'load-path "~/.emacs.d")
+  (add-to-list 'load-path "~/workspace/elisp")
+  (add-to-list 'load-path "~/.emacs.d/lib")
+#+end_src
+
+** Bind Settings Files to Registers
+Bind init.org, .emacs.d/lib/latex.org, and Preferences.el to the
+registers "e", "l", and "p" (resp.) so that they can be opened easily with
+"C-x r j <register>".
+
+#+BEGIN_SRC emacs-lisp
+  (set-register ?e (cons 'file "~/.emacs.d/init.org"))
+  (set-register ?l (cons 'file "~/.emacs.d/lib/latex.org"))
+  (set-register ?p (cons 'file "~/Library/Preferences/Aquamacs Emacs/Preferences.el"))
+#+END_SRC
+
+*** DONE Determine how to evaluate this file without reloading Aquamacs
+Invoke org-babel-load-file on init.org to retangle and reload this file.
+*** DONE Add registers for .emacs.d/lib/latex.org and Preferences.el
+It might be worth also adding a register for Preferences.el for when I
+want to evaluate this buffer without reloading emacs (although Babel
+probably has an easier way to do that natively).
+
+** Set the Default Directory
+Make the default directory ~/workspace/ for easy access to LaTeX
+projects.
+
+#+BEGIN_SRC emacs-lisp
+  (setq default-directory "~/workspace/")
+#+END_SRC
+
+** Set the Default Major Mode
+Make Text Mode the default major mode, but disable the Auto-Fill Mode hook.
+#+BEGIN_SRC emacs-lisp
+  (setq default-major-mode 'text-mode)
+  (remove-hook 'text-mode-hook 'auto-fill-mode)
+#+END_SRC
+
+** Make Emacs insert a newline at the end of each file
+I can't find a link at the moment, but requiring newlines at the end
+of files prevents some kind of buggy behavior at times. I think I read
+about this on StackExchange at some point.
+
+#+BEGIN_SRC emacs-lisp
+  (setq require-final-newline t)
+#+END_SRC
+
+* Loading & Configuring Default Packages
+The following list comprises all packages that are loaded by default
+and in such a way that they affect all (or most) modes (or enable
+minor-modes in all major-modes).
+
+** Ido Mode (Better, Interactive find-file Command)
+Enable Ido Mode for a much improved buffer and file switching/finding
+experience. Configuring Ido Mode, based on the settings in [[http://xgarrido.github.io/emacs-starter-kit/starter-kit-ido.html][xgarrido's
+Emacs Starter Kit]].
+*** Enable Ido Mode
+#+srcname: enable-ido-mode
+#+begin_src emacs-lisp
+  (ido-mode t)
+#+end_src
+*** Basic Configuration
+#+srcname: ido-mode-basic-config
+#+BEGIN_SRC emacs-lisp
+  (setq ido-everywhere            t
+        ido-enable-prefix         nil
+        ido-enable-flex-matching  t
+        ido-auto-merge-work-directories-length nil
+        ;;ido-use-filename-at-point t
+        ido-max-prospects         10
+        ido-create-new-buffer     'always
+        ;; ido-use-virtual-buffers   t
+        ;; ido-handle-duplicate-virtual-buffers 2
+        ido-default-buffer-method 'selected-window
+        ido-default-file-method   'selected-window)
+#+END_SRC
+*** Order File Extensions
+Set the order in which Ido displays files based on their extensions.
+#+srcname: ido-mode-extension-order
+#+BEGIN_SRC emacs-lisp
+  (setq ido-file-extensions-order     '(".cc" ".h" ".tex" ".sh" ".org"
+                                      ".el" ".tex" ".png"))
+#+END_SRC
+
+*** Set Ignored File Extensions and Buffers
+The following settings tell Ido Mode to ignore various types of files
+and buffers that we never actually look up/attempt to switch to.
+
+#+srcname: ido-mode-ignored-extensions-and-buffers
+#+BEGIN_SRC emacs-lisp
+  (setq completion-ignored-extensions '(".o" ".elc" "~" ".bin" ".bak"
+                                        ".obj" ".map" ".a" ".so"
+                                        ".mod" ".aux" ".out" ".pyg"
+                                        "_flymake.tex" ".fdb_latexmk"
+                                        ".log" ".fls"))
+  (setq ido-ignore-extensions t)
+  (setq ido-ignore-buffers (list (rx (or (and bos  " ")
+                                         (and bos
+                                              (or "*Completions*"
+                                                  "*Shell Command Output*"
+                                                  "*vc-diff*")
+                                              eos)))))
+#+END_SRC
+
+*** Allow Spaces in ido-find-file
+By default, pressing [Space] does nothing when using ido-find-file,
+which makes it difficult to search with several words that you know
+occur in the file name. This snippet changes this behavior to be more
+intuitive.
+
+#+srcname: ido-mode-enable-spaces
+#+BEGIN_SRC emacs-lisp
+  (add-hook 'ido-make-file-list-hook
+            (lambda ()
+              (define-key ido-file-dir-completion-map (kbd "SPC") 'self-insert-command)))
+#+END_SRC
+
+*** Order Results Vertically
+By default Ido Mode displays results in a multi-line horizontal list,
+which is, frankly, difficult to read at times. This code makes Ido
+list results in a vertical list instead.
+
+#+SRCNAME: ido-mode-list-results-vertically
+#+BEGIN_SRC emacs-lisp
+  (setq ido-decorations (quote ("\n-> " "" "\n " "\n ..." "[" "]" "
+    [No match]" " [Matched]" " [Not readable]" " [Too big]" "
+    [Confirm]")))
+  (defun ido-disable-line-truncation () (set (make-local-variable 'truncate-lines) nil))
+  (add-hook 'ido-minibuffer-setup-hook 'ido-disable-line-truncation)
+#+END_SRC
+
+** SMEX Mode (Ido for M-x)
+Replace the usual M-x keybinding with an equivalent that also list all
+completions of the partial command name you've typed in much the same
+way Ido Mode does for buffers and files.
+
+#+SRCNAME: rebind-Mx-to-smex
+#+BEGIN_SRC emacs-lisp
+  (require 'smex)
+  (global-set-key (kbd "M-x") 'smex)
+#+END_SRC
+** Re-Builder (Regex Builder/Helper)
+The Re-Builder (REgular expression BUILDER) package aids in
+constructing regular expressions by highlighting all matches of the
+current expression in the document, including different colors for
+different capture groups and other amenities. It supports several
+different styles of regular expressions (see the documentation), but
+has been configured here to use the one that's probably the most
+natural to me (and involves the fewest number of excess backslashes).
+
+#+SRCNAME enable-re-builder
+#+BEGIN_SRC emacs-lisp
+  (require 're-builder)
+  (setq reb-re-syntax 'string)
+#+END_SRC
+** Color-Theme Mode (Custom Themes)
+Color-Theme Mode is Emacs's standard theming engine for customizing faces throughout the UI and editor. We first load the package and initialize it.
+
+#+BEGIN_SRC emacs-lisp
+  (require 'color-theme)
+  (color-theme-initialize)
+#+END_SRC
+
+We now select the current theme.
+
+#+BEGIN_SRC emacs-lisp 
+  (load-theme 'cyberpunk t)
+#+END_SRC
+
+*** TODO Consider moving theme selection into an "appearance" section of the file.
+** Recentf (Track Recent Files, Load via C-x C-r)
+
+#+BEGIN_SRC emacs-lisp
+  (require 'recentf)
+  (recentf-mode 1)
+  (setq recentf-max-menu-items 25)
+  (global-set-key "\C-x\ \C-r" 'recentf-open-files)
+#+END_SRC
+* Appearance Settings
+** Display the current time in the baseline of each frame
+
+#+BEGIN_SRC emacs-lisp
+  (display-time)
+#+END_SRC
+
+** Display line numbers on the left of each frame
+#+BEGIN_SRC emacs-lisp
+  (global-linum-mode 1)
+  (setq linum-format "%4d \u2502 ")
+#+END_SRC
+
+** Highlight the current row
+Highlights the current row in gray. (taken from [[http://tex.stackexchange.com/questions/50827/a-simpletons-guide-to-tex-workflow-with-emacs][here]])
+#+BEGIN_SRC emacs-lisp
+  (global-hl-line-mode 1); Highlight current row
+  (set-face-background hl-line-face "#0e1717"); Same color as greyness in gtk
+#+END_SRC
+
+** Set the default font
+
+#+BEGIN_SRC emacs-lisp
+  (set-default-font "-apple-bitstream vera sans mono-medium-r-normal--0-0-0-0-m-0-mac-roman")
+#+END_SRC
+
+** Disable cursor blinking
+
+#+BEGIN_SRC emacs-lisp
+  (blink-cursor-mode (- (*) (*) (*)))
+#+END_SRC
+* Indentation & Whitespace Settings
+This deserves its own section, since it is always the part of text
+editors I tweak the most.
+
+#+BEGIN_SRC emacs-lisp
+  ;;      
+  ;  global_indentation
+  ;
+  ;      Contains all global customizations pertaining to indentation,
+  ;      whitespace, and fill commands.
+  (load-library "global_indentation") 
+  
+  ;; Set tab width to 4
+  (setq tab-stop-list (number-sequence 4 200 4))
+
+  ;; Force emacs to only indent with spaces and never tabs
+  (setq-default indent-tabs-mode nil)
+#+END_SRC
+
+** TODO Consolidate these settings
+All of these settings could be moved into a file like
+~/.emacs.d/indentation.org for more logical organization.
+
+* Major Mode Customization
+** Emacs-Lisp Mode
+We use the built-in emacs-lisp-mode for editing .el files, but with a
+couple quality of life tweaks incorporated.
+*** Fix electric-indent-mode when in Emacs-Lisp mode
+The following code addresses an oddity in the interaction between
+Electric Indent Mode and Emacs-Lisp Mode. Without it, hitting return
+on a line beginning with a semi-colon in an elisp file will result in
+that line being indented by 40-ish characters.
+
+See the following if similar issues arise in other modes:
+    http://emacs.stackexchange.com/q/3322
+    http://emacs.stackexchange.com/q/9563
+
+#+BEGIN_SRC emacs-lisp
+  (defun electric-indent-mode-configure ()
+         "Delete newline (?\n) from `electric-indent-chars'."
+         (setq electric-indent-chars (delq 10 electric-indent-chars)))
+  (add-hook 'emacs-lisp-mode-hook #'electric-indent-mode-configure)
+#+END_SRC
+
+** LaTeX Modes
+*** Load LaTeX Configuration Library
+Loads the file ~/.emacs.d/lib/latex.org, which contains and/or
+dynamically loads all of our custom LaTeX settings.
+
+#+BEGIN_SRC emacs-lisp
+  
+  ;(org-babel-load-file
+  ;  (expand-file-name "~/.emacs.d/lib/latex.org"))
+#+END_SRC
+
+** Org Mode
+*** Ensure that syntax highlighting is enabled while in Org Mode
+
+#+BEGIN_SRC emacs-lisp
+  (add-hook 'org-mode-hook 'turn-on-font-lock) ; not needed when global-font-lock-mode is on
+#+END_SRC
+
+*** Keybindings
+
+#+BEGIN_SRC emacs-lisp
+  ;; Access the Org Agenda with "C-c a"
+  ;; 
+  ;;     From the Agenda, you can view all todos and other things in org that
+  ;;     have looming deadlines.
+  (global-set-key "\C-ca" 'org-agenda)
+
+  ;; Store an org-link to the current location in org-stored-links
+  ;; with "C-c l"
+  ;;
+  ;;     The same link can be inserted elsewhere later from the
+  ;;     org-stored-links variable using "C-c C-l"
+  (global-set-key "\C-cl" 'org-store-link)
+  
+  ;; Switch to another org buffer with "C-c b"
+  ;;
+  ;;     Switches to the org buffer with a given name.
+  (global-set-key "\C-cb" 'org-iswitchb)
+#+END_SRC
+
+*** Create Custom Easy Templates
+[[http://orgmode.org/manual/Easy-Templates.html][Easy Templates]] serve as a simple way to enter code blocks, quotes,
+examples, LaTeX code, etc. in Org files without having to type out an
+entire block start or end tag. Better still, we can create our own!
+(See the code below for inspiration.)
+
+#+BEGIN_SRC emacs-lisp
+  ;; Creates an "el" Easy Template in Org Mode.
+  ;; 
+  ;;     Typing "<el" followed by [TAB] replaces <el with
+  ;;
+  ;;         #+BEGIN_SRC emacs-lisp
+  ;;           [Cursor Here]
+  ;;         #+END_SRC
+  (add-to-list 'org-structure-template-alist
+       '("el" "#+BEGIN_SRC emacs-lisp\n  ?\n#+END_SRC" ""))
+#+END_SRC
+
