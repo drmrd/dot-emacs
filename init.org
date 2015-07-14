@@ -107,6 +107,12 @@ Aquamacs will also find libraries contained in
     ~/Library/Preferences/Aquamacs Emacs/Preferences.el
 
 which is why I originally moved mine there from "~/.emacs.d".
+* TODOs
+The following is a list of desirable functionality/configuration
+changes that I have yet to take the time to implement or don't know
+how to yet. There are also TODO bullets scattered throughout this
+document that mostly specify desirable modifications of configuration
+tweaks that have already been implemented here and in the init tree.
 * Global Settings 
 ** Personal Information
 *** Email Address
@@ -207,13 +213,46 @@ Emacs Starter Kit]].
   (ido-mode t)
 #+end_src
 *** Basic Configuration
-#+srcname: ido-mode-basic-config
+Next, we change some basic settings to make our lives easier.
+
+|------------------------------------+----------------------------------+---------------------------------------------|
+| Setting (ido-[...])                | Description                      | Possible Values                             |
+|------------------------------------+----------------------------------+---------------------------------------------|
+| everywhere                         | Enable Ido Everywhere            | Boolean                                     |
+| enable-prefix                      | Match input only if prefix       | Boolean                                     |
+| enable-flex-matching               | If no string match, match        | Boolean                                     |
+|                                    | filenames containing input chars |                                             |
+| auto-merge-work-directories-length | Auto switch to merged work       | Integer N (disable behavior is < 0)         |
+|                                    | directories after N typed chars  |                                             |
+| use-filename-at-point              | Use filename at point?           | Boolean                                     |
+| max-prospects                      | Max number of results to display | Integer N >= 0                              |
+|                                    | (infinite if set to 0)           |                                             |
+| create-new-buffer                  | Create a new buffer if no buffer | 'always: always do this                     |
+|                                    | matches substring?               | 'prompt: ask to do this                     |
+|                                    |                                  | 'never:  never do this                      |
+| use-virtual-buffers                |                                  | nil: Don't use virtual buffers              |
+|                                    |                                  | t:   Always use virtual buffers             |
+|                                    |                                  | auto: Use only when current input           |
+|                                    |                                  | has no matches                              |
+| handle-duplicate-virtual-buffers   | ??? (...obsolete?)               | ???                                         |
+| default-buffer-method              | Determines where/how the         | selected-window: show in selected window    |
+|                                    | selected buffer is opened        | other-window: show in other window          |
+|                                    |                                  | display: display in other window without    |
+|                                    |                                  | selecting (i.e., without switching buffers) |
+|                                    |                                  | other-frame: show in other frame            |
+|                                    |                                  | maybe-frame: ask to show in other frame     |
+|                                    |                                  | raise-frame: raise frame if already shown   |
+| default-file-method                | Determines where/how the         | Same as default-buffer-method               |
+|                                    | selected file is opened          |                                             |
+|------------------------------------+----------------------------------+---------------------------------------------|
+
+#+SRCNAME: ido-mode-basic-config
 #+BEGIN_SRC emacs-lisp
   (setq ido-everywhere            t
         ido-enable-prefix         nil
         ido-enable-flex-matching  t
         ido-auto-merge-work-directories-length nil
-        ;;ido-use-filename-at-point t
+        ido-use-filename-at-point t
         ido-max-prospects         10
         ido-create-new-buffer     'always
         ;; ido-use-virtual-buffers   t
@@ -221,6 +260,22 @@ Emacs Starter Kit]].
         ido-default-buffer-method 'selected-window
         ido-default-file-method   'selected-window)
 #+END_SRC
+
+Note that
+*** Custom Keybindings
+Since we will configure Ido Mode to [[*Order%20Results%20Vertically][order results vertically]] below,
+rather than horizontally, we will also make the up and down arrow keys
+move up and down the list of results for easy browsing.
+
+#+SRCNAME: ido-mode-custom-keybindings
+#+BEGIN_SRC emacs-lisp
+  (defun ido-my-keys ()
+    (define-key ido-completion-map (kbd "<up>")   'ido-prev-match)
+    (define-key ido-completion-map (kbd "<down>") 'ido-next-match))
+
+  (add-hook 'ido-setup-hook 'ido-my-keys)
+#+END_SRC
+
 *** Order File Extensions
 Set the order in which Ido displays files based on their extensions.
 #+srcname: ido-mode-extension-order
@@ -233,13 +288,17 @@ Set the order in which Ido displays files based on their extensions.
 The following settings tell Ido Mode to ignore various types of files
 and buffers that we never actually look up/attempt to switch to.
 
-#+srcname: ido-mode-ignored-extensions-and-buffers
+#+SRCNAME: ido-mode-ignored-extensions-and-buffers
 #+BEGIN_SRC emacs-lisp
   (setq completion-ignored-extensions '(".o" ".elc" "~" ".bin" ".bak"
                                         ".obj" ".map" ".a" ".so"
                                         ".mod" ".aux" ".out" ".pyg"
+                                        ".bbl" ".blg" ".idx" ".ilg"
+                                        ".ind" ".rel" ".synctex.gz"
+                                        "_flymake.bcf" "_flymake.dvi"
+                                        "_flymake.run.xml"
                                         "_flymake.tex" ".fdb_latexmk"
-                                        ".log" ".fls"))
+                                        ".log" ".fls" ".DS_Store"))
   (setq ido-ignore-extensions t)
   (setq ido-ignore-buffers (list (rx (or (and bos  " ")
                                          (and bos
@@ -248,6 +307,9 @@ and buffers that we never actually look up/attempt to switch to.
                                                   "*vc-diff*")
                                               eos)))))
 #+END_SRC
+**** TODO Create a new function/keybinding that lists EVERYTHING in the directory
+This would be nice for, e.g., hacking intermediate TeX files on the
+rare occasions when that's useful/necessary.
 
 *** Allow Spaces in ido-find-file
 By default, pressing [Space] does nothing when using ido-find-file,
@@ -255,7 +317,7 @@ which makes it difficult to search with several words that you know
 occur in the file name. This snippet changes this behavior to be more
 intuitive.
 
-#+srcname: ido-mode-enable-spaces
+#+SRCNAME: ido-mode-enable-spaces
 #+BEGIN_SRC emacs-lisp
   (add-hook 'ido-make-file-list-hook
             (lambda ()
@@ -324,33 +386,28 @@ We now select the current theme.
   (global-set-key "\C-x\ \C-r" 'recentf-open-files)
 #+END_SRC
 * Appearance Settings
-** Display the current time in the baseline of each frame
-
+** Display the current time in the baseline of each frame 
 #+BEGIN_SRC emacs-lisp
   (display-time)
-#+END_SRC
-
+#+END_SRC 
 ** Display line numbers on the left of each frame
 #+BEGIN_SRC emacs-lisp
   (global-linum-mode 1)
   (setq linum-format "%4d \u2502 ")
+  (set-face-attribute 'fringe nil :background "#333333")
+  ;(set-face-attribute 'linum nil :background "#CCC") 
 #+END_SRC
-
 ** Highlight the current row
 Highlights the current row in gray. (taken from [[http://tex.stackexchange.com/questions/50827/a-simpletons-guide-to-tex-workflow-with-emacs][here]])
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (global-hl-line-mode 1); Highlight current row
   (set-face-background hl-line-face "#0e1717"); Same color as greyness in gtk
-#+END_SRC
-
-** Set the default font
-
+#+END_SRC 
+** Set the default font 
 #+BEGIN_SRC emacs-lisp
   (set-default-font "-apple-bitstream vera sans mono-medium-r-normal--0-0-0-0-m-0-mac-roman")
-#+END_SRC
-
-** Disable cursor blinking
-
+#+END_SRC 
+** Disable cursor blinking 
 #+BEGIN_SRC emacs-lisp
   (blink-cursor-mode (- (*) (*) (*)))
 #+END_SRC
@@ -403,10 +460,9 @@ See the following if similar issues arise in other modes:
 Loads the file ~/.emacs.d/lib/latex.org, which contains and/or
 dynamically loads all of our custom LaTeX settings.
 
-#+BEGIN_SRC emacs-lisp
-  
-  ;(org-babel-load-file
-  ;  (expand-file-name "~/.emacs.d/lib/latex.org"))
+#+BEGIN_SRC emacs-lisp 
+  (org-babel-load-file
+    (expand-file-name "~/.emacs.d/lib/latex.org"))
 #+END_SRC
 
 ** Org Mode

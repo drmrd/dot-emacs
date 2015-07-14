@@ -1,6 +1,6 @@
 #+TITLE: LaTeX Emacs Configuration
 #+AUTHOR: DRMRD
-#+PROPERTY: header-args    :tangle latex_config.el
+#+PROPERTY: header-args    :tangle ~/.emacs.d/lib/latex_config.el
 #+OPTIONS: toc:nil num:nil ^:nil
 #+STARTUP: indent
 
@@ -49,6 +49,14 @@ First, we turn on RefTeX for AUCTeX http://www.gnu.org/s/auctex/manual/reftex/re
 #+END_SRC
 
 * Appearance
+** Custom Syntax Highlighting
+Syntax Highlighting is controlled by Font Lock Mode, and it is a
+simple matter to add additional keywords for it to recognize and color
+accordingly using the [[help:font-lock-add-keywords][font-lock-add-keywords]] function. Keywords are
+passed to this function as a list of elements of the form described
+[[help:font-lock-keywords][here]].
+
+
 ** Line Wrapping
 *** Enable Soft Line Wrapping
 This is achieved through Visual Line Mode and Adaptive Wrap Prefix
@@ -59,7 +67,6 @@ softly wrapped lines to the appropriate levels.
   (add-hook 'LaTeX-mode-hook 'visual-line-mode)
   (add-hook 'visual-line-mode-hook 'adaptive-wrap-prefix-mode)
 #+END_SRC
-
 * Support for Custom Macros & Environments
 ** Make AUCTeX Aware of Custom Theorem Environments
 
