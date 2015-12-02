@@ -3,7 +3,7 @@
 #+OPTIONS: toc:nil num:nil ^:nil
 #+STARTUP: indent
 
-* General Information
+* General Information/Notes
 ** What should go into init.org?
 The init.org file is loaded at startup, rather than on demand. Hence
 it should contain any and all Emacs settings that you'd like loaded
@@ -17,37 +17,7 @@ should contain are
 - Global theme customizations
 
 ** Emacs Configuration Files Hierarchy
-At present, init.org loads files written by me from three places:
-*** ~/.emacs.d/
-Adding libraries to the root .emacs.d directory should ONLY happen if
-they implement/customize features affecting all major modes by default
-AND contain too much code for this file.
-
-A good use case for such a file is indentation.org, which contains
-settings for all global tweaks to how indentation and filling are done
-in Emacs.
-
-Eventually, it may very well be that I stop doing this entirely,
-loading these configuration files from, e.g., a .emacs.d/lib/global
-subdirectory, to help avoid namespace collisions with third party
-packages.
-
-*** ~/workspace/elisp [[*NOTE:%20This%20folder%20should%20be%20considered%20OBSOLETE.][(OBSOLETE)]]
-This is the old location for storing .el files. It should be replaced
-by literate programming .org files in the folder ~/.emacs.d/lib/
-
-init.org loads all .el files in this directory, unless told to do
-otherwise.
-
-**** DONE List any exceptions to this loading rule here.
-This is considered done, since the folder is obsolete.
-**** TODO NOTE: This folder should be considered OBSOLETE.
-No new elisp libraries should be added here. Due to some undesirable
-effects of the code in these old .el files, the original directory has
-been renamed elisp.bak. Any configuration files/settings needed that
-are in elisp.bak should be integrated into org files in the .emacs.d
-directory.
-
+At present, init.org loads files written by me from _one_ place:
 *** ~/.emacs.d/lib
 The new folder for storing .org files, intended to contain libraries
 meant for customizing, e.g., specific major modes (in ways that go
@@ -77,8 +47,40 @@ would add hundreds or thousands of lines of code unnecessarily.
 ****** What To Do When a Major Mode Configuration Library Gets Too Big
 - Keep the bullet_title.org file
 - Create a ~/.emacs.d/lib/bullet_title subdirectory
-- Add libraries to this subdirectory and load them from bullet_title.org
-* Notes on Aquamacs Configuration Oddities
+- Add libraries to this subdirectory and load them from
+  bullet_title.org
+*** ~/workspace/elisp [[*NOTE:%20This%20folder%20should%20be%20considered%20OBSOLETE.][(OBSOLETE)]]
+This is the old location for storing .el files. It should be replaced
+by literate programming .org files in the folder ~/.emacs.d/lib/
+
+init.org loads all .el files in this directory, unless told to do
+otherwise.
+
+**** DONE List any exceptions to this loading rule here.
+This is considered done, since the folder is obsolete.
+**** DONE NOTE: This folder should be considered OBSOLETE.
+CLOSED: [2015-12-02 Wed 15:54]
+No new elisp libraries should be added here. Due to some undesirable
+effects of the code in these old .el files, the original directory has
+been renamed elisp.bak. Any configuration files/settings needed that
+are in elisp.bak should be integrated into org files in the .emacs.d
+directory.
+
+(This was really completed much earlier than the close date/time.)
+*** ~/.emacs.d/
+Adding libraries to the root .emacs.d directory should ONLY happen if
+they implement/customize features affecting all major modes by default
+AND contain too much code for this file.
+
+A good use case for such a file is indentation.org, which contains
+settings for all global tweaks to how indentation and filling are done
+in Emacs.
+
+Eventually, it may very well be that I stop doing this entirely,
+loading these configuration files from, e.g., a .emacs.d/lib/global
+subdirectory, to help avoid namespace collisions with third party
+packages.
+** Notes on Aquamacs Configuration Oddities
 Since Aquamacs is obnoxious, my .emacs and .emacs.d files were
 originally found in
     
@@ -107,18 +109,245 @@ Aquamacs will also find libraries contained in
     ~/Library/Preferences/Aquamacs Emacs/Preferences.el
 
 which is why I originally moved mine there from "~/.emacs.d".
+** FAQ
+*** Q: When should I use apostrophes?
+**** A: To return an object/variable name without evaluating it.
+The code ='object= is short for =(quote object)=, which is a special
+form that returns =object= without evaluating it. This is useful, for
+instance, when you would like to change the value of a variable,
+append elements to a list, add un-evaluated elisp code to some other
+object, etc.
+
+***** Example: A variable called =Paddington=
+Let's say you have a variable named =Paddington=, and you wish to
+replace its value with the string "A Bear Called Paddington". This can
+be achieved as follows:
+#+BEGIN_EXAMPLE
+  (setq Paddington "A Bear Called Paddington")
+#+END_EXAMPLE
+Note that quoting is unnecessary here, since =(setq foo bar)= sets the
+/literal/ symbol =foo= to the value =bar= (so in some sense quotes
+=Paddington= without our intervention).
+
+Indeed, if you want to get unnecessarily fancy here (and to emphasize
+what the apostrophe is doing) you could execute the following
+equivalent code, too:
+#+BEGIN_EXAMPLE
+  (setq Paddington (concat "A Bear Called " (symbol-name 'Paddington)))
+#+END_EXAMPLE
+Note that we can't just use =(concat "A Bear Called " 'Paddington)=
+here, since ='Paddington= is really a /symbol/, not a /string/. (See
+the emacs documentation for variables and symbols.)
+
+***** Example: Prepending to a list
+Suppose you have a list variable named =mylist= and you'd like to add
+the string "A Bear Called Paddington" to it. In conjunction with the
+=add-to-list= function, you can use quoting to achieve this:
+#+BEGIN_EXAMPLE
+  (add-to-list 'mylist "A Bear Called Paddington")
+#+END_EXAMPLE
+You can also add the string to the end of this list by setting the first
+optional argument of =add-to-list= to =t= (or anything non-nil).
+
+*** Q: What's an alist?
+**** A: An association list
+An alist is a list =mylist= of cons cells =(car . cdr)= (in dotted
+pair notation) and atoms. For example:
+
+#+BEGIN_EXAMPLE
+  (setq mylist
+    '((setting1 . value1)
+     (setting2 . value2)
+     (setting3 . value3)))
+#+END_EXAMPLE
+
+sets =mylist= equal to an alist. In each cons cell =(setting
+. value)=, the CAR =setting= is called a *key* and the CDR =value= a
+*value*. A key (or value) corresponding to a value (or key) is called
+an *association* for the key (or value) in =mylist=.
+
+The following functions are commonly used to retrieve data from
+alists.
+
+| Function                     | Description                   | Example                          |
+|------------------------------+-------------------------------+----------------------------------|
+| (assoc key alist)            | Returns the first association | (assoc 'setting1 mylist)         |
+|                              | to =key= in =alist=           | returns value1                   |
+| (rassoc value alist)         | Returns the first association | (assoc 'value1 mylist)           |
+|                              | to =value= in =alist=         | returns setting1                 |
+| (assq key alist)             | Like =assoc= but uses =eq=    |                                  |
+|                              | for comparison instead        |                                  |
+|                              | of =equal= which is faster    |                                  |
+|                              | (but useless when things      |                                  |
+|                              | other than symbols appear as  |                                  |
+|                              | keys in the alist)            |                                  |
+| (rassq key alist)            | Like =rassoc= but uses =eq=   |                                  |
+|                              | for comparison, just like the |                                  |
+|                              | last function                 |                                  |
+| (assoc-default key alist     | TODO: Fill this in            |                                  |
+| &optional test default)      |                               |                                  |
+| (copy-alist alist)           | Returns a two-level deep copy |                                  |
+|                              | of the given alist            |                                  |
+| (assq-delete-all key alist)  | Delete every element from the | (setq mylist '((a 1) (b 1) (a 2) |
+|                              | alist with a CAR matching the | (b 3) (b 4) (b 5) (a 3) (c 2)))  |
+|                              | given key, and return the new | (assq-delete-all 'a mylist)      |
+|                              | list. This                    | returns                          |
+|                              | often-but-unpredictably       | ((b 1) (b 3) (b 4) (b 5) (c 2))  |
+|                              | modifies the passed alist,    |                                  |
+|                              | and so only the returned      |                                  |
+|                              | alist should be used after    |                                  |
+|                              | invoking this function.       |                                  |
+| (rassq-delete-all key alist) | Like the last function but    |                                  |
+|                              | compares CDRs to the given    |                                  |
+|                              | key instead of CARs.          |                                  |
+** Elisp Notes and Techniques
+*** Add an element to a list
+**** Approach 1: (add-to-list ...)
+#+BEGIN_EXAMPLE
+  (add-to-list LIST-VAR ELEMENT &optional APPEND COMPARE-FCN)
+#+END_EXAMPLE
+
+The =add-to-list= function prepends (by default) its second argument
+=ELEMENT= to the value of the list variable in its first argument
+=LIST-VAR= if it is not already present there. Adding anything non-nil
+as an optional parameter =APPEND= makes =add-to-list= append the
+second argument instead. Its final argument =COMPARE-FCN= (also
+optional) may be a function for it to use instead of =eq= to determine
+if the new element is equal to anything in the list. The new value of
+the list is then returned.
+
+***** Example 1: Unnamed =LIST-VAR=
+To add 4 to an unnamed list containing 1, 2, and 3.
+
+#+BEGIN_EXAMPLE
+  (add-to-list '(1 2 3) 4)
+  ; Returns (4 1 2 3)
+  
+  (add-to-list '(1 2 3) 4 t)
+  ; Returns (1 2 3 4)
+#+END_EXAMPLE
+
+***** Example 2: Named =LIST-VAR=
+Suppose =mylist= is a variable with value =(3 2 1)=. Then we may
+prepend 4 to =mylist= with the following command:
+
+#+BEGIN_EXAMPLE
+  (add-to-list 'mylist 4)
+#+END_EXAMPLE
+**** Approach 2: (cons car cdr)
+#+BEGIN_EXAMPLE
+  (setq foo (cons car cdr))
+#+END_EXAMPLE
+=cons= is /the/ list creation function in elisp, and most other
+functions (presumably including =add-to-list=) are built on top of
+it. The command =(cons car cdr)= (short for *cons*truct) creates a
+*cons cell* (aka a *non-atomic s-expression" (itself short for
+"*s*ymbolic expression")), which is an object consisting of an ordered
+pair of pointers CAR and CDR. Each pointer can point to any Lisp
+object. The pointers CAR and CDR are often identified (in the
+documentation) with the objects they point to.
+
+By definition (in Lisp) a *list* is a series of cons cells =C1=, =C2=,
+..., =Cn=, where for =k = 1,2,...,n= the CAR of =Ck= is a Lisp object
+and the CDR of =Ck= is =Ck+1=, except for the CDR of =Cn= which is
+=nil= (or =()=, equivalently). If the list object in the CAR of Ck is
+the symbol =eltk= for each =k=, then this looks like the following:
+#+BEGIN_EXAMPLE
+  ;; Using cons:
+  (cons elt1 (cons elt2 (cons elt3 [...] (cons eltn ()) [...])))
+  ;; In dotted pair notation:
+  '(elt1 . (elt2 . (elt3 [...] (eltn . ()) [...] )))
+  ;; As a list
+  '(elt1 elt2 elt3 [...] eltn)
+#+END_EXAMPLE
+Note that each =eltk= doesn't have to be atomic (or a symbol in
+particular); lists may contain other lists and objects as elements.
+One way to represent these visually is as follows:
+
+#+BEGIN_EXAMPLE
+    --- ---      --- ---                --- ---
+   |   |   |--> |   |   |--> [...] --> |   |   |--> nil
+    --- ---      --- ---                --- ---
+     |            |                      |
+     |            |                      |
+      --> elt1     --> elt2               --> eltn
+#+END_EXAMPLE
+
+*** Replace an element in an alist
+Use the assq-delete-all and rassq-delete-all commands to delete all
+elements in the alist with a given CAR or CDR, and then prepend the
+element of the same CAR/CDR you were replacing to the resulting list,
+and set the original list equal to the result.
+#+BEGIN_EXAMPLE
+  (setq mylist ((car1 . cdr1) (car2 . cdr2) (car1 . cdr11) (car3 . cdr3)))
+  (setq mylist (cons '(car1 . newcdr1) (assq-delete-all 'car1 mylist)))
+  sets mylist equal to ((car1 . newcdr1) (car2 . cdr2) (car3 . cdr3))
+#+END_EXAMPLE 
+** Org Mode Notes and Techniques
+*** Edit a code block in its default major mode (e.g. =lisp-mode= or =LaTeX-mode=)
+While the pointer is in the code block hit C-c ' to open a new frame
+in the correct mode containing just this code block. Hit C-x C-s to
+save changes in the original buffer without closing the new one. Hit
+C-c ' again to apply changes to the code block in the org file.
 * TODOs
 The following is a list of desirable functionality/configuration
 changes that I have yet to take the time to implement or don't know
 how to yet. There are also TODO bullets scattered throughout this
 document that mostly specify desirable modifications of configuration
 tweaks that have already been implemented here and in the init tree.
-* Global Settings 
+** TODO Fix line numbers
+Currently, line numbers are affected by syntax highlighting on the
+current line, including the separator of them and the adjacent line.
+*** Changes
+- <2015-07-14 Tue> Changed from using linum-mode to nlinum-mode
+  globally.
+** TODO Support operating-system-dependent, emacsen-specific, and terminal/window-specific config settings
+As a simple example, the locations of dot-emacs files differ on Linux
+and in Aquamacs, and the latter has the evil Preferences.el file, as
+well. It would be nice to use the same config file for Aquamacs and
+normal Emacs without modifications.
+
+One possible albeit somewhat inelegant solution would be to wrap all
+operating system/emacs version dependent code in blocks conditional
+blocks. For instance, the following code checks if the current
+operating system is Mac OSX:
+
+#+BEGIN_EXAMPLE
+  (if (eq system-type 'darwin)
+    ; Do stuff when one a Mac
+    ; else code (Optional something here if not on Mac)
+  )
+#+END_EXAMPLE
+
+See [[http://stackoverflow.com/q/1817257/1656985][here]] (and in several useful answers) for discussions of several
+relevant variables and [[http://stackoverflow.com/q/912355/1656985][here]] for a discussion of the correct ways to
+form conditionals in Emacs.
+
+*** Changes
+- <2015-07-14 Tue> Found out about the variables =system-type=,
+  =emacs-version=, and =window-system= variables, which return strings
+  containing the operating system, version of Emacs, and windowing
+  system (e.g. X or a terminal) that are currently running.
+* Global Settings
 ** Personal Information
 *** Email Address
 #+BEGIN_SRC emacs-lisp
   (setq user-mail-address "moore@math.osu.edu")
 #+END_SRC
+** Performance Improvements
+The following settings improve the performance of Emacs in various
+ways, typically by permitting it to assume our computer wasn't built
+in the stone age.
+*** Force Emacs to fully redraw windows *before* processing queued input events
+The following should dramatically reduce the amount of screen tearing
+you see while working with Emacs.
+#+BEGIN_SRC emacs-lisp
+  (setq redisplay-dont-pause t)
+#+END_SRC
+**** TODO Remove this setting after updating to Emacs v. 24.5 on all machines
+This setting is the default behavior in Emacs v. 24.5 and higher, and
+I read in a comment somewhere (confirm this) that the above variable
+is going to be deemed deprecated soon.
 ** Setting up Package Manager and Default Repositories
 Load Package, load all default packages, and link to all standard
 package repositories.
@@ -151,7 +380,7 @@ seems).
 
 #+srcname: custom-load-paths
 #+begin_src emacs-lisp
-  (add-to-list 'load-path "~/.emacs.d")
+  ;(add-to-list 'load-path "~/.emacs.d")
   (add-to-list 'load-path "~/workspace/elisp")
   (add-to-list 'load-path "~/.emacs.d/lib")
 #+end_src
@@ -163,12 +392,17 @@ registers "e", "l", and "p" (resp.) so that they can be opened easily with
 
 #+BEGIN_SRC emacs-lisp
   (set-register ?e (cons 'file "~/.emacs.d/init.org"))
-  (set-register ?l (cons 'file "~/.emacs.d/lib/latex.org"))
-  (set-register ?p (cons 'file "~/Library/Preferences/Aquamacs Emacs/Preferences.el"))
+  (set-register ?l (cons 'file "~/.emacs.d/lib/latex/latex.org"))
+  ;; Also set a register for Preferences.el if on a Mac
+  (if (eq system-type 'darwin)
+    (set-register ?p (cons 'file "~/Library/Preferences/Aquamacs Emacs/Preferences.el"))) 
 #+END_SRC
 
 *** DONE Determine how to evaluate this file without reloading Aquamacs
-Invoke org-babel-load-file on init.org to retangle and reload this file.
+Invoke org-babel-load-file on init.org to retangle and reload this
+file.
+
+To modify and re-evaluate a single code block, use C-c C-c inside the block.
 *** DONE Add registers for .emacs.d/lib/latex.org and Preferences.el
 It might be worth also adding a register for Preferences.el for when I
 want to evaluate this buffer without reloading emacs (although Babel
@@ -187,6 +421,7 @@ Make Text Mode the default major mode, but disable the Auto-Fill Mode hook.
 #+BEGIN_SRC emacs-lisp
   (setq default-major-mode 'text-mode)
   (remove-hook 'text-mode-hook 'auto-fill-mode)
+  (add-hook 'text-mode-hook 'kill-auto-fill-mode-hook)
 #+END_SRC
 
 ** Make Emacs insert a newline at the end of each file
@@ -198,11 +433,54 @@ about this on StackExchange at some point.
   (setq require-final-newline t)
 #+END_SRC
 
+* Utility Functions
+** my-reb-copy: Yank Into Minibuffer Without Doubling Backslashes
+Yank text into the minibuffer without backslashes being doubled. This
+is especially useful when working with regular expressions.
+
+#+BEGIN_SRC emacs-lisp
+    (defun my-reb-copy ()
+        "Copy current RE into the kill ring without quotes and single
+backslashes for later insertion."
+        (interactive)
+        (reb-update-regexp)
+        (let* ((re (with-output-to-string
+                (print (reb-target-binding reb-regexp))))
+                (str (substring re 2 (- (length re) 2))))
+        (with-temp-buffer
+            (insert str)
+            (goto-char (point-min))
+            (while (search-forward "\\\\" nil t)
+                (replace-match "\\" nil t))
+                (kill-new (buffer-substring (point-min) (point-max))))
+                (message "Regexp copied to kill-ring")))
+#+END_SRC
+** nolinums: Disable Line Numbers
+Use (add-hook 'foo-mode-hook 'nolinums) to disable line numbering in
+foo-mode
+#+BEGIN_SRC emacs-lisp
+  (defun nolinums ()
+      (global-linum-mode 0)
+      (global-nlinum-mode 0)
+  )
+#+END_SRC
+** kill-auto-fill-mode: Disable auto-fill-mode (use as a hook)
+#+BEGIN_SRC emacs-lisp
+  (defun kill-auto-fill-mode-hook ()
+    "Disables auto-fill-mode when used as a hook"
+    (auto-fill-mode -1)
+    ; Remove the auto-detect-wrap function from the text-mode-hook if
+    ; on Mac OS X (in case you're running Aquamacs)
+    (if (eq system-type 'darwin)
+        (remove-hook 'text-mode-hook 'auto-detect-wrap)
+    )
+  )
+#+END_SRC
+
 * Loading & Configuring Default Packages
 The following list comprises all packages that are loaded by default
 and in such a way that they affect all (or most) modes (or enable
-minor-modes in all major-modes).
-
+minor-modes in all major-modes). 
 ** Ido Mode (Better, Interactive find-file Command)
 Enable Ido Mode for a much improved buffer and file switching/finding
 experience. Configuring Ido Mode, based on the settings in [[http://xgarrido.github.io/emacs-starter-kit/starter-kit-ido.html][xgarrido's
@@ -213,7 +491,11 @@ Emacs Starter Kit]].
   (ido-mode t)
 #+end_src
 *** Basic Configuration
-Next, we change some basic settings to make our lives easier.
+Next, we change some basic settings to make our lives easier. The
+following table describes each setting. Note that, for Boolean
+variables, the Description column shows the behavior if non-nil, with
+the behavior being the opposite if nil (unless otherwise
+specified).
 
 |------------------------------------+----------------------------------+---------------------------------------------|
 | Setting (ido-[...])                | Description                      | Possible Values                             |
@@ -245,6 +527,15 @@ Next, we change some basic settings to make our lives easier.
 | default-file-method                | Determines where/how the         | Same as default-buffer-method               |
 |                                    | selected file is opened          |                                             |
 |------------------------------------+----------------------------------+---------------------------------------------|
+
+|---------------------------------------------------------------------------------------------------------------------|
+| Notes                                                                                                               |
+|---------------------------------------------------------------------------------------------------------------------|
+| Several options mention =virtual buffers=, which are ido-mode's way of pretending recently-closed buffers are open. |
+| So, for instance, if you set =ido-use-virtual-buffers= to =t=, ido-mode will keep a list of recently-closed buffers |
+| at the bottom of the buffer list (displayed in the font-face =ido-virtual=), enabling you to, e.g., switch to       |
+| recently-closed buffers after you exit and re-open Emacs.                                                           |
+|---------------------------------------------------------------------------------------------------------------------|
 
 #+SRCNAME: ido-mode-basic-config
 #+BEGIN_SRC emacs-lisp
@@ -280,8 +571,8 @@ move up and down the list of results for easy browsing.
 Set the order in which Ido displays files based on their extensions.
 #+srcname: ido-mode-extension-order
 #+BEGIN_SRC emacs-lisp
-  (setq ido-file-extensions-order     '(".cc" ".h" ".tex" ".sh" ".org"
-                                      ".el" ".tex" ".png"))
+  (setq ido-file-extensions-order     '(".tex" ".org" ".log" ".cc"
+                                        ".h" ".sh" ".el" ".png"))
 #+END_SRC
 
 *** Set Ignored File Extensions and Buffers
@@ -298,7 +589,7 @@ and buffers that we never actually look up/attempt to switch to.
                                         "_flymake.bcf" "_flymake.dvi"
                                         "_flymake.run.xml"
                                         "_flymake.tex" ".fdb_latexmk"
-                                        ".log" ".fls" ".DS_Store"))
+                                        ".fls" ".DS_Store"))
   (setq ido-ignore-extensions t)
   (setq ido-ignore-buffers (list (rx (or (and bos  " ")
                                          (and bos
@@ -324,16 +615,38 @@ intuitive.
               (define-key ido-file-dir-completion-map (kbd "SPC") 'self-insert-command)))
 #+END_SRC
 
-*** Order Results Vertically
+*** Order Results Vertically & Change Ido Result Formatting
 By default Ido Mode displays results in a multi-line horizontal list,
 which is, frankly, difficult to read at times. This code makes Ido
 list results in a vertical list instead.
 
 #+SRCNAME: ido-mode-list-results-vertically
 #+BEGIN_SRC emacs-lisp
-  (setq ido-decorations (quote ("\n-> " "" "\n " "\n ..." "[" "]" "
-    [No match]" " [Matched]" " [Not readable]" " [Too big]" "
-    [Confirm]")))
+  (setq ido-decorations (quote ("\n-> "   ""      ; The "brackets" around the
+                                                  ; entire prospect list
+                                "\n "             ; The prospect separator
+                                "\n ..."          ; String inserted at end of a
+                                                  ; truncated list of prospects
+                                "["       "]"     ; Brackets around the common
+                                                  ; match string (that can be
+                                                  ; completed using [Tab])
+                                " [No match]"     ; The string to display when
+                                                  ; there are no matches
+                                " [Matched]"      ; The string to display when
+                                                  ; there is a unique match (and
+                                                  ; faces are not being used)
+                                " [Not readable]" ; The string to display when
+                                                  ; the current directory is not
+                                                  ; readable
+                                " [Too big]"      ; The string to display when
+                                                  ; the current directory
+                                                  ; is > ido-max-directory-size
+                                " [Confirm]"      ; The string to display when
+                                                  ; creating a new file buffer
+                                ; Absent 12th & 13th strings:
+                                ; Brackets around the sole remaining completion,
+                                ; if they should differ from 5 and 6.
+                        )))
   (defun ido-disable-line-truncation () (set (make-local-variable 'truncate-lines) nil))
   (add-hook 'ido-minibuffer-setup-hook 'ido-disable-line-truncation)
 #+END_SRC
@@ -362,21 +675,6 @@ natural to me (and involves the fewest number of excess backslashes).
   (require 're-builder)
   (setq reb-re-syntax 'string)
 #+END_SRC
-** Color-Theme Mode (Custom Themes)
-Color-Theme Mode is Emacs's standard theming engine for customizing faces throughout the UI and editor. We first load the package and initialize it.
-
-#+BEGIN_SRC emacs-lisp
-  (require 'color-theme)
-  (color-theme-initialize)
-#+END_SRC
-
-We now select the current theme.
-
-#+BEGIN_SRC emacs-lisp 
-  (load-theme 'cyberpunk t)
-#+END_SRC
-
-*** TODO Consider moving theme selection into an "appearance" section of the file.
 ** Recentf (Track Recent Files, Load via C-x C-r)
 
 #+BEGIN_SRC emacs-lisp
@@ -386,15 +684,46 @@ We now select the current theme.
   (global-set-key "\C-x\ \C-r" 'recentf-open-files)
 #+END_SRC
 * Appearance Settings
-** Display the current time in the baseline of each frame 
+** Color-Theme Mode (Custom Themes)
+Color-Theme Mode is Emacs's standard theming engine for customizing
+faces throughout the UI and editor. We first load the package and
+initialize it.
+
+#+BEGIN_SRC emacs-lisp
+  (require 'color-theme)
+  (color-theme-initialize)
+#+END_SRC
+
+Now we choose a color theme to load. I've commented out several other
+nice candidates, and other themes showing potential should also be
+added here.
+
+#+BEGIN_SRC emacs-lisp 
+  ;(color-theme-bharadwaj-slate)
+  (color-theme-charcoal-black)
+  ;(color-theme-classic)
+  ;(color-theme-deep-blue )
+  ;(color-theme-ld-dark)	
+  ;(color-theme-midnight)
+  ;(color-theme-pok-wog)
+  ;(color-theme-resolve)	
+  ;(color-theme-shaman)
+  ;(color-theme-subtle-hacker)
+#+END_SRC
+*** DONE Consider moving theme selection into an "appearance" section of the file.
+CLOSED: [2015-12-01 Tue 17:24]
+** Load a color theme
+See [[*Color-Theme%20Mode%20(Custom%20Themes)][Color-Theme Mode (Custom Themes)]] in the last section.
+** Mode Line Configuration
+*** Display the current time in the baseline of each frame 
 #+BEGIN_SRC emacs-lisp
   (display-time)
 #+END_SRC 
 ** Display line numbers on the left of each frame
 #+BEGIN_SRC emacs-lisp
-  (global-linum-mode 1)
-  (setq linum-format "%4d \u2502 ")
-  (set-face-attribute 'fringe nil :background "#333333")
+  (add-hook 'find-file-hook (lambda () (nlinum-mode 1)))
+  ;(setq linum-format "%4d \u2502 ")
+  ;(set-face-attribute 'fringe nil :background "#333333")
   ;(set-face-attribute 'linum nil :background "#CCC") 
 #+END_SRC
 ** Highlight the current row
@@ -403,10 +732,15 @@ Highlights the current row in gray. (taken from [[http://tex.stackexchange.com/q
   (global-hl-line-mode 1); Highlight current row
   (set-face-background hl-line-face "#0e1717"); Same color as greyness in gtk
 #+END_SRC 
-** Set the default font 
+** Set the default font
+On Mac OS X, use the Vera Sans font family.
 #+BEGIN_SRC emacs-lisp
-  (set-default-font "-apple-bitstream vera sans mono-medium-r-normal--0-0-0-0-m-0-mac-roman")
-#+END_SRC 
+  (if (eq system-type 'darwin)
+    (set-default-font "-apple-bitstream
+      vera sans mono-medium-r-normal--0-0-0-0-m-0-mac-roman"))
+  (if (eq system-type 'gnu/linux)
+    (set-default-font "-unknown-DejaVu Sans Mono-normal-normal-normal-*-15-*-*-*-m-0-iso10646-1"))
+#+END_SRC
 ** Disable cursor blinking 
 #+BEGIN_SRC emacs-lisp
   (blink-cursor-mode (- (*) (*) (*)))
@@ -414,14 +748,35 @@ Highlights the current row in gray. (taken from [[http://tex.stackexchange.com/q
 * Indentation & Whitespace Settings
 This deserves its own section, since it is always the part of text
 editors I tweak the most.
+** [Tab] Behavior
+The tab-always-indent setting
+#+BEGIN_SRC emacs-lisp
+  ;; make tab key call indent command or insert tab character, depending on cursor position
+(setq-default tab-always-indent nil)
+#+END_SRC emacs-lisp
 
 #+BEGIN_SRC emacs-lisp
-  ;;      
-  ;  global_indentation
-  ;
-  ;      Contains all global customizations pertaining to indentation,
-  ;      whitespace, and fill commands.
-  (load-library "global_indentation") 
+  
+
+;; make tab key do indent first then completion.
+(setq-default tab-always-indent 'complete)
+
+;; make return key also do indent, globally
+; (electric-indent-mode 1)
+
+
+;;
+;  Makes M-q indent from cursor to the space prior to the next
+;  non-whitespace character on the previous line.
+;
+;  Example: If you have the following lines (with cursor denoted by *)
+;          sample text is entertaining to write
+;          I completely agree* with you
+;      Then the result of hitting M-q will be
+;          sample text is entertaining to write
+;          I completely agree          with you
+;      with the cursor right before the "w" in "with".
+(global-set-key (kbd "M-q") 'indent-relative)
   
   ;; Set tab width to 4
   (setq tab-stop-list (number-sequence 4 200 4))
@@ -429,10 +784,6 @@ editors I tweak the most.
   ;; Force emacs to only indent with spaces and never tabs
   (setq-default indent-tabs-mode nil)
 #+END_SRC
-
-** TODO Consolidate these settings
-All of these settings could be moved into a file like
-~/.emacs.d/indentation.org for more logical organization.
 
 * Major Mode Customization
 ** Emacs-Lisp Mode
@@ -460,17 +811,78 @@ See the following if similar issues arise in other modes:
 Loads the file ~/.emacs.d/lib/latex.org, which contains and/or
 dynamically loads all of our custom LaTeX settings.
 
-#+BEGIN_SRC emacs-lisp 
+#+BEGIN_SRC emacs-lisp
   (org-babel-load-file
-    (expand-file-name "~/.emacs.d/lib/latex.org"))
+    (expand-file-name "~/.emacs.d/lib/latex/latex.org"))
 #+END_SRC
 
 ** Org Mode
-*** Ensure that syntax highlighting is enabled while in Org Mode
+*** Settings for TODOs
+**** Set the TODO keywords
+The globally-defined TODO keywords are stored in the
+[[help:org-todo-keywords][=org-todo-keywords=]] variable. There is a lot you can do with these, so
+see the documentation of this variable for all the details. In
+summary, it is a list of "TODO entry keyword sequences" which are
+themselves lists of the form
+=(<sequence or type> "K1" [...] "Km" [optionally "|" "DK1" [...] "DKn"])=
+where the first element is =sequence= if the subsequent elements should
+be interpreted as a sequence of "action steps" and =type= if the
+subsequent elements should be interpreted as specifying different types
+of TODO items. Additionally, if the first element is =sequence= then
+ 1. "K1",...,"Km-1" always represent states requiring action, as does
+    "Km" if "|" appears in the list. Otherwise "Km" represents a (unique)
+    DONE state in which no additional action is necessary.
+ 2. "DK1",...,"DKn" represent states in which no further action is
+    necessary. 
 
+By default the value is =((sequence "TODO" "DONE"))= 
+
+**** Toggle timestamps and/or notes when TODOs are toggled between =TODO= and =DONE=
+The behavior of the =org-todo= command, bound to C-c C-t by default,
+is controlled in part by the [[help:org-log-done][=org-log-done=]] variable. If this is set
+to =nil= then no timestamp or note is inserted when a task is marked
+as =DONE= (this is the default behavior). If it is set to =time=, then
+the timestamp from when the task was completed is inserted on the next
+line (and removed if the task is marked as incomplete later). If set
+to =note=, the timestamp is inserted and the user is prompted for
+input to insert onto an additional line in the format specified by the
+[[help:org-log-note-headings][org-log-note-headings]] variable.
+#+BEGIN_SRC emacs-lisp
+  (setq org-log-done 'time)
+#+END_SRC
+*** Configure default source-block evaluation settings
+The global defaults for how code-blocks are evaluated in org-mode are
+stored in *=org-babel-default-header-args=*. As usual, check the
+Change the default setting for code-block evaluation, so that the
+results of evaluation are not displayed in a new element. 
+#+BEGIN_SRC emacs-lisp
+  (setq org-babel-default-header-args
+    (cons '(:results . "silent")
+          (assq-delete-all :results org-babel-default-header-args)))
+#+END_SRC
+**** Explanation
+The variable org-babel-default-header-args contains the default
+
+*** Ensure that syntax highlighting is enabled while in Org Mode 
 #+BEGIN_SRC emacs-lisp
   (add-hook 'org-mode-hook 'turn-on-font-lock) ; not needed when global-font-lock-mode is on
 #+END_SRC
+
+*** Syntax Highlighting in Code Blocks
+The following uses "native fontification" to enable syntax highlighting in code blocks.
+#+BEGIN_SRC emacs-lisp
+  (setq org-src-fontify-natively t)
+#+END_SRC
+
+*** Disable Line Numbers in Org Mode
+Line numbers are rather useless in org-mode, and they also are hard to
+make look right (and not bug out) in indentation mode. So we disable
+them entirely.
+
+#+BEGIN_SRC emacs-lisp
+  ;(add-hook 'org-mode-hook 'nolinums)
+#+END_SRC
+***** TODO Figure out why this isn't working
 
 *** Keybindings
 
@@ -500,7 +912,7 @@ examples, LaTeX code, etc. in Org files without having to type out an
 entire block start or end tag. Better still, we can create our own!
 (See the code below for inspiration.)
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp [:results output silent]
   ;; Creates an "el" Easy Template in Org Mode.
   ;; 
   ;;     Typing "<el" followed by [TAB] replaces <el with
@@ -511,4 +923,4 @@ entire block start or end tag. Better still, we can create our own!
   (add-to-list 'org-structure-template-alist
        '("el" "#+BEGIN_SRC emacs-lisp\n  ?\n#+END_SRC" ""))
 #+END_SRC
-
+  
