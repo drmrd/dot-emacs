@@ -1,0 +1,257 @@
+#+TITLE: LaTeX Emacs Configuration
+#+AUTHOR: DRMRD
+#+PROPERTY: header-args    :tangle ~/.emacs.d/lib/latex/latex_config.el
+#+OPTIONS: toc:nil num:nil ^:nil
+#+STARTUP: indent
+
+* Startup
+** Load AucTeX and Preview LaTeX
+AucTeX is the bread-and-butter LaTeX editor for Emacs and should
+always be enabled to complement the built-in modes. Preview LaTeX Mode
+allows you to preview the output of a LaTeX file in a split-window
+environment.
+
+#+BEGIN_SRC emacs-lisp
+  (sit-for 1)
+  (load "auctex.el" nil t t)
+  ;(load "preview-latex.el" nil t t)
+#+END_SRC
+
+** AUCTeX Initialization/Configuration 
+*** Parse Document on Load and Save
+#+BEGIN_SRC emacs-lisp
+  (setq TeX-auto-save t)
+  (setq TeX-parse-self t)
+#+END_SRC
+
+*** Multi-file Document Support
+Make AUCTeX search for a master file instead of assuming it's the
+current file.
+
+#+BEGIN_SRC emacs-lisp
+  (setq-default TeX-master nil)
+#+END_SRC
+
+** RefTeX Initialization/Configuration
+*** Enable RefTeX in AUCTeX
+First, we turn on RefTeX for AUCTeX http://www.gnu.org/s/auctex/manual/reftex/reftex_5.html
+#+BEGIN_SRC emacs-lisp
+  (add-hook 'TeX-mode-hook 'turn-on-reftex)
+  (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
+#+END_SRC
+*** Add Custom Keybindings
+#+BEGIN_SRC emacs-lisp
+  (setq reftex-label-alist '((nil ?e nil "~\\eqref{%s}" nil nil))) 
+#+END_SRC
+*** Set Default Bibliography
+#+BEGIN_SRC emacs-lisp
+  (setq reftex-default-bibliography
+          '("~/workspace/citations/library.bib"))
+#+END_SRC
+
+* Appearance
+** Custom Syntax Highlighting
+Syntax Highlighting is controlled by Font Lock Mode, and it is a
+simple matter to add additional keywords for it to recognize and color
+accordingly using the [[help:font-lock-add-keywords][font-lock-add-keywords]] function. Keywords are
+passed to this function as a list of elements of the form described
+[[help:font-lock-keywords][here]].
+
+** Line Wrapping
+*** Enable Soft Line Wrapping
+This is achieved through Visual Line Mode and Adaptive Wrap Prefix
+Mode. The former enables basic soft wrapping, and the latter indents
+softly wrapped lines to the appropriate levels.
+
+#+BEGIN_SRC emacs-lisp
+  (add-hook 'LaTeX-mode-hook 'visual-line-mode)
+  (add-hook 'visual-line-mode-hook 'adaptive-wrap-prefix-mode)
+#+END_SRC
+* Customizing Environment Templates
+** Change Built-In Templates
+
+* Support for Custom Macros & Environments
+** Make AUCTeX Aware of Custom Theorem Environments
+
+#+BEGIN_SRC emacs-lisp
+  (add-hook 'LaTeX-mode-hook
+    (lambda ()
+      (LaTeX-add-environments
+        '("thm" LaTeX-env-label)
+        '("lem" LaTeX-env-label)
+        '("proof" LaTeX-env-label)
+	    '("cor" LaTeX-env-label)
+	    '("rem" LaTeX-env-label)
+	    '("claim" LaTeX-env-label))))
+#+END_SRC
+* Filling
+** Disable Auto Fill Mode in LaTeX modes (for now)
+I still haven't customized the fill commands for LaTeX files in a
+satisfactory manner. In particular, fill still doesn't respect most
+indentation, failing to indent after headers and incorrectly indenting
+in most custom (and some standard) environments.
+
+#+BEGIN_SRC emacs-lisp
+  (remove-hook 'latex-mode-hook 'turn-on-auto-fill)
+  (remove-hook 'LaTeX-mode-hook 'turn-on-auto-fill)
+  (auto-fill-mode -1)
+  ;(setq-default fill-column 99999)
+  ;(setq fill-column 99999)
+#+END_SRC
+
+*** TODO Customize auto-fill more instead of disabling it.
+The fill-{region, paragraph, etc.} commands for LaTeX have really
+crude support for indentation built-in, to the point where this is
+actually surprisingly complicated. Longterm, this definitely seems
+like a worthy endeavor, though, as automatic filling would really
+speed up writing, e.g., large lists. Part of this might also be
+implemented "softly" using soft word wrap. 
+** Fill Sentences (Instead of Paragraphs)
+The following function is due to Luca de Alfaro, and it allows you to
+fill individual sentences instead of full paragraphs. This is useful
+if you intend to keep sentences on separate lines.
+
+- Note: This command still breaks sentences onto multiple lines for
+  some aggravating reason. I need to fix how filling works.
+
+This command is bound to "M-j".
+
+#+BEGIN_SRC emacs-lisp
+  (defun fill-sentence ()
+    "Fill an individual sentence instead of a paragraph."
+    (interactive)
+    (save-excursion
+      (or (eq (point) (point-max)) (forward-char))
+      (forward-sentence -1)
+      (indent-relative)
+      (let ((beg (point)))
+        (forward-sentence)
+        (fill-region-as-paragraph beg (point))
+      )
+    )
+  )
+  (global-set-key "\ej" 'fill-sentence)
+#+END_SRC 
+** Advise fill-region to start each sentence on a new line
+#+BEGIN_SRC emacs-lisp
+  (defadvice LaTeX-fill-region-as-paragraph (around LaTeX-sentence-filling)
+    "Start each sentence on a new line."
+    (let ((from (ad-get-arg 0))
+          (to-marker (set-marker (make-marker) (ad-get-arg 1)))
+          tmp-end)
+      (while (< from (marker-position to-marker))
+        (forward-sentence)
+        ;; might have gone beyond to-marker --- use whichever is smaller:
+        (ad-set-arg 1 (setq tmp-end (min (point) (marker-position to-marker))))
+        ad-do-it
+        (ad-set-arg 0 (setq from (point)))
+        (unless (or
+                 (bolp)
+                 (looking-at "\\s *$"))
+          (LaTeX-newline)))
+      (set-marker to-marker nil)))
+  (ad-activate 'LaTeX-fill-region-as-paragraph)
+#+END_SRC 
+* Indentation
+** Set default indentation level to 4 spaces
+#+BEGIN_SRC emacs-lisp
+  (setq-default LaTeX-default-offset 4)
+#+END_SRC
+** Customize general indentation commands
+#+BEGIN_SRC emacs-lisp
+  ;;
+  ;; Customizing general indentation commands
+  ;;
+  ; Set indentation of current line by 4n where n is the sum of the
+  ; number of unmatched instances of "\begin{<environment>}" and "{":
+  (setq-default LaTeX-indent-level 4)
+  (setq-default TeX-brace-indent-level 4)
+  ; Add 4m to indentation level of current line where m is the number
+  ; currently-unmatched, enumerate-like environments at our current
+  ; location (and the cursor is on a line beginning with "\item" or
+  ; something "\item-like":
+  (setq-default LaTeX-item-indent 4)
+#+END_SRC
+** Advise indent command to indent inside parts, chapters, sections, etc. 
+#+BEGIN_SRC emacs-lisp
+  (defadvice LaTeX-indent-line (after LaTeX-indent-line-in-sections-advice activate)
+    "A function designed to advise the indent command to indent within
+     parts, chapters, sections, subsections, etc." 
+    (interactive)
+    (let (
+           (section-list ; Make a copy of LaTeX-section-headers
+             (copy-list LaTeX-section-list)
+           )
+           (prevline ; Set equal to the previous line as a string
+             (save-excursion 
+               (forward-line -1)
+               (thing-at-point 'line t)
+             )
+           )
+         )
+         ; If the previous line is the start of a section, indent
+         ; the current line by an additional LaTeX-default-offset
+         ; spaces.
+         ;
+         ; The while loop essentially uses the copied section key list
+         (while section-list 
+           (if (string-match (concat "\s-+\\" (caar section-list) ".*\s-") prevline)
+             (message (concat "prevline matches regexp with section key " (caar section-list)))
+             (progn
+               ; Move to first non-whitespace character in line
+               (back-to-indentation)
+               ; Insert LaTeX-default-offset many spaces
+               (indent-to 0 LaTeX-default-offset)
+               (setq section-list nil)
+             )
+           )
+           (setq section-list (cdr section-list))
+         )
+    )
+  )
+#+END_SRC
+*** I've officially learned a trick or two!
+Figuring out the "right" way to implement this in Emacs was daunting a
+few months ago. Today (<2015-12-02 Wed>) I did it in 1.5 hours. This is a long way from
+* Spell Checking
+** Enable Flyspell Mode
+#+BEGIN_SRC emacs-lisp
+  (add-hook 'LaTeX-mode-hook 'flyspell-mode)
+#+END_SRC
+
+* Debugging
+** Change TeX debugging mode (for more informative error messages)
+#+BEGIN_SRC emacs-lisp
+  (setq LaTeX-command-style '(("" "%(PDF)%(latex) -file-line-error %S%(PDFout)")))
+#+END_SRC
+* Compilation & External Programs
+** Compile PDFs by Default
+#+BEGIN_SRC emacs-lisp
+  (setq TeX-PDF-mode t)
+#+END_SRC
+** Enable support for latexmk via C-c C-c
+#+BEGIN_SRC emacs-lisp
+  (add-hook 'LaTeX-mode-hook 
+      (lambda ()
+          (push
+              '("latexmk" "latexmk -outdir=/tmp %t -pdf %s" TeX-run-TeX nil t
+                  :help "Run latexmk on file")
+              TeX-command-list
+          )
+      )
+  )
+  (add-hook 'TeX-mode-hook '(lambda () (setq TeX-command-default "latexmk")))
+#+END_SRC
+
+** Set how TeX handles DVI files
+#+BEGIN_SRC emacs-lisp
+  (setq tex-dvi-print-command "dvips")
+  (setq tex-dvi-view-command "xdvi")
+#+END_SRC
+* All the other code that I need to organize
+#+BEGIN_SRC emacs-lisp
+;(load "~/workspace/elisp/emacs_latex_reftex")
+
+;; AucTeX
+(add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
+#+END_SRC
