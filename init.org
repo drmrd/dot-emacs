@@ -3,6 +3,10 @@
 #+OPTIONS: toc:nil num:nil ^:nil
 #+STARTUP: indent
 
+* Changelog
+** <2015-12-05 Sat>
+- Finished implementing [[*org-babel-reload-file:%20org-babel-load-file%20but%20defaulting%20to%20the%20current%20file][org-babel-reload-file]], and it's working beautifully.
+- Various corrections to the documentation here and in latex.org.
 * General Information/Notes
 ** What should go into init.org?
 The init.org file is loaded at startup, rather than on demand. Hence
@@ -380,8 +384,6 @@ seems).
 
 #+srcname: custom-load-paths
 #+begin_src emacs-lisp
-  ;(add-to-list 'load-path "~/.emacs.d")
-  (add-to-list 'load-path "~/workspace/elisp")
   (add-to-list 'load-path "~/.emacs.d/lib")
 #+end_src
 
@@ -432,51 +434,6 @@ about this on StackExchange at some point.
 #+BEGIN_SRC emacs-lisp
   (setq require-final-newline t)
 #+END_SRC
-
-* Utility Functions
-** my-reb-copy: Yank Into Minibuffer Without Doubling Backslashes
-Yank text into the minibuffer without backslashes being doubled. This
-is especially useful when working with regular expressions.
-
-#+BEGIN_SRC emacs-lisp
-    (defun my-reb-copy ()
-        "Copy current RE into the kill ring without quotes and single
-backslashes for later insertion."
-        (interactive)
-        (reb-update-regexp)
-        (let* ((re (with-output-to-string
-                (print (reb-target-binding reb-regexp))))
-                (str (substring re 2 (- (length re) 2))))
-        (with-temp-buffer
-            (insert str)
-            (goto-char (point-min))
-            (while (search-forward "\\\\" nil t)
-                (replace-match "\\" nil t))
-                (kill-new (buffer-substring (point-min) (point-max))))
-                (message "Regexp copied to kill-ring")))
-#+END_SRC
-** nolinums: Disable Line Numbers
-Use (add-hook 'foo-mode-hook 'nolinums) to disable line numbering in
-foo-mode
-#+BEGIN_SRC emacs-lisp
-  (defun nolinums ()
-      (global-linum-mode 0)
-      (global-nlinum-mode 0)
-  )
-#+END_SRC
-** kill-auto-fill-mode: Disable auto-fill-mode (use as a hook)
-#+BEGIN_SRC emacs-lisp
-  (defun kill-auto-fill-mode-hook ()
-    "Disables auto-fill-mode when used as a hook"
-    (auto-fill-mode -1)
-    ; Remove the auto-detect-wrap function from the text-mode-hook if
-    ; on Mac OS X (in case you're running Aquamacs)
-    (if (eq system-type 'darwin)
-        (remove-hook 'text-mode-hook 'auto-detect-wrap)
-    )
-  )
-#+END_SRC
-
 * Loading & Configuring Default Packages
 The following list comprises all packages that are loaded by default
 and in such a way that they affect all (or most) modes (or enable
@@ -552,7 +509,6 @@ specified).
         ido-default-file-method   'selected-window)
 #+END_SRC
 
-Note that
 *** Custom Keybindings
 Since we will configure Ido Mode to [[*Order%20Results%20Vertically][order results vertically]] below,
 rather than horizontally, we will also make the up and down arrow keys
@@ -675,14 +631,128 @@ natural to me (and involves the fewest number of excess backslashes).
   (require 're-builder)
   (setq reb-re-syntax 'string)
 #+END_SRC
-** Recentf (Track Recent Files, Load via C-x C-r)
-
+** Recentf (Track Recent Files, Load via C-x C-r) 
 #+BEGIN_SRC emacs-lisp
   (require 'recentf)
   (recentf-mode 1)
   (setq recentf-max-menu-items 25)
   (global-set-key "\C-x\ \C-r" 'recentf-open-files)
 #+END_SRC
+** Magit: Robust Git Porcelain (open with C-x g)
+[[http://www.emacswiki.org/emacs/Magit][Magit]] is a Git porcelain (aka front end) for Emacs.  We load Magit and
+bind C-x g to the magit-status function (really the only command
+you'll ever invoke).
+
+Use "s" to stage a file, "c c" to start a commit, "C-c C-c" to finish
+a commit, "b b" to switch branches, "P P" to do a git push, and "F F"
+to do a git pull. [Tab] is also a nice key.
+
+#+BEGIN_SRC emacs-lisp
+  (require 'magit)
+  (global-set-key "\C-x\ g" 'magit-status)
+#+END_SRC 
+* Utility Functions
+** my-reb-copy: Yank Into Minibuffer Without Doubling Backslashes
+Yank text into the minibuffer without backslashes being doubled. This
+is especially useful when working with regular expressions.
+
+#+BEGIN_SRC emacs-lisp
+    (defun my-reb-copy ()
+        "Copy current RE into the kill ring without quotes and single
+backslashes for later insertion."
+        (interactive)
+        (reb-update-regexp)
+        (let* ((re (with-output-to-string
+                (print (reb-target-binding reb-regexp))))
+                (str (substring re 2 (- (length re) 2))))
+        (with-temp-buffer
+            (insert str)
+            (goto-char (point-min))
+            (while (search-forward "\\\\" nil t)
+                (replace-match "\\" nil t))
+                (kill-new (buffer-substring (point-min) (point-max))))
+                (message "Regexp copied to kill-ring")))
+#+END_SRC
+** nolinums: Disable Line Numbers
+Use (add-hook 'foo-mode-hook 'nolinums) to disable line numbering in
+foo-mode
+#+BEGIN_SRC emacs-lisp
+  (defun nolinums ()
+      (global-linum-mode 0)
+      (global-nlinum-mode 0)
+  )
+#+END_SRC
+** kill-auto-fill-mode: Disable auto-fill-mode (use as a hook)
+#+BEGIN_SRC emacs-lisp
+  (defun kill-auto-fill-mode-hook ()
+    "Disables auto-fill-mode when used as a hook"
+    (auto-fill-mode -1)
+    ; Remove the auto-detect-wrap function from the text-mode-hook if
+    ; on Mac OS X (in case you're running Aquamacs)
+    (if (eq system-type 'darwin)
+        (remove-hook 'text-mode-hook 'auto-detect-wrap)
+    )
+  )
+#+END_SRC
+** kill-aquamacs-autoface-mode: Disable aquamacs-autoface-mode (use as a hook)
+#+BEGIN_SRC emacs-lisp
+  (defun kill-aquamacs-autoface-mode ()
+    "Disables Aquamacs's built-in `aquamacs-autoface-mode' when used as a hook."
+    (let ((os system-type)
+          (modeIsOn (if (eq os 'darwin) aquamacs-autoface-mode nil)))
+      (if (eq os 'darwin)
+        (if (modeIsOn)
+          (aquamacs-autoface-mode)
+          (message "Aquamacs Autoface Mode is already disabled.")
+        )
+        (message "Attempted to disable Aquamacs Autoface Mode, but there's no need; you're not using Aquamacs!")
+      )
+    )
+  )
+#+END_SRC
+** org-babel-reload-file: org-babel-load-file but defaulting to the current file
+#+BEGIN_SRC emacs-lisp
+  (defun org-babel-reload-file (FILE &optional COMPILE)
+    "Tangle and load a specified file, with the current buffer's file as
+    default.
+
+    Tangle the Emacs Lisp source code in the indicated Org-mode file
+    FILE or the file corresponding to the active buffer if FILE is nil
+    and the current buffer corresponds to an existing file. This works
+    in precisely the same way as `org-babel-load-file'--calling
+    `org-babel-tangle' on FILE and then `load-file' on the output elisp
+    file--with the only difference being that this function defaults to
+    the current file if no argument is provided."
+    (interactive (let*
+                   (
+                     (insert-default-directory nil)
+                     (filename
+                       (read-file-name 
+                         (concat "File to load" 
+                           (if (not (null (buffer-file-name)))
+                             (concat " [Default: '" (buffer-file-name) "']: ")
+                             ": "
+                           )
+                         )
+                         (file-name-directory (if (not (null (buffer-file-name))) (buffer-file-name) ""))   ; DIR
+                         (buffer-file-name) ; DEFAULT-FILENAME
+                         t                  ; REQUIRE-MATCH
+                         nil                ; PREDICATE
+                       )
+                     )
+                   )
+                   (message "The file name is '%s'" filename)
+                   (list filename)
+                 )) 
+    (message "Reloading '%s'" FILE)
+    (org-babel-load-file FILE COMPILE)
+  )
+#+END_SRC
+
+*** DONE Finish implementing this function
+CLOSED: [2015-12-05 Sat 12:54]
+*** DONE Make the interactive prompt string say "default: [current buffer name here]"
+CLOSED: [2015-12-05 Sat 12:55]
 * Appearance Settings
 ** Color-Theme Mode (Custom Themes)
 Color-Theme Mode is Emacs's standard theming engine for customizing
@@ -748,42 +818,50 @@ On Mac OS X, use the Vera Sans font family.
 * Indentation & Whitespace Settings
 This deserves its own section, since it is always the part of text
 editors I tweak the most.
-** [Tab] Behavior
-The tab-always-indent setting
-#+BEGIN_SRC emacs-lisp
-  ;; make tab key call indent command or insert tab character, depending on cursor position
-(setq-default tab-always-indent nil)
-#+END_SRC emacs-lisp
+** Default to indenting with spaces, four at a time
+#+BEGIN_SRC emacs-lisp 
+  ;; make return key also do indent, globally
+  ; (electric-indent-mode 1)
 
-#+BEGIN_SRC emacs-lisp
-  
-
-;; make tab key do indent first then completion.
-(setq-default tab-always-indent 'complete)
-
-;; make return key also do indent, globally
-; (electric-indent-mode 1)
-
-
-;;
-;  Makes M-q indent from cursor to the space prior to the next
-;  non-whitespace character on the previous line.
-;
-;  Example: If you have the following lines (with cursor denoted by *)
-;          sample text is entertaining to write
-;          I completely agree* with you
-;      Then the result of hitting M-q will be
-;          sample text is entertaining to write
-;          I completely agree          with you
-;      with the cursor right before the "w" in "with".
-(global-set-key (kbd "M-q") 'indent-relative)
-  
   ;; Set tab width to 4
   (setq tab-stop-list (number-sequence 4 200 4))
 
   ;; Force emacs to only indent with spaces and never tabs
   (setq-default indent-tabs-mode nil)
 #+END_SRC
+** [Tab] behavior
+*** Set =tab-always=indent=: Make [Tab] try to indent or (if already indented) complete the thing-at-point
+Change the =tab-always-indent= setting to "complete", which makes
+[Tab] first try to indent the current line and then, iff it was
+already indented, attempt to complete the thing at the current point.
+
+The other options for this variable are =nil=, which makes [Tab]
+indent the current line if at the left margin or in its indentation
+and otherwise literally insert a TAB character, and =t=, which makes
+[Tab] always indent.
+#+BEGIN_SRC emacs-lisp
+  (setq-default tab-always-indent 'complete)
+#+END_SRC emacs-lisp
+*** Bind M-q to =indent-relative=
+#+BEGIN_SRC emacs-lisp
+  ;;
+  ;  Makes M-q indent from cursor to the space prior to the next
+  ;  non-whitespace character on the previous line.
+  ;
+  ;  Example: If the current buffer looks as follows (with the cursor denoted by *)...
+  ;
+  ;          sample text is entertaining to write
+  ;          I completely agree* with you
+  ;
+  ;      Then the result of hitting M-q will be
+  ;
+  ;          sample text is entertaining to write
+  ;          I completely agree          with you
+  ;
+  ;      with the cursor right before the "w" in "with".
+  (global-set-key (kbd "M-q") 'indent-relative)
+#+END_SRC
+**** TODO Consider also setting [Tab] (or something) to (indent-relative-maybe).
 
 * Major Mode Customization
 ** Emacs-Lisp Mode
@@ -800,10 +878,10 @@ See the following if similar issues arise in other modes:
     http://emacs.stackexchange.com/q/9563
 
 #+BEGIN_SRC emacs-lisp
-  (defun electric-indent-mode-configure ()
+  (defun electric-indent-mode-remove-newline-from-indent-chars ()
          "Delete newline (?\n) from `electric-indent-chars'."
          (setq electric-indent-chars (delq 10 electric-indent-chars)))
-  (add-hook 'emacs-lisp-mode-hook #'electric-indent-mode-configure)
+  (add-hook 'emacs-lisp-mode-hook #'electric-indent-mode-remove-newline-from-indent-chars)
 #+END_SRC
 
 ** LaTeX Modes
@@ -816,7 +894,78 @@ dynamically loads all of our custom LaTeX settings.
     (expand-file-name "~/.emacs.d/lib/latex/latex.org"))
 #+END_SRC
 
-** Org Mode
+** Org Mode 
+*** Configure Default Directory, Agenda Directory, and Notes File
+For now the org-agenda-files list simply contains ~/org, but it can
+readily be modified to a list of subdirectories, files, etc. if
+necessary.
+#+BEGIN_SRC emacs-lisp
+  (setq org-directory "~/org")
+  (setq org-agenda-files '("~/org"))
+  (setq org-default-notes-file "~/org/inbox.org")
+#+END_SRC
+*** Configure Capture Mode and Capture Templates
+Enables [[help:org-capture][org-capture]] mode with C-c c. This and the capture templates
+that follow will allow us to automatically create TODOs, notes, etc.,
+linked to the current pointer location in another file, and store them
+in our default notes file. (Of course, there are unlimited other
+possibilities here for automating this further/creating additional
+templates that we could also setup, but these should suffice for now.)
+A task may be started with the "C-c C-c" command in this mode, which
+will make org-capture start monitoring time spent on the given task.
+
+#+BEGIN_SRC emacs-lisp 
+  (global-set-key (kbd "C-c c") 'org-capture)
+#+END_SRC
+
+Next we define some templates. These are possibly-modified versions of
+the templates found in [[http://doc.norang.ca/org-mode.html#CaptureTemplates][this guide]].
+
+#+BEGIN_SRC emacs-lisp
+  (setq org-capture-templates
+      (quote (("t" "todo" entry (file "~/org/inbox.org")
+               "* TODO %?\n%U\n%a\n" :clock-in t :clock-resume t)
+              ("r" "respond" entry (file "~/org/inbox.org")
+               "* NEXT Respond to %:from on %:subject\nSCHEDULED: %t\n%U\n%a\n" :clock-in t :clock-resume t :immediate-finish t)
+              ("n" "note" entry (file "~/org/inbox.org")
+               "* %? :NOTE:\n%U\n%a\n" :clock-in t :clock-resume t)
+              ("j" "Journal" entry (file+datetree "~/org/diary.org")
+               "* %?\n%U\n" :clock-in t :clock-resume t)
+              ("w" "org-protocol" entry (file "~/org/inbox.org")
+               "* TODO Review %c\n%U\n" :immediate-finish t)
+              ("m" "Meeting" entry (file "~/org/inbox.org")
+               "* MEETING with %? :MEETING:\n%U" :clock-in t :clock-resume t)
+              ("p" "Phone call" entry (file "~/org/inbox.org")
+               "* PHONE %? :PHONE:\n%U" :clock-in t :clock-resume t)
+              ("h" "Habit" entry (file "~/org/inbox.org")
+               "* NEXT %?\n%U\n%a\nSCHEDULED: %(format-time-string \"%<<%Y-%m-%d %a .+1d/3d>>\")\n:PROPERTIES:\n:STYLE: habit\n:REPEAT_TO_STATE: NEXT\n:END:\n"))))
+#+END_SRC
+
+It also prints a reminder about the shortcut and capture template keys
+to the minibuffer and *Messages* buffers.
+
+#+BEGIN_SRC emacs-lisp
+  (message "Reminder: You can toggle org-capture mode for easy task
+  management using \"C-c c\". While org-capture mode is active, use
+  \"C-c C-c\" followed by one of the letters t, r, n, j, w, m, p,
+  and h to start capturing a todo, response-needed, note, journal,
+  org-protocols, logging a meeting, logging a phonecall, and
+  logging a habit (resp.).")
+#+END_SRC 
+
+Now we add code to remove logbook entries that are created but empty,
+which occur when we spend less than a minute capturing something.
+
+#+BEGIN_SRC emacs-lisp
+  ;; Remove empty LOGBOOK drawers on clock out
+  (defun bh/remove-empty-drawer-on-clock-out ()
+    (interactive)
+    (save-excursion
+      (beginning-of-line 0)
+      (org-remove-empty-drawer-at "LOGBOOK" (point))))
+
+  (add-hook 'org-clock-out-hook 'bh/remove-empty-drawer-on-clock-out 'append)
+#+END_SRC
 *** Settings for TODOs
 **** Set the TODO keywords
 The globally-defined TODO keywords are stored in the
@@ -850,11 +999,12 @@ input to insert onto an additional line in the format specified by the
 #+BEGIN_SRC emacs-lisp
   (setq org-log-done 'time)
 #+END_SRC
+
 *** Configure default source-block evaluation settings
 The global defaults for how code-blocks are evaluated in org-mode are
-stored in *=org-babel-default-header-args=*. As usual, check the
-Change the default setting for code-block evaluation, so that the
-results of evaluation are not displayed in a new element. 
+stored in *=org-babel-default-header-args=*. Change the default
+setting for code-block evaluation, so that the results of evaluation
+are not displayed in a new element.
 #+BEGIN_SRC emacs-lisp
   (setq org-babel-default-header-args
     (cons '(:results . "silent")
@@ -923,4 +1073,4 @@ entire block start or end tag. Better still, we can create our own!
   (add-to-list 'org-structure-template-alist
        '("el" "#+BEGIN_SRC emacs-lisp\n  ?\n#+END_SRC" ""))
 #+END_SRC
-  
+

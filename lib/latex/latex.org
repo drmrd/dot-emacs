@@ -4,6 +4,10 @@
 #+OPTIONS: toc:nil num:nil ^:nil
 #+STARTUP: indent
 
+* Changelog
+** <2015-12-05 Sat>
+- Fixed a bug with our section-indenting advice for LaTeX-indent-line
+  that was causing it to mess up the LaTeX-insert-environment calls.
 * Startup
 ** Load AucTeX and Preview LaTeX
 AucTeX is the bread-and-butter LaTeX editor for Emacs and should
@@ -48,8 +52,91 @@ First, we turn on RefTeX for AUCTeX http://www.gnu.org/s/auctex/manual/reftex/re
   (setq reftex-default-bibliography
           '("~/workspace/citations/library.bib"))
 #+END_SRC
+* Loading Minor Modes
+** Outline Minor Mode
+This allows us to fold sections/environments like in Org Mode.
+*** Load outline-minor-mode 
+#+BEGIN_SRC emacs-lisp
+  (add-hook 'TeX-mode-hook 'outline-minor-mode)
+  (add-hook 'LaTeX-mode-hook 'outline-minor-mode)
+#+END_SRC
+*** Configure sane keybindings for outline-minor-mode
+By default the prefix for outline-minor-mode is the insanely
+inconvenient C-c @, so we change it to M-o instead. We also add
+suffixes for just about every command we could ask for.
+#+BEGIN_SRC emacs-lisp
+  ; Outline-minor-mode key map
+  (define-prefix-command 'cm-map nil "Outline-")
+  ; HIDE
+  (define-key cm-map "q" 'hide-sublevels)    ; Hide everything but the top-level headings
+  (define-key cm-map "t" 'hide-body)         ; Hide everything but headings (all body lines)
+  (define-key cm-map "o" 'hide-other)        ; Hide other branches
+  (define-key cm-map "c" 'hide-entry)        ; Hide this entry's body
+  (define-key cm-map "l" 'hide-leaves)       ; Hide body lines in this entry and sub-entries
+  (define-key cm-map "d" 'hide-subtree)      ; Hide everything in this entry and sub-entries
+  ; SHOW
+  (define-key cm-map "a" 'show-all)          ; Show (expand) everything
+  (define-key cm-map "e" 'show-entry)        ; Show this heading's body
+  (define-key cm-map "i" 'show-children)     ; Show this heading's immediate child sub-headings
+  (define-key cm-map "k" 'show-branches)     ; Show all sub-headings under this heading
+  (define-key cm-map "s" 'show-subtree)      ; Show (expand) everything in this heading & below
+  ; MOVE
+  (define-key cm-map "u" 'outline-up-heading)                ; Up
+  (define-key cm-map "n" 'outline-next-visible-heading)      ; Next
+  (define-key cm-map "p" 'outline-previous-visible-heading)  ; Previous
+  (define-key cm-map "f" 'outline-forward-same-level)        ; Forward - same level
+  (define-key cm-map "b" 'outline-backward-same-level)       ; Backward - same level
+  (global-set-key "\M-o" cm-map)
+#+END_SRC
+*** Load outline-magic and bind outline-cycle to C-tab
+This allows for org-like cycling of folded regions
+#+BEGIN_SRC emacs-lisp
+  (eval-after-load 'outline
+  '(progn
+    (require 'outline-magic)
+    (define-key outline-minor-mode-map (kbd "<C-tab>") 'outline-cycle)))
+#+END_SRC
+*** Adding extra outline headings
+In [[http://emacs.stackexchange.com/a/3076/8643][a brilliant answer]] on Emacs.SE, a most-excellently-named user
+described some of his configuration. In particular, for adding fake
+sections to his documents (i.e., headings that indicate to auctex
+(and, hence, outline-minor-mode) the start of something section-like,
+but things that are not compiled by LaTeX (comments)), and I'm dead
+set on trying this out. Frankly, I can't believe I hadn't thought of
+this myself!
+#+BEGIN_SRC emacs-lisp
+  ;; extra outline headers 
+  (setq TeX-outline-extra
+        '(("%chapter" 1)
+          ("%section" 2)
+          ("%subsection" 3)
+          ("%subsubsection" 4)
+          ("%paragraph" 5)
+          ("%proof" 5)))
 
+  ;; add font locking to the headers
+  (font-lock-add-keywords
+   'latex-mode
+   '(("^%\\(chapter\\|\\(sub\\|subsub\\)?section\\|paragraph\\)"
+      0 'font-lock-keyword-face t)
+     ("^%chapter{\\(.*\\)}"       1 'font-latex-sectioning-1-face t)
+     ("^%section{\\(.*\\)}"       1 'font-latex-sectioning-2-face t)
+     ("^%subsection{\\(.*\\)}"    1 'font-latex-sectioning-3-face t)
+     ("^%subsubsection{\\(.*\\)}" 1 'font-latex-sectioning-4-face t) 
+     ("^%paragraph{\\(.*\\)}"     1 'font-latex-sectioning-5-face t) 
+     ("^%proof{\\(.*\\)}"         1 'font-latex-sectioning-5-face t)))
+#+END_SRC
+**** TODO Consider expanding on this
+For instance, we could add support for TODO comments that appear like
+the ones in Org.
 * Appearance
+** Disable Aquamacs's Auto-Face Mode
+Use this to disable Aquamacs's Auto-Face Mode, which should then allow
+for the use of fixed-width fonts.
+#+BEGIN_SRC emacs-lisp
+  (add-hook 'TeX-mode-hook 'kill-aquamacs-autoface-mode)
+  (add-hook 'LaTeX-mode-hook 'kill-aquamacs-autoface-mode)
+#+END_SRC
 ** Custom Syntax Highlighting
 Syntax Highlighting is controlled by Font Lock Mode, and it is a
 simple matter to add additional keywords for it to recognize and color
@@ -157,10 +244,10 @@ This command is bound to "M-j".
 #+BEGIN_SRC emacs-lisp
   (setq-default LaTeX-default-offset 4)
 #+END_SRC
-** Customize general indentation commands
+** Customize general indentation settings
 #+BEGIN_SRC emacs-lisp
   ;;
-  ;; Customizing general indentation commands
+  ;; Customizing general indentation settings
   ;;
   ; Set indentation of current line by 4n where n is the sum of the
   ; number of unmatched instances of "\begin{<environment>}" and "{":
@@ -193,32 +280,45 @@ This command is bound to "M-j".
          ; the current line by an additional LaTeX-default-offset
          ; spaces.
          ;
-         ; The while loop essentially uses the copied section key list
-         (while section-list 
-           (if (string-match (concat "\s-+\\" (caar section-list) ".*\s-") prevline)
-             (message (concat "prevline matches regexp with section key " (caar section-list)))
-             (progn
-               ; Move to first non-whitespace character in line
-               (back-to-indentation)
-               ; Insert LaTeX-default-offset many spaces
-               (indent-to 0 LaTeX-default-offset)
-               (setq section-list nil)
+         ; The while loop essentially uses section-list, a copy of
+         ; LaTeX-section-list, as a stack, pushing another section
+         ; name off the stack with each iteration until it is empty.
+         ; 
+         ; The entire while loop is wrapped in a save-excursion call
+         ; to avoid moving the pointer around. I'm not sure if this
+         ; is less efficient than just putting it in the conditional
+         ; or if it matters at all. Perhaps something to look into
+         ; another time.
+         (save-excursion
+           (while section-list 
+             (if (string-match (concat "\s-+\\" (caar section-list) ".*\s-") prevline)
+               (progn
+                 ; Move to first non-whitespace character in line
+                 (back-to-indentation)
+                 ; Insert LaTeX-default-offset many spaces
+                 (indent-to 0 LaTeX-default-offset)
+                 (setq section-list nil)
+               )
              )
+             (setq section-list (cdr section-list))
            )
-           (setq section-list (cdr section-list))
          )
     )
   )
 #+END_SRC
+*** DONE Fix the interaction between this and environment insertion commands
+CLOSED: [2015-12-05 Sat 14:27]
+It seems that this advice may break environment insertion via C-c
+C-e. The latter now places the "\end{...}" block immediately before
+the "\begin{...}" one.
 *** I've officially learned a trick or two!
 Figuring out the "right" way to implement this in Emacs was daunting a
-few months ago. Today (<2015-12-02 Wed>) I did it in 1.5 hours. This is a long way from
+few months ago. Today (<2015-12-02 Wed>) I did it in 1.5 hours.
 * Spell Checking
 ** Enable Flyspell Mode
 #+BEGIN_SRC emacs-lisp
   (add-hook 'LaTeX-mode-hook 'flyspell-mode)
-#+END_SRC
-
+#+END_SRC 
 * Debugging
 ** Change TeX debugging mode (for more informative error messages)
 #+BEGIN_SRC emacs-lisp

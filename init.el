@@ -11,8 +11,6 @@
   ("melpa" . "http://melpa.milkbox.net/packages/")
   ("marmalade" . "http://marmalade-repo.org/packages/")))
 
-;(add-to-list 'load-path "~/.emacs.d")
-(add-to-list 'load-path "~/workspace/elisp")
 (add-to-list 'load-path "~/.emacs.d/lib")
 
 (set-register ?e (cons 'file "~/.emacs.d/init.org"))
@@ -28,37 +26,6 @@
 (add-hook 'text-mode-hook 'kill-auto-fill-mode-hook)
 
 (setq require-final-newline t)
-
-(defun my-reb-copy ()
-        "Copy current RE into the kill ring without quotes and single
-backslashes for later insertion."
-        (interactive)
-        (reb-update-regexp)
-        (let* ((re (with-output-to-string
-                (print (reb-target-binding reb-regexp))))
-                (str (substring re 2 (- (length re) 2))))
-        (with-temp-buffer
-            (insert str)
-            (goto-char (point-min))
-            (while (search-forward "\\\\" nil t)
-                (replace-match "\\" nil t))
-                (kill-new (buffer-substring (point-min) (point-max))))
-                (message "Regexp copied to kill-ring")))
-
-(defun nolinums ()
-    (global-linum-mode 0)
-    (global-nlinum-mode 0)
-)
-
-(defun kill-auto-fill-mode-hook ()
-  "Disables auto-fill-mode when used as a hook"
-  (auto-fill-mode -1)
-  ; Remove the auto-detect-wrap function from the text-mode-hook if
-  ; on Mac OS X (in case you're running Aquamacs)
-  (if (eq system-type 'darwin)
-      (remove-hook 'text-mode-hook 'auto-detect-wrap)
-  )
-)
 
 (ido-mode t)
 
@@ -143,6 +110,90 @@ backslashes for later insertion."
 (setq recentf-max-menu-items 25)
 (global-set-key "\C-x\ \C-r" 'recentf-open-files)
 
+(require 'magit)
+(global-set-key "\C-x\ g" 'magit-status)
+
+(defun my-reb-copy ()
+        "Copy current RE into the kill ring without quotes and single
+backslashes for later insertion."
+        (interactive)
+        (reb-update-regexp)
+        (let* ((re (with-output-to-string
+                (print (reb-target-binding reb-regexp))))
+                (str (substring re 2 (- (length re) 2))))
+        (with-temp-buffer
+            (insert str)
+            (goto-char (point-min))
+            (while (search-forward "\\\\" nil t)
+                (replace-match "\\" nil t))
+                (kill-new (buffer-substring (point-min) (point-max))))
+                (message "Regexp copied to kill-ring")))
+
+(defun nolinums ()
+    (global-linum-mode 0)
+    (global-nlinum-mode 0)
+)
+
+(defun kill-auto-fill-mode-hook ()
+  "Disables auto-fill-mode when used as a hook"
+  (auto-fill-mode -1)
+  ; Remove the auto-detect-wrap function from the text-mode-hook if
+  ; on Mac OS X (in case you're running Aquamacs)
+  (if (eq system-type 'darwin)
+      (remove-hook 'text-mode-hook 'auto-detect-wrap)
+  )
+)
+
+(defun kill-aquamacs-autoface-mode ()
+  "Disables Aquamacs's built-in `aquamacs-autoface-mode' when used as a hook."
+  (let ((os system-type)
+        (modeIsOn (if (eq os 'darwin) aquamacs-autoface-mode nil)))
+    (if (eq os 'darwin)
+      (if (modeIsOn)
+        (aquamacs-autoface-mode)
+        (message "Aquamacs Autoface Mode is already disabled.")
+      )
+      (message "Attempted to disable Aquamacs Autoface Mode, but there's no need; you're not using Aquamacs!")
+    )
+  )
+)
+
+(defun org-babel-reload-file (FILE &optional COMPILE)
+  "Tangle and load a specified file, with the current buffer's file as
+  default.
+
+  Tangle the Emacs Lisp source code in the indicated Org-mode file
+  FILE or the file corresponding to the active buffer if FILE is nil
+  and the current buffer corresponds to an existing file. This works
+  in precisely the same way as `org-babel-load-file'--calling
+  `org-babel-tangle' on FILE and then `load-file' on the output elisp
+  file--with the only difference being that this function defaults to
+  the current file if no argument is provided."
+  (interactive (let*
+                 (
+                   (insert-default-directory nil)
+                   (filename
+                     (read-file-name 
+                       (concat "File to load" 
+                         (if (not (null (buffer-file-name)))
+                           (concat " [Default: '" (buffer-file-name) "']: ")
+                           ": "
+                         )
+                       )
+                       (file-name-directory (if (not (null (buffer-file-name))) (buffer-file-name) ""))   ; DIR
+                       (buffer-file-name) ; DEFAULT-FILENAME
+                       t                  ; REQUIRE-MATCH
+                       nil                ; PREDICATE
+                     )
+                   )
+                 )
+                 (message "The file name is '%s'" filename)
+                 (list filename)
+               )) 
+  (message "Reloading '%s'" FILE)
+  (org-babel-load-file FILE COMPILE)
+)
+
 (require 'color-theme)
 (color-theme-initialize)
 
@@ -172,42 +223,79 @@ backslashes for later insertion."
 
 (blink-cursor-mode (- (*) (*) (*)))
 
-;; make tab key call indent command or insert tab character, depending on cursor position
-(setq-default tab-always-indent nil)
-
-;; make tab key do indent first then completion.
-(setq-default tab-always-indent 'complete)
-
 ;; make return key also do indent, globally
 ; (electric-indent-mode 1)
 
+;; Set tab width to 4
+(setq tab-stop-list (number-sequence 4 200 4))
+
+;; Force emacs to only indent with spaces and never tabs
+(setq-default indent-tabs-mode nil)
 
 ;;
 ;  Makes M-q indent from cursor to the space prior to the next
 ;  non-whitespace character on the previous line.
 ;
-;  Example: If you have the following lines (with cursor denoted by *)
+;  Example: If the current buffer looks as follows (with the cursor denoted by *)...
+;
 ;          sample text is entertaining to write
 ;          I completely agree* with you
+;
 ;      Then the result of hitting M-q will be
+;
 ;          sample text is entertaining to write
 ;          I completely agree          with you
+;
 ;      with the cursor right before the "w" in "with".
 (global-set-key (kbd "M-q") 'indent-relative)
-  
-  ;; Set tab width to 4
-  (setq tab-stop-list (number-sequence 4 200 4))
 
-  ;; Force emacs to only indent with spaces and never tabs
-  (setq-default indent-tabs-mode nil)
-
-(defun electric-indent-mode-configure ()
+(defun electric-indent-mode-remove-newline-from-indent-chars ()
        "Delete newline (?\n) from `electric-indent-chars'."
        (setq electric-indent-chars (delq 10 electric-indent-chars)))
-(add-hook 'emacs-lisp-mode-hook #'electric-indent-mode-configure)
+(add-hook 'emacs-lisp-mode-hook #'electric-indent-mode-remove-newline-from-indent-chars)
 
 (org-babel-load-file
   (expand-file-name "~/.emacs.d/lib/latex/latex.org"))
+
+(setq org-directory "~/org")
+(setq org-agenda-files '("~/org"))
+(setq org-default-notes-file "~/org/inbox.org")
+
+(global-set-key (kbd "C-c c") 'org-capture)
+
+(setq org-capture-templates
+    (quote (("t" "todo" entry (file "~/org/inbox.org")
+             "* TODO %?\n%U\n%a\n" :clock-in t :clock-resume t)
+            ("r" "respond" entry (file "~/org/inbox.org")
+             "* NEXT Respond to %:from on %:subject\nSCHEDULED: %t\n%U\n%a\n" :clock-in t :clock-resume t :immediate-finish t)
+            ("n" "note" entry (file "~/org/inbox.org")
+             "* %? :NOTE:\n%U\n%a\n" :clock-in t :clock-resume t)
+            ("j" "Journal" entry (file+datetree "~/org/diary.org")
+             "* %?\n%U\n" :clock-in t :clock-resume t)
+            ("w" "org-protocol" entry (file "~/org/inbox.org")
+             "* TODO Review %c\n%U\n" :immediate-finish t)
+            ("m" "Meeting" entry (file "~/org/inbox.org")
+             "* MEETING with %? :MEETING:\n%U" :clock-in t :clock-resume t)
+            ("p" "Phone call" entry (file "~/org/inbox.org")
+             "* PHONE %? :PHONE:\n%U" :clock-in t :clock-resume t)
+            ("h" "Habit" entry (file "~/org/inbox.org")
+             "* NEXT %?\n%U\n%a\nSCHEDULED: %(format-time-string \"%<<%Y-%m-%d %a .+1d/3d>>\")\n:PROPERTIES:\n:STYLE: habit\n:REPEAT_TO_STATE: NEXT\n:END:\n"))))
+
+(message "Reminder: You can toggle org-capture mode for easy task
+management using \"C-c c\". While org-capture mode is active, use
+\"C-c C-c\" followed by one of the letters t, r, n, j, w, m, p,
+and h to start capturing a todo, response-needed, note, journal,
+org-protocols, logging a meeting, logging a phonecall, and
+logging a habit (resp.).")
+
+;; Remove empty LOGBOOK drawers on clock out
+(defun bh/remove-empty-drawer-on-clock-out ()
+  (interactive)
+  (save-excursion
+    (beginning-of-line 0)
+    (org-remove-empty-drawer-at "LOGBOOK" (point))))
+
+(add-hook 'org-clock-out-hook 'bh/remove-empty-drawer-on-clock-out 'append)
 
 (setq org-log-done 'time)
 
