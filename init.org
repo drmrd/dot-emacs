@@ -7,6 +7,7 @@
 ** <2015-12-05 Sat>
 - Finished implementing [[*org-babel-reload-file:%20org-babel-load-file%20but%20defaulting%20to%20the%20current%20file][org-babel-reload-file]], and it's working beautifully.
 - Various corrections to the documentation here and in latex.org.
+- Simplified logic in and repaired the kill-aquamacs-autoface-mode function
 * General Information/Notes
 ** What should go into init.org?
 The init.org file is loaded at startup, rather than on demand. Hence
@@ -419,7 +420,9 @@ projects.
 #+END_SRC
 
 ** Set the Default Major Mode
-Make Text Mode the default major mode, but disable the Auto-Fill Mode hook.
+Make Text Mode the default major mode, but disable the Auto-Fill Mode
+hook.
+
 #+BEGIN_SRC emacs-lisp
   (setq default-major-mode 'text-mode)
   (remove-hook 'text-mode-hook 'auto-fill-mode)
@@ -433,11 +436,26 @@ about this on StackExchange at some point.
 
 #+BEGIN_SRC emacs-lisp
   (setq require-final-newline t)
-#+END_SRC
-* Loading & Configuring Default Packages
+#+END_SRC 
+** Other Default Settings
+#+BEGIN_SRC emacs-lisp
+  (setq inhibit-startup-screen t        ; Disable Emacs's welcome screen
+        apropos-do-all         t)       ; Make all apropos commands
+                                        ; perform more extensive
+                                        ; searches
+#+END_SRC 
+* Loading & Configuring Default Packages (Built-in and Otherwise)
 The following list comprises all packages that are loaded by default
 and in such a way that they affect all (or most) modes (or enable
-minor-modes in all major-modes). 
+minor-modes in all major-modes).
+** TODO Use-Package: A Uniform Framework for Loading and Configuring Packages
+** GnuTLS: (TLS and SSL support in Emacs)
+By default, GnuTLS accepts primes of bit length at least 256 in key
+exchanges. We beef this number up to add a bit more
+security/protection from man-in-the-middle attacks.
+#+BEGIN_SRC emacs-lisp
+  (setq gnutls-min-prime-bits 4096)
+#+END_SRC
 ** Ido Mode (Better, Interactive find-file Command)
 Enable Ido Mode for a much improved buffer and file switching/finding
 experience. Configuring Ido Mode, based on the settings in [[http://xgarrido.github.io/emacs-starter-kit/starter-kit-ido.html][xgarrido's
@@ -650,7 +668,23 @@ to do a git pull. [Tab] is also a nice key.
 #+BEGIN_SRC emacs-lisp
   (require 'magit)
   (global-set-key "\C-x\ g" 'magit-status)
-#+END_SRC 
+#+END_SRC
+*** Safety Settings 
+**** Enable Wip (Work In Progress) Mode
+Since Magit "makes it easy to modify uncommitted changes" to both the
+working tree and index of a repository (and uncommitted changes aren't
+tracked by Git), Magit provides three different "Wip" modes to track
+these automatically, without unnecessary commit to the repository.
+***** TODO Configure Wip mode
+Refer to [[http://magit.vc/manual/magit/Wip-modes.html#Wip-modes][the documentation]].
+** iedit: Support Renaming Variables/Changing Word Throughout a Buffer 
+** TODO Bookmarks 
+** TODO Company (Auto-Completion Support)
+** TODO Popwin (Popup Windows at Bottom of Screen)
+** TODO Color-identifiers-mode (Unique display colors for unique variables)
+** TODO Origami: A Multi-Language Folding Mode
+** TODO Eww: Emacs Web Browser
+** TODO Visible-Mark: Make the Current Mark Visible
 * Utility Functions
 ** my-reb-copy: Yank Into Minibuffer Without Doubling Backslashes
 Yank text into the minibuffer without backslashes being doubled. This
@@ -698,18 +732,17 @@ foo-mode
 #+BEGIN_SRC emacs-lisp
   (defun kill-aquamacs-autoface-mode ()
     "Disables Aquamacs's built-in `aquamacs-autoface-mode' when used as a hook."
-    (let ((os system-type)
-          (modeIsOn (if (eq os 'darwin) aquamacs-autoface-mode nil)))
-      (if (eq os 'darwin)
-        (if (modeIsOn)
-          (aquamacs-autoface-mode)
-          (message "Aquamacs Autoface Mode is already disabled.")
-        )
-        (message "Attempted to disable Aquamacs Autoface Mode, but there's no need; you're not using Aquamacs!")
+    (if (eq system-type 'darwin)
+      (progn
+        (aquamacs-autoface-mode -1)
+        (message "Aquamacs Autoface Mode is already disabled.")
       )
+      (message "Attempted to disable Aquamacs Autoface Mode, but there's no need; you're not using Aquamacs!") 
     )
   )
 #+END_SRC
+*** DONE Make this actually work
+CLOSED: [2015-12-05 Sat 17:57]
 ** org-babel-reload-file: org-babel-load-file but defaulting to the current file
 #+BEGIN_SRC emacs-lisp
   (defun org-babel-reload-file (FILE &optional COMPILE)
@@ -1032,8 +1065,14 @@ them entirely.
 #+BEGIN_SRC emacs-lisp
   ;(add-hook 'org-mode-hook 'nolinums)
 #+END_SRC
-***** TODO Figure out why this isn't working
-
+**** TODO Figure out why this isn't working
+*** Load Minor Modes 
+**** Auto Fill Mode
+auto-fill-mode works beautifully in Org files, and we enable it
+accordingly.
+#+BEGIN_SRC emacs-lisp
+  (add-hook 'org-mode-hook 'auto-fill-mode)
+#+END_SRC
 *** Keybindings
 
 #+BEGIN_SRC emacs-lisp

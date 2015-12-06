@@ -1,0 +1,4 @@
+2015-12-06  Moore  <moore@math.osu.edu>
+
+	* init.org (to): Added auto-fill-mode to the org-mode-hook
+

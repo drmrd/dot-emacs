@@ -8,6 +8,7 @@
 ** <2015-12-05 Sat>
 - Fixed a bug with our section-indenting advice for LaTeX-indent-line
   that was causing it to mess up the LaTeX-insert-environment calls.
+- Corrected the regex in my font-lock-add-keywords call
 * Startup
 ** Load AucTeX and Preview LaTeX
 AucTeX is the bread-and-butter LaTeX editor for Emacs and should
@@ -117,14 +118,14 @@ this myself!
   ;; add font locking to the headers
   (font-lock-add-keywords
    'latex-mode
-   '(("^%\\(chapter\\|\\(sub\\|subsub\\)?section\\|paragraph\\)"
+   '(("^%\\(chapter\\|\\(sub\\|subsub\\)?section\\|paragraph\\|proof\\)"
       0 'font-lock-keyword-face t)
-     ("^%chapter{\\(.*\\)}"       1 'font-latex-sectioning-1-face t)
-     ("^%section{\\(.*\\)}"       1 'font-latex-sectioning-2-face t)
-     ("^%subsection{\\(.*\\)}"    1 'font-latex-sectioning-3-face t)
-     ("^%subsubsection{\\(.*\\)}" 1 'font-latex-sectioning-4-face t) 
-     ("^%paragraph{\\(.*\\)}"     1 'font-latex-sectioning-5-face t) 
-     ("^%proof{\\(.*\\)}"         1 'font-latex-sectioning-5-face t)))
+     ("^\\s-*%chapter{\\(.*\\)}"       1 'font-latex-sectioning-1-face t)
+     ("^\\s-*%section{\\(.*\\)}"       1 'font-latex-sectioning-2-face t)
+     ("^\\s-*%subsection{\\(.*\\)}"    1 'font-latex-sectioning-3-face t)
+     ("^\\s-*%subsubsection{\\(.*\\)}" 1 'font-latex-sectioning-4-face t) 
+     ("^\\s-*%paragraph{\\(.*\\)}"     1 'font-latex-sectioning-5-face t) 
+     ("^\\s-*%proof{\\(.*\\)}"         1 'font-latex-sectioning-5-face t)))
 #+END_SRC
 **** TODO Consider expanding on this
 For instance, we could add support for TODO comments that appear like
