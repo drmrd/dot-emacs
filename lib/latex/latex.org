@@ -5,6 +5,18 @@
 #+STARTUP: indent
 
 * Changelog
+** <2015-12-14 Mon> 
+*** Fixed that obnoxious \item indentation behavior (I think!)
+Recall that the problem was that setting LaTeX-item-indent to 4
+indented \item's in enumerate-like environments by 8 for some
+inexplicable reason. Also, commenting out the line in the
+configuration below in which this default value was set ultimately
+made \item's appear at the same indentation level as their parents,
+which is again really odd based on its description. The solution? It
+turns out that the default value of LaTeX-item-indent is -4 (idk why),
+and the items are correctly receiving the right indentation from their
+ancestors, so the desired behavior is achieved by setting
+LaTeX-item-indent equal to 0.
 ** <2015-12-05 Sat>
 - Fixed a bug with our section-indenting advice for LaTeX-indent-line
   that was causing it to mess up the LaTeX-insert-environment calls.
@@ -258,7 +270,7 @@ This command is bound to "M-j".
   ; currently-unmatched, enumerate-like environments at our current
   ; location (and the cursor is on a line beginning with "\item" or
   ; something "\item-like":
-  (setq-default LaTeX-item-indent 4)
+  (setq-default LaTeX-item-indent 0)
 #+END_SRC
 ** Advise indent command to indent inside parts, chapters, sections, etc. 
 #+BEGIN_SRC emacs-lisp
