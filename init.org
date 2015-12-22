@@ -416,7 +416,7 @@ Disable the welcome screen and instead display a welcome message as a
 comment in the scratch buffer.
 #+BEGIN_SRC emacs-lisp
   (setq inhibit-startup-screen t)   ; Disable Emacs's welcome screen
-  (setq initial-scratch-message ";; Welcome to Emacs!")
+  (setq initial-scratch-message "")
 #+END_SRC
 ** Performance Improvements
 The following settings improve the performance of Emacs in various
