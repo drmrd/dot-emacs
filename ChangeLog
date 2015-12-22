@@ -1,3 +1,7 @@
+2015-12-06  Daniel Moore  <moore@math.osu.edu>
+
+	* init.org: Document the warning about and disable Magit Auto Revert Mode
+
 2015-12-06  Moore  <moore@math.osu.edu>
 
 	* init.org (to): Added auto-fill-mode to the org-mode-hook

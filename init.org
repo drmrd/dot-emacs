@@ -4,6 +4,10 @@
 #+STARTUP: indent
 
 * Changelog
+** <2015-12-06 Sun>
+- Various small improvements
+- Disabled magit-auto-fill-mode
+- Changed the initial-scratch-message variable
 ** <2015-12-05 Sat>
 - Finished implementing [[*org-babel-reload-file:%20org-babel-load-file%20but%20defaulting%20to%20the%20current%20file][org-babel-reload-file]], and it's working beautifully.
 - Various corrections to the documentation here and in latex.org.
@@ -333,11 +337,86 @@ form conditionals in Emacs.
   =emacs-version=, and =window-system= variables, which return strings
   containing the operating system, version of Emacs, and windowing
   system (e.g. X or a terminal) that are currently running.
+
+
+* Initializing the Initializers:
+** Configure =package=
+The following code loads =package= for package management, sets the
+default package repositories, and then initializes =package=.
+
+Load Package, load all default packages, and link to all standard
+package repositories.
+
+We first ensure that the Package package for package management
+(that's a mouthful!) has been loaded. Then we call package-initialize,
+which loads all packages specified in the variable
+package-load-list. After loading the default packages, we redefine the
+package-archives list to include ELPA, GNU, MELPA, and Marmalade.
+
+#+SRCNAME: package-startup
+#+BEGIN_SRC emacs-lisp
+  ;; Load `package'
+  (require 'package)
+  (setq
+    package-enable-at-startup nil
+    package-archives
+      '(("melpa-stable" . "https://stable.melpa.org/packages/")
+        ("melpa"        . "https://melpa.org/packages/")
+        ("marmalade"    . "http://marmalade-repo.org/packages/")
+        ("org"          . "http://orgmode.org/elpa/")
+        ("gnu"          . "http://elpa.gnu.org/packages/")))
+  (package-initialize)
+#+END_SRC
+
+** Bootstrap =use-package=
+Next, we ensure that =use-package= is installed on our system.
+
+#+BEGIN_SRC emacs-lisp
+  ;; Install `use-package'
+  (unless (package-installed-p 'use-package)
+    (package-refresh-contents)
+    (package-install 'use-package))
+  
+  (eval-when-compile
+    (require 'use-package))
+  (require 'diminish)
+  (require 'bind-key)
+#+END_SRC
+
+We also ensure that all packages loaded through =use-package= are
+automatically installed on the current system.
+
+#+BEGIN_SRC emacs-lisp
+  (setq use-package-always-ensure t)
+#+END_SRC
+
+*** DONE Consider only loading =use-package= at compile time
+CLOSED: [2015-12-09 Wed 13:31]
+It's mentioned in the [[https://github.com/jwiegley/use-package][use-package README on GitHub]] that it's no longer
+necessary (as of v2.0) to load =use-package= at runtime. It suggests
+putting the following code at the start of our config, which uses
+=eval-when-compile= to load =use-package= only when necessary, further
+reducing load time.
+
+#+BEGIN_SRC emacs-lisp :tangle no
+  (eval-when-compile
+    (require 'use-package))
+  (require 'diminish)                ;; if you use :diminish
+  (require 'bind-key)                ;; if you use any :bind variant
+#+END_SRC
+
 * Global Settings
 ** Personal Information
 *** Email Address
 #+BEGIN_SRC emacs-lisp
   (setq user-mail-address "moore@math.osu.edu")
+#+END_SRC
+** What to Display at Startup
+Disable the welcome screen and instead display a welcome message as a
+comment in the scratch buffer.
+#+BEGIN_SRC emacs-lisp
+  (setq inhibit-startup-screen t)   ; Disable Emacs's welcome screen
+  (setq initial-scratch-message ";; Welcome to Emacs!")
 #+END_SRC
 ** Performance Improvements
 The following settings improve the performance of Emacs in various
@@ -353,26 +432,6 @@ you see while working with Emacs.
 This setting is the default behavior in Emacs v. 24.5 and higher, and
 I read in a comment somewhere (confirm this) that the above variable
 is going to be deemed deprecated soon.
-** Setting up Package Manager and Default Repositories
-Load Package, load all default packages, and link to all standard
-package repositories.
-
-We first ensure that the Package package for package management
-(that's a mouthful!) has been loaded. Then we call package-initialize,
-which loads all packages specified in the variable
-package-load-list. After loading the default packages, we redefine the
-package-archives list to include ELPA, GNU, MELPA, and Marmalade.
-
-#+srcname: package-startup
-#+begin_src emacs-lisp
-  (require 'package)
-  (package-initialize)
-  (setq package-archives
-  '(("ELPA" . "http://tromey.com/elpa/")
-    ("gnu" . "http://elpa.gnu.org/packages/")
-    ("melpa" . "http://melpa.milkbox.net/packages/")
-    ("marmalade" . "http://marmalade-repo.org/packages/")))
-#+end_src
 
 ** Loading Other Customization Files
 We now add several directories to the load-path. The directory
@@ -419,7 +478,7 @@ projects.
   (setq default-directory "~/workspace/")
 #+END_SRC
 
-** Set the Default Major Mode
+** Set the Default Major Mode to Text Mode
 Make Text Mode the default major mode, but disable the Auto-Fill Mode
 hook.
 
@@ -439,16 +498,16 @@ about this on StackExchange at some point.
 #+END_SRC 
 ** Other Default Settings
 #+BEGIN_SRC emacs-lisp
-  (setq inhibit-startup-screen t        ; Disable Emacs's welcome screen
-        apropos-do-all         t)       ; Make all apropos commands
-                                        ; perform more extensive
-                                        ; searches
+  (setq apropos-do-all         t)   ; Make all apropos commands perform
+                                    ; more extensive searches
 #+END_SRC 
-* Loading & Configuring Default Packages (Built-in and Otherwise)
+* Load and Configure Packages (Built-in and Otherwise)
 The following list comprises all packages that are loaded by default
 and in such a way that they affect all (or most) modes (or enable
 minor-modes in all major-modes).
-** TODO Use-Package: A Uniform Framework for Loading and Configuring Packages
+** DONE Use-Package: A Uniform Framework for Loading and Configuring Packages
+This is now loaded [[*Bootstrap%20%3Duse-package%3D][above]].
+CLOSED: [2015-12-09 Wed 12:37]
 ** GnuTLS: (TLS and SSL support in Emacs)
 By default, GnuTLS accepts primes of bit length at least 256 in key
 exchanges. We beef this number up to add a bit more
@@ -469,48 +528,47 @@ Emacs Starter Kit]].
 Next, we change some basic settings to make our lives easier. The
 following table describes each setting. Note that, for Boolean
 variables, the Description column shows the behavior if non-nil, with
-the behavior being the opposite if nil (unless otherwise
-specified).
+the behavior being the opposite if nil (unless otherwise specified).
 
-|------------------------------------+----------------------------------+---------------------------------------------|
-| Setting (ido-[...])                | Description                      | Possible Values                             |
-|------------------------------------+----------------------------------+---------------------------------------------|
-| everywhere                         | Enable Ido Everywhere            | Boolean                                     |
-| enable-prefix                      | Match input only if prefix       | Boolean                                     |
-| enable-flex-matching               | If no string match, match        | Boolean                                     |
-|                                    | filenames containing input chars |                                             |
-| auto-merge-work-directories-length | Auto switch to merged work       | Integer N (disable behavior is < 0)         |
-|                                    | directories after N typed chars  |                                             |
-| use-filename-at-point              | Use filename at point?           | Boolean                                     |
-| max-prospects                      | Max number of results to display | Integer N >= 0                              |
-|                                    | (infinite if set to 0)           |                                             |
-| create-new-buffer                  | Create a new buffer if no buffer | 'always: always do this                     |
-|                                    | matches substring?               | 'prompt: ask to do this                     |
-|                                    |                                  | 'never:  never do this                      |
-| use-virtual-buffers                |                                  | nil: Don't use virtual buffers              |
-|                                    |                                  | t:   Always use virtual buffers             |
-|                                    |                                  | auto: Use only when current input           |
-|                                    |                                  | has no matches                              |
-| handle-duplicate-virtual-buffers   | ??? (...obsolete?)               | ???                                         |
-| default-buffer-method              | Determines where/how the         | selected-window: show in selected window    |
-|                                    | selected buffer is opened        | other-window: show in other window          |
-|                                    |                                  | display: display in other window without    |
-|                                    |                                  | selecting (i.e., without switching buffers) |
-|                                    |                                  | other-frame: show in other frame            |
-|                                    |                                  | maybe-frame: ask to show in other frame     |
-|                                    |                                  | raise-frame: raise frame if already shown   |
-| default-file-method                | Determines where/how the         | Same as default-buffer-method               |
-|                                    | selected file is opened          |                                             |
-|------------------------------------+----------------------------------+---------------------------------------------|
+|-----------------------+----------------------------------+----------------------------|
+| Setting (ido-[...])   | Description                      | Possible Values            |
+|-----------------------+----------------------------------+----------------------------|
+| everywhere            | Enable Ido Everywhere            | Boolean                    |
+| enable-prefix         | Match input only if prefix       | Boolean                    |
+| enable-flex-matching  | If no string match, match        | Boolean                    |
+|                       | filenames containing input chars |                            |
+| auto-merge-work       | Auto switch to merged work       | Integer N (disable if < 0) |
+| -directories-length   | directories after N typed chars  |                            |
+| use-filename-at-point | Use filename at point?           | Boolean                    |
+| max-prospects         | Max number of results to display | Integer N >= 0             |
+|                       | (infinite if set to 0)           |                            |
+| create-new-buffer     | Create a new buffer if no buffer | 'always                    |
+|                       | matches substring?               | 'prompt                    |
+|                       |                                  | 'never                     |
+| use-virtual-buffers   |                                  | Boolean                    |
+|                       |                                  |                            |
+| handle-duplicate      | ??? (...obsolete?)               | ???                        |
+| -virtual-buffers      |                                  |                            |
+| default-buffer-method | Determines where/how the         | selected-window            |
+|                       | selected buffer is opened        | other-window               |
+|                       |                                  | display                    |
+|                       |                                  | other-frame                |
+|                       |                                  | maybe-frame                |
+|                       |                                  | raise-frame                |
+|                       |                                  | already shown              |
+| default-file-method   | Determines where/how the         | Same as                    |
+|                       | selected file is opened          | default-buffer-method      |
+|-----------------------+----------------------------------+----------------------------|
 
-|---------------------------------------------------------------------------------------------------------------------|
-| Notes                                                                                                               |
-|---------------------------------------------------------------------------------------------------------------------|
-| Several options mention =virtual buffers=, which are ido-mode's way of pretending recently-closed buffers are open. |
-| So, for instance, if you set =ido-use-virtual-buffers= to =t=, ido-mode will keep a list of recently-closed buffers |
-| at the bottom of the buffer list (displayed in the font-face =ido-virtual=), enabling you to, e.g., switch to       |
-| recently-closed buffers after you exit and re-open Emacs.                                                           |
-|---------------------------------------------------------------------------------------------------------------------|
+|------------------------------------------------------------------------------------------|
+| Notes                                                                                    |
+|------------------------------------------------------------------------------------------|
+| Several options mention =virtual buffers=, which are ido-mode's way of pretending        |
+| recently-closed buffers are open. So, for instance, if you set =ido-use-virtual-buffers= |
+| to =t=, ido-mode will keep a list of recently-closed buffers at the bottom of the buffer |
+| list (displayed in the font-face =ido-virtual=), enabling you to, e.g., switch to        |
+| recently-closed buffers after you exit and re-open Emacs.                                |
+|------------------------------------------------------------------------------------------|
 
 #+SRCNAME: ido-mode-basic-config
 #+BEGIN_SRC emacs-lisp
@@ -632,8 +690,9 @@ way Ido Mode does for buffers and files.
 
 #+SRCNAME: rebind-Mx-to-smex
 #+BEGIN_SRC emacs-lisp
-  (require 'smex)
-  (global-set-key (kbd "M-x") 'smex)
+  (use-package smex
+    :bind
+      ("M-x" . smex))
 #+END_SRC
 ** Re-Builder (Regex Builder/Helper)
 The Re-Builder (REgular expression BUILDER) package aids in
@@ -646,15 +705,19 @@ natural to me (and involves the fewest number of excess backslashes).
 
 #+SRCNAME enable-re-builder
 #+BEGIN_SRC emacs-lisp
-  (require 're-builder)
-  (setq reb-re-syntax 'string)
+  (use-package re-builder
+    :init (setq reb-re-syntax 'string))
 #+END_SRC
-** Recentf (Track Recent Files, Load via C-x C-r) 
+** Recentf (Track Recent Files, Load via C-x C-r)
+#+SRCNAME load-and-configure-recentf
 #+BEGIN_SRC emacs-lisp
-  (require 'recentf)
-  (recentf-mode 1)
-  (setq recentf-max-menu-items 25)
-  (global-set-key "\C-x\ \C-r" 'recentf-open-files)
+  (use-package recentf
+    :init
+      (setq recentf-max-menu-items 25)
+    :config
+      (recentf-mode 1)
+    :bind
+      ("C-x C-r" . recentf-open-files))
 #+END_SRC
 ** Magit: Robust Git Porcelain (open with C-x g)
 [[http://www.emacswiki.org/emacs/Magit][Magit]] is a Git porcelain (aka front end) for Emacs.  We load Magit and
@@ -665,11 +728,66 @@ Use "s" to stage a file, "c c" to start a commit, "C-c C-c" to finish
 a commit, "b b" to switch branches, "P P" to do a git push, and "F F"
 to do a git pull. [Tab] is also a nice key.
 
+#+SRCNAME load-and-configure-magit
 #+BEGIN_SRC emacs-lisp
-  (require 'magit)
-  (global-set-key "\C-x\ g" 'magit-status)
+  (use-package magit
+    :bind
+      ("C-x g" . magit-status))
 #+END_SRC
-*** Safety Settings 
+*** Safety Settings
+Magit makes reverting files accidentally easier than it is by
+default. For instance, the following warning appeared after installing
+version 1.4.0.
+
+#+BEGIN_EXAMPLE
+  Warning (:warning): for magit-1.4.0
+
+  You have just updated to version 1.4.0 of Magit, and have to
+  make a choice.
+
+  Before running Git, Magit by default reverts all unmodified
+  buffers that visit files tracked in the current repository.
+  This can potentially lead to data loss, so you might want to
+  disable this by adding the following line to your init file:
+
+    (setq magit-auto-revert-mode nil)
+
+  The risk is not as high as it might seem.  Snapshots on MELPA
+  and MELPA-Stable have had this enabled for a long time, so if
+  you have not experienced any data loss in the past, you should
+  probably keep this enabled.
+
+  Keeping this mode enabled is only problematic if you, for
+  example, use `git reset --hard REV' or `magit-reset-head-hard'
+  and expect Emacs to preserve the old state of some file in a
+  buffer.  If you turn off this mode then file-visiting buffers and
+  the Magit buffer will no longer be in sync, which can be confusing
+  and would complicate many operations.  Note that it is possible
+  to undo an automatic buffer reversion using `C-x u' (`undo').
+
+  To prevent this message from being shown each time you start
+  Emacs, you must add the following line to your init file:
+
+    (setq magit-last-seen-setup-instructions "1.4.0")
+
+  You might also want to read the release notes:
+  https://raw.githubusercontent.com/magit/magit/next/Documentation/RelNotes/1.4.0.txt
+#+END_EXAMPLE
+
+[[http://magit.vc/manual/magit/Wip-modes.html#Wip-modes][The documentation]] mentions at least a couple other reasons why
+untracked changes are at times vulnerable to deletion, and (since why
+risk having to rewrite a chunk of our dissertation?) we should account
+for these (relatively minor) risks by following the safe instructions
+in the above warning and configuring a [[*Configure%20Wip%20mode][Wip mode]].
+
+**** Disable Magit-Auto-Revert-Mode by Default
+#+BEGIN_SRC emacs-lisp
+  ; Disable the warning message about magit-auto-revert-mode
+  (setq magit-last-seen-setup-instructions "1.4.0")
+  ; Disable magit-auto-revert-mode
+  (setq magit-auto-revert-mode nil)
+#+END_SRC
+
 **** Enable Wip (Work In Progress) Mode
 Since Magit "makes it easy to modify uncommitted changes" to both the
 working tree and index of a repository (and uncommitted changes aren't
@@ -677,8 +795,19 @@ tracked by Git), Magit provides three different "Wip" modes to track
 these automatically, without unnecessary commit to the repository.
 ***** TODO Configure Wip mode
 Refer to [[http://magit.vc/manual/magit/Wip-modes.html#Wip-modes][the documentation]].
-** iedit: Support Renaming Variables/Changing Word Throughout a Buffer 
-** TODO Bookmarks 
+** TODO iedit: Support Renaming Variables/Changing Word Throughout a Buffer
+[[https://www.masteringemacs.org/article/iedit-interactive-multi-occurrence-editing-in-your-buffer][iedit]] mode allows you to edit multiple occurrences of the same string
+in a buffer without disrupting your workflow with prompts/other
+windows. To do this, run iedit-mode while the pursor is on a word you
+wish to change. All of the occurrences of this word in the current
+buffer are then highlighted (like in isearch), and modifying a
+highlighted word makes the same changes in all of its other
+occurrences in the file. It's a nice middle ground between manually
+changing each occurrence and the prompt heavy M-% and C-M-% commands.
+** TODO Multiple Cursors: Have multiple cursors working in the same file
+It's like iedit but on steroids. [[https://www.youtube.com/watch?v=jNa3axo40qM][This]] is a great example of it in
+action.
+** TODO Bookmarks
 ** TODO Company (Auto-Completion Support)
 ** TODO Popwin (Popup Windows at Bottom of Screen)
 ** TODO Color-identifiers-mode (Unique display colors for unique variables)
@@ -818,10 +947,14 @@ CLOSED: [2015-12-01 Tue 17:24]
 ** Load a color theme
 See [[*Color-Theme%20Mode%20(Custom%20Themes)][Color-Theme Mode (Custom Themes)]] in the last section.
 ** Mode Line Configuration
+*** Display the current column number in the mode line
+#+BEGIN_SRC emacs-lisp
+  (column-number-mode 1)
+#+END_SRC
 *** Display the current time in the baseline of each frame 
 #+BEGIN_SRC emacs-lisp
   (display-time)
-#+END_SRC 
+#+END_SRC
 ** Display line numbers on the left of each frame
 #+BEGIN_SRC emacs-lisp
   (add-hook 'find-file-hook (lambda () (nlinum-mode 1)))
