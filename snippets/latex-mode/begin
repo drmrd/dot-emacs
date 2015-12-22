@@ -1,0 +1,8 @@
+# -*- mode: snippet; require-final-newline: nil -*-
+# name: \begin{environment} ... \end{environment}
+# key: begin
+# group: environments
+# --
+\begin{${1:$$(yas-choose-value (mapcar 'car (LaTeX-environment-list)))}}
+    $0
+\end{$1}
