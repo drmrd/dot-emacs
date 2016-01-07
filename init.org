@@ -1,6 +1,7 @@
 #+TITLE: Emacs Init File for Mac OSX
 #+AUTHOR: DRMRD
 #+OPTIONS: toc:nil num:nil ^:nil
+#+PROPERTY: header-args    :comments link
 #+STARTUP: indent
 
 * Changelog
@@ -429,7 +430,7 @@ Disable the welcome screen and instead display a welcome message as a
 comment in the scratch buffer.
 #+BEGIN_SRC emacs-lisp
   (setq inhibit-startup-screen t)   ; Disable Emacs's welcome screen
-  (setq initial-scratch-message ";; Welcome to Emacs!")
+  (setq initial-scratch-message "")
 #+END_SRC
 ** Performance Improvements
 The following settings improve the performance of Emacs in various
@@ -844,12 +845,12 @@ All of the following keybindings are defaults.
 #+BEGIN_SRC emacs-lisp
   (use-package yasnippet 
     :config
-      (setq yas-snippet-dirs
-        (append yas-snippet-dirs
-          '("~/.emacs.d/snippets"
-            "~/Downloads/ThirdPartySnippets")))
+      (add-to-list 'yas-snippet-dirs
+        "~/.emacs.d/snippets")
+      (add-to-list 'yas-snippet-dirs
+        "~/Downloads/ThirdPartySnippets")
       (yas-reload-all)
-      (yas-global-mode))
+      (yas-global-mode t))
 #+END_SRC
 ** TODO Company (Auto-Completion Support): COMPlete ANYthing
 #+BEGIN_SRC emacs-lisp :tangle no
