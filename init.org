@@ -65,6 +65,11 @@ would add hundreds or thousands of lines of code unnecessarily.
 - Create a ~/.emacs.d/lib/bullet_title subdirectory
 - Add libraries to this subdirectory and load them from
   bullet_title.org
+*** ~/elisp
+This is the location in which all third party scripts should be
+placed. They should NOT be placed here manually, however. Instead, add
+an entry for each new script into the makefile in that directory, then
+install them from the command line as byte-compiled elisp files.
 *** ~/workspace/elisp [[*NOTE:%20This%20folder%20should%20be%20considered%20OBSOLETE.][(OBSOLETE)]]
 This is the old location for storing .el files. It should be replaced
 by literate programming .org files in the folder ~/.emacs.d/lib/
@@ -429,22 +434,8 @@ Disable the welcome screen and instead display a welcome message as a
 comment in the scratch buffer.
 #+BEGIN_SRC emacs-lisp
   (setq inhibit-startup-screen t)   ; Disable Emacs's welcome screen
-  (setq initial-scratch-message ";; Welcome to Emacs!")
+  (setq initial-scratch-message ";; Welcome to Emacs!\n")
 #+END_SRC
-** Performance Improvements
-The following settings improve the performance of Emacs in various
-ways, typically by permitting it to assume our computer wasn't built
-in the stone age.
-*** Force Emacs to fully redraw windows *before* processing queued input events
-The following should dramatically reduce the amount of screen tearing
-you see while working with Emacs.
-#+BEGIN_SRC emacs-lisp
-  (setq redisplay-dont-pause t)
-#+END_SRC
-**** TODO Remove this setting after updating to Emacs v. 24.5 on all machines
-This setting is the default behavior in Emacs v. 24.5 and higher, and
-I read in a comment somewhere (confirm this) that the above variable
-is going to be deemed deprecated soon.
 
 ** Loading Other Customization Files
 We now add several directories to the load-path. The directory
@@ -460,6 +451,10 @@ seems).
   (add-to-list 'load-path "~/.emacs.d/lib")
 #+end_src
 
+** Load Third-Party Elisp not Manage by *Package*
+#+BEGIN_SRC emacs-lisp
+  (add-to-list 'load-path "~/elisp")
+#+END_SRC
 ** Bind Settings Files to Registers
 Bind init.org, .emacs.d/lib/latex.org, and Preferences.el to the
 registers "e", "l", and "p" (resp.) so that they can be opened easily with
@@ -482,7 +477,6 @@ To modify and re-evaluate a single code block, use C-c C-c inside the block.
 It might be worth also adding a register for Preferences.el for when I
 want to evaluate this buffer without reloading emacs (although Babel
 probably has an easier way to do that natively).
-
 ** Set the Default Directory
 Make the default directory ~/workspace/ for easy access to LaTeX
 projects.
@@ -862,6 +856,31 @@ All of the following keybindings are defaults.
 ** TODO Origami: A Multi-Language Folding Mode
 ** TODO Eww: Emacs Web Browser
 ** TODO Visible-Mark: Make the Current Mark Visible
+** Pomodoro Mode: The Pomodoro Technique in Emacs!
+The *pomodoro.el* script adds pomodoro technique indicators to the
+modeline. Enable the minor mode by invoking the `pomodoro'
+command. Refer to the function's documentation for more info.
+
+#+SRC_NAME pomodoro
+#+BEGIN_SRC emacs-lisp
+  (require 'pomodoro)
+#+END_SRC
+** Lazy Flyspell Mode: Make Flyspell take a load off
+Load the third-party flyspell-lazy.elc script, which improves
+flyspell's responsiveness by forcing it to only check spelling when
+Emacs has been idle for a little while (as opposed to damn near
+constantly).
+
+#+BEGIN_SRC emacs-lisp
+  (require 'flyspell-lazy)
+  (flyspell-lazy-mode 1)
+#+END_SRC
+
+*** NOTE: Flyspell must be loaded AFTER this code executes
+Right now this isn't a problem, since flyspell is loaded via major
+mode hooks (see the ./lib/latex.org config file for an example), but
+should we decide to use it globally this code might need to be
+moved.
 * Utility Functions
 ** my-reb-copy: Yank Into Minibuffer Without Doubling Backslashes
 Yank text into the minibuffer without backslashes being doubled. This
@@ -1017,7 +1036,10 @@ Highlights the current row in gray. (taken from [[http://tex.stackexchange.com/q
   (set-face-background hl-line-face "#0e1717"); Same color as greyness in gtk
 #+END_SRC 
 ** Set the default font
-On Mac OS X, use the Vera Sans font family.
+Naturally, fonts are quite OS and machine-specific, so this portion of
+the configuration will probably grow a bit with time. For now, the
+following configuration is appropriate. On Mac OS X, the Vera Sans
+font family is used, while on Linux we employ DejaVu Sans Mono.
 #+BEGIN_SRC emacs-lisp
   (if (eq system-type 'darwin)
     (set-default-font "-apple-bitstream
@@ -1025,7 +1047,10 @@ On Mac OS X, use the Vera Sans font family.
   (if (eq system-type 'gnu/linux)
     (set-default-font "-unknown-DejaVu Sans Mono-normal-normal-normal-*-15-*-*-*-m-0-iso10646-1"))
 #+END_SRC
-** Disable cursor blinking 
+** Disable cursor blinking
+The enemy of civil society. I disable cursor blinking not only
+because I find it obnoxious and distracting, but because it's *the
+right thing to do*.
 #+BEGIN_SRC emacs-lisp
   (blink-cursor-mode (- (*) (*) (*)))
 #+END_SRC
@@ -1076,7 +1101,49 @@ and otherwise literally insert a TAB character, and =t=, which makes
   (global-set-key (kbd "M-q") 'indent-relative)
 #+END_SRC
 **** TODO Consider also setting [Tab] (or something) to (indent-relative-maybe).
+* Benchmarking/Performance Settings
+The following settings improve the performance of Emacs in various
+ways, typically by permitting it to assume our computer wasn't built
+in the stone age. They also provide various methods by which we can
+benchmark our init settings.
 
+Other ideas for speeding up Emacs can be found in
+[[https://www.reddit.com/r/emacs/comments/2094tl/how_can_i_improve_emacs_performance/][this reddit thread]], from which several of the functions/ideas that
+follow were taken.
+** Force Emacs to fully redraw windows *before* processing queued input events
+The following should dramatically reduce the amount of screen tearing
+you see while working with Emacs.
+#+BEGIN_SRC emacs-lisp
+  (setq redisplay-dont-pause t)
+#+END_SRC
+*** TODO Remove this setting after updating to Emacs v. 24.5 on all machines
+This setting is the default behavior in Emacs v. 24.5 and higher, and
+I read in a comment somewhere (confirm this) that the above variable
+is going to be deemed deprecated soon. Alternatively (and better),
+just wrap this command in a version check.
+** Benchmark Initialization
+The following code, taken from [[https://www.reddit.com/r/emacs/comments/2094tl/how_can_i_improve_emacs_performance/cg0ydzc][this reddit comment from wadcann]]
+makes it so that messages are posted to the *Messages* buffer with
+timestamps as Emacs loads, providing a way to analyze which packages,
+functions, etc. are eating up the most startup time.
+#+BEGIN_SRC emacs-lisp
+  ;;; Timestamps in *Messages* at startup
+  (defun current-time-microseconds ()
+    (let* ((nowtime (current-time))
+           (now-ms (nth 2 nowtime)))
+      (concat (format-time-string "[%Y-%m-%dT%T" nowtime) (format ".%d] " now-ms))))
+
+  (defadvice message (before test-symbol activate)
+    (if (not (string-equal (ad-get-arg 0) "%s%s"))
+        (let ((deactivate-mark nil)
+              (inhibit-read-only t))
+          (save-excursion
+            (set-buffer "*Messages*")
+            (goto-char (point-max))
+            (if (not (bolp))
+                (newline))
+            (insert (current-time-microseconds))))))
+#+END_SRC
 * Major Mode Customization
 ** Emacs-Lisp Mode
 We use the built-in emacs-lisp-mode for editing .el files, but with a
