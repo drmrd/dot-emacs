@@ -106,6 +106,7 @@ Since Aquamacs is obnoxious, my .emacs and .emacs.d files were
 originally found in
     
     ~/Library/Preferences/Aquamacs Emacs/Preferences.el
+
 and
 
     ~/Library/Preferences/Aquamacs Emacs/
@@ -137,45 +138,7 @@ Use =describe-variable= via "C-h v", type the name of the package (or
 part of it) in the minibuffer, and then tab twice to get an
 autocompletion list. Since a typical package will begin its variable
 names with its own name, this generates a reasonably complete list.
-*** Q: When should I use apostrophes?
-**** A: To return an object/variable name without evaluating it.
-The code ='object= is short for =(quote object)=, which is a special
-form that returns =object= without evaluating it. This is useful, for
-instance, when you would like to change the value of a variable,
-append elements to a list, add un-evaluated elisp code to some other
-object, etc.
-
-***** Example: A variable called =Paddington=
-Let's say you have a variable named =Paddington=, and you wish to
-replace its value with the string "A Bear Called Paddington". This can
-be achieved as follows:
-#+BEGIN_EXAMPLE
-  (setq Paddington "A Bear Called Paddington")
-#+END_EXAMPLE
-Note that quoting is unnecessary here, since =(setq foo bar)= sets the
-/literal/ symbol =foo= to the value =bar= (so in some sense quotes
-=Paddington= without our intervention).
-
-Indeed, if you want to get unnecessarily fancy here (and to emphasize
-what the apostrophe is doing) you could execute the following
-equivalent code, too:
-#+BEGIN_EXAMPLE
-  (setq Paddington (concat "A Bear Called " (symbol-name 'Paddington)))
-#+END_EXAMPLE
-Note that we can't just use =(concat "A Bear Called " 'Paddington)=
-here, since ='Paddington= is really a /symbol/, not a /string/. (See
-the emacs documentation for variables and symbols.)
-
-***** Example: Prepending to a list
-Suppose you have a list variable named =mylist= and you'd like to add
-the string "A Bear Called Paddington" to it. In conjunction with the
-=add-to-list= function, you can use quoting to achieve this:
-#+BEGIN_EXAMPLE
-  (add-to-list 'mylist "A Bear Called Paddington")
-#+END_EXAMPLE
-You can also add the string to the end of this list by setting the first
-optional argument of =add-to-list= to =t= (or anything non-nil).
-
+** Elisp Notes and Techniques 
 *** Q: What's an alist?
 **** A: An association list
 An alist is a list =mylist= of cons cells =(car . cdr)= (in dotted
@@ -227,7 +190,44 @@ alists.
 | (rassq-delete-all key alist) | Like the last function but    |                                  |
 |                              | compares CDRs to the given    |                                  |
 |                              | key instead of CARs.          |                                  |
-** Elisp Notes and Techniques
+*** Q: When should I use apostrophes?
+**** A: To return an object/variable name without evaluating it.
+The code ='object= is short for =(quote object)=, which is a special
+form that returns =object= without evaluating it. This is useful, for
+instance, when you would like to change the value of a variable,
+append elements to a list, add un-evaluated elisp code to some other
+object, etc.
+
+***** Example: A variable called =Paddington=
+Let's say you have a variable named =Paddington=, and you wish to
+replace its value with the string "A Bear Called Paddington". This can
+be achieved as follows:
+#+BEGIN_EXAMPLE
+  (setq Paddington "A Bear Called Paddington")
+#+END_EXAMPLE
+Note that quoting is unnecessary here, since =(setq foo bar)= sets the
+/literal/ symbol =foo= to the value =bar= (so in some sense quotes
+=Paddington= without our intervention).
+
+Indeed, if you want to get unnecessarily fancy here (and to emphasize
+what the apostrophe is doing) you could execute the following
+equivalent code, too:
+#+BEGIN_EXAMPLE
+  (setq Paddington (concat "A Bear Called " (symbol-name 'Paddington)))
+#+END_EXAMPLE
+Note that we can't just use =(concat "A Bear Called " 'Paddington)=
+here, since ='Paddington= is really a /symbol/, not a /string/. (See
+the emacs documentation for variables and symbols.)
+
+***** Example: Prepending to a list
+Suppose you have a list variable named =mylist= and you'd like to add
+the string "A Bear Called Paddington" to it. In conjunction with the
+=add-to-list= function, you can use quoting to achieve this:
+#+BEGIN_EXAMPLE
+  (add-to-list 'mylist "A Bear Called Paddington")
+#+END_EXAMPLE
+You can also add the string to the end of this list by setting the first
+optional argument of =add-to-list= to =t= (or anything non-nil).
 *** Add an element to a list
 **** Approach 1: (add-to-list ...)
 #+BEGIN_EXAMPLE
@@ -298,8 +298,7 @@ One way to represent these visually is as follows:
      |            |                      |
      |            |                      |
       --> elt1     --> elt2               --> eltn
-#+END_EXAMPLE
-
+#+END_EXAMPLE 
 *** Replace an element in an alist
 Use the assq-delete-all and rassq-delete-all commands to delete all
 elements in the alist with a given CAR or CDR, and then prepend the
@@ -309,7 +308,16 @@ and set the original list equal to the result.
   (setq mylist ((car1 . cdr1) (car2 . cdr2) (car1 . cdr11) (car3 . cdr3)))
   (setq mylist (cons '(car1 . newcdr1) (assq-delete-all 'car1 mylist)))
   sets mylist equal to ((car1 . newcdr1) (car2 . cdr2) (car3 . cdr3))
-#+END_EXAMPLE 
+#+END_EXAMPLE
+*** Concatenate alists
+Use the [[help:append][append]] command.
+
+#+BEGIN_EXAMPLE
+  (setq l1 '(a b c))
+  (setq l2 '(x y z))
+  (append l1 l2)
+    => (a b c x y z)
+#+END_EXAMPLE
 ** Org Mode Notes and Techniques
 *** Edit a code block in its default major mode (e.g. =lisp-mode= or =LaTeX-mode=)
 While the pointer is in the code block hit C-c ' to open a new frame
@@ -834,7 +842,11 @@ All of the following keybindings are defaults.
 |            |                       | *Bookmark List*.                |
 |------------+-----------------------+---------------------------------|
 
-** TODO YASnippet
+** DONE YASnippet
+CLOSED: [2016-01-11 Mon 13:04]
+Yet Another Snippet is a templating package for Emacs, enabling rapid
+template creation and reuse. Store snippets in the
+~/.emacs.d/snippets/ directory.
 #+BEGIN_SRC emacs-lisp
   (use-package yasnippet 
     :config
@@ -844,6 +856,38 @@ All of the following keybindings are defaults.
             "~/Downloads/ThirdPartySnippets")))
       (yas-reload-all)
       (yas-global-mode))
+#+END_SRC 
+** Auto-YASnippet: Create Temporary YASnippets
+Create a temporary snippet for reproducing similar code repeatedly in
+a file. To get an idea of how to use this, the following example is
+provided by the package.
+#+SRC_NAME:Auto-YASnippet_JavaExample
+#+BEGIN_EXAMPLE
+  In Java write:
+  class Light$On implements Runnable {
+    public Light$On() {}
+    public void run() {
+      System.out.println("Turning $on lights");
+      light = $true;
+    }
+  }
+  This differs from the code that you wanted to write only by 4 $ chars.
+  Since it's more than one line, select the region and call `create-auto-yasnippet'.
+  The $ chars disappear, yielding valid code.
+  `*current-auto-yasnippet-template* becomes:
+  "class Light$1 implements Runnable {
+    public Light$1() {}
+    public void run() {
+      System.out.println(\"Turning $2 lights\");
+      light = $3;
+    }
+  }"
+#+END_EXAMPLE
+#+BEGIN_SRC emacs-lisp
+  (use-package auto-yasnippet
+    :bind
+      ("H-w" . aya-create)
+      ("H-y" . aya-expand))
 #+END_SRC
 ** TODO Company (Auto-Completion Support): COMPlete ANYthing
 #+BEGIN_SRC emacs-lisp :tangle no
@@ -863,8 +907,11 @@ command. Refer to the function's documentation for more info.
 
 #+SRC_NAME pomodoro
 #+BEGIN_SRC emacs-lisp
-  (require 'pomodoro)
+  (use-package pomodoro
+    :config
+      (setq pomodoro-raise-frame nil))
 #+END_SRC
+
 ** Lazy Flyspell Mode: Make Flyspell take a load off
 Load the third-party flyspell-lazy.elc script, which improves
 flyspell's responsiveness by forcing it to only check spelling when
@@ -1170,12 +1217,12 @@ See the following if similar issues arise in other modes:
 Loads the file ~/.emacs.d/lib/latex.org, which contains and/or
 dynamically loads all of our custom LaTeX settings.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (org-babel-load-file
     (expand-file-name "~/.emacs.d/lib/latex/latex.org"))
 #+END_SRC
 
-** Org Mode 
+** Org Mode
 *** Configure Default Directory, Agenda Directory, and Notes File
 For now the org-agenda-files list simply contains ~/org, but it can
 readily be modified to a list of subdirectories, files, etc. if
@@ -1184,6 +1231,72 @@ necessary.
   (setq org-directory "~/org")
   (setq org-agenda-files '("~/org"))
   (setq org-default-notes-file "~/org/inbox.org")
+#+END_SRC
+*** Task Management (TODO Keywords, Tags, etc.)
+**** Settings for TODOs
+***** Set the TODO keywords
+The globally-defined TODO keywords are stored in the
+[[help:org-todo-keywords][=org-todo-keywords=]] variable. There is a lot you can do with these, so
+see the documentation of this variable for all the details. In
+summary, it is a list of "TODO entry keyword sequences" which are
+themselves lists of the form
+
+#+BEGIN_EXAMPLE
+  (<sequence or type>
+    "K1" [...] "Km"
+    [optionally "|" "DK1" [...] "DKn"])
+#+END_EXAMPLE
+
+where the first element is =sequence= if the subsequent elements should
+be interpreted as a sequence of "action steps" and =type= if the
+subsequent elements should be interpreted as specifying different types
+of TODO items. Additionally, if the first element is =sequence= then
+ 1. "K1",...,"K<m-1>" always represent states requiring action, as does
+    "Km" if "|" appears in the list. Otherwise "Km" represents a (unique)
+    DONE state in which no additional action is necessary.
+ 2. "DK1",...,"DKn" represent states in which no further action is
+    necessary.
+
+By default the value is =((sequence "TODO" "DONE"))=
+
+#+SRC_NAME redef_org-todo-keywords
+#+BEGIN_SRC emacs-lisp
+  (setq org-todo-keywords
+    '((sequence "TODO(t)" "STARTED(s)" "WAITING(w)" "|" "DONE(d)" "CANCELED(c)")))
+#+END_SRC
+
+***** Toggle timestamps and/or notes when TODOs are toggled between =TODO= and =DONE=
+The behavior of the =org-todo= command, bound to C-c C-t by default,
+is controlled in part by the [[help:org-log-done][=org-log-done=]] variable. If this is set
+to =nil= then no timestamp or note is inserted when a task is marked
+as =DONE= (this is the default behavior). If it is set to =time=, then
+the timestamp from when the task was completed is inserted on the next
+line (and removed if the task is marked as incomplete later). If set
+to =note=, the timestamp is inserted and the user is prompted for
+input to insert onto an additional line in the format specified by the
+[[help:org-log-note-headings][org-log-note-headings]] variable.
+#+BEGIN_SRC emacs-lisp
+  (setq org-log-done 'time)
+#+END_SRC
+
+**** Configuring Tags
+The [[help:org-tag-alist][org-tag-alist]] variable can be configured to include default tags,
+which can in turn be used for organizing TODO/agenda items.
+#+SRC_NAME redef_org-tag-alist
+#+BEGIN_SRC emacs-lisp
+  (setq org-tag-alist
+    '(;(:startgroup . nil)
+      ;  ("@home" . ?h)
+      ;  ("@work" . ?w)
+      ;(:endgroup . nil)
+      ("fun"          . ?f)
+      ("work"         . ?w)
+      ("organizing"   . ?o)
+      ("proving"      . ?p)
+      ("revisions"    . ?r)
+      (:startgroup    . nil)
+        ("urgent"     . ?u) 
+      (:endgroup      . nil)))
 #+END_SRC
 *** Configure Capture Mode and Capture Templates
 Enables [[help:org-capture][org-capture]] mode with C-c c. This and the capture templates
@@ -1271,39 +1384,6 @@ want which behavior, but here's a start.
   ;; possible settings (there are five in total).
   (setq org-catch-invisible-edits 'smart)
 #+END_SRC
-*** Settings for TODOs
-**** Set the TODO keywords
-The globally-defined TODO keywords are stored in the
-[[help:org-todo-keywords][=org-todo-keywords=]] variable. There is a lot you can do with these, so
-see the documentation of this variable for all the details. In
-summary, it is a list of "TODO entry keyword sequences" which are
-themselves lists of the form
-=(<sequence or type> "K1" [...] "Km" [optionally "|" "DK1" [...] "DKn"])=
-where the first element is =sequence= if the subsequent elements should
-be interpreted as a sequence of "action steps" and =type= if the
-subsequent elements should be interpreted as specifying different types
-of TODO items. Additionally, if the first element is =sequence= then
- 1. "K1",...,"Km-1" always represent states requiring action, as does
-    "Km" if "|" appears in the list. Otherwise "Km" represents a (unique)
-    DONE state in which no additional action is necessary.
- 2. "DK1",...,"DKn" represent states in which no further action is
-    necessary. 
-
-By default the value is =((sequence "TODO" "DONE"))= 
-
-**** Toggle timestamps and/or notes when TODOs are toggled between =TODO= and =DONE=
-The behavior of the =org-todo= command, bound to C-c C-t by default,
-is controlled in part by the [[help:org-log-done][=org-log-done=]] variable. If this is set
-to =nil= then no timestamp or note is inserted when a task is marked
-as =DONE= (this is the default behavior). If it is set to =time=, then
-the timestamp from when the task was completed is inserted on the next
-line (and removed if the task is marked as incomplete later). If set
-to =note=, the timestamp is inserted and the user is prompted for
-input to insert onto an additional line in the format specified by the
-[[help:org-log-note-headings][org-log-note-headings]] variable.
-#+BEGIN_SRC emacs-lisp
-  (setq org-log-done 'time)
-#+END_SRC
 
 *** Configure default source-block evaluation settings
 The global defaults for how code-blocks are evaluated in org-mode are
@@ -1385,3 +1465,22 @@ entire block start or end tag. Better still, we can create our own!
        '("el" "#+BEGIN_SRC emacs-lisp\n  ?\n#+END_SRC" ""))
 #+END_SRC
 
+*** Org-Latex Configuration
+#+BEGIN_EXAMPLE
+  (require 'ox-latex)
+  (add-to-list 'org-latex-classes
+               '("beamer"
+                 "\\documentclass\[presentation\]\{beamer\}"
+                 ("\\section\{%s\}" . "\\section*\{%s\}")
+                 ("\\subsection\{%s\}" . "\\subsection*\{%s\}")
+                 ("\\subsubsection\{%s\}" . "\\subsubsection*\{%s\}")))
+#+END_EXAMPLE
+* Clean Up
+** Close Extra Frames in Aquamacs
+For some reason (in Aquamacs only) my configuration files open
+multiple frames as they're being processed. So we close them after
+loading everything. At present, this doesn't seem to work.
+#+BEGIN_SRC emacs-lisp
+  (if (eq system-type 'darwin)
+    (delete-other-frames))
+#+END_SRC

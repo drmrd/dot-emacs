@@ -184,6 +184,95 @@ softly wrapped lines to the appropriate levels.
 	    '("rem" LaTeX-env-label)
 	    '("claim" LaTeX-env-label))))
 #+END_SRC
+* Custom Functions
+** TODO Forward/Backward Token/Mode/Environment Boundary Functions
+By default, the key combinations 'C-M-f' and 'C-M-b' are bound to
+[[help:forward-sexp][forward-sexp]] and [[help:backward-sexp][backward-sexp]], which aren't very useful in a TeX
+document. We will instead bind these commands to functions that look
+for the next/previous instance of a token delimiter: *{*; a math-mode
+delimiter: *$*, *$$*, *\[$, or *\]$; or an environment *begin* or
+*end* statement. We collectively call such things *LaTeX boundary
+delimiters*, although reserve the right to change this name later.
+
+#+SRC_NAME TeX-BoundaryDelimiters
+#+BEGIN_SRC emacs-lisp
+  (defvar drmrd-init/lib/latex-TokenDelimiters 
+    '(("{" . nil)
+      ("}" . nil))
+    "An alist consisting of elements (CAR . CDR), in which CAR is
+    always a string representing a (Whatever)Tex token
+    delimiter. So, for instance, the default alist in a TeX or
+    LaTeX distribution would include a string for matching '{' and
+    another for matching '}'. In each list element, if CDR is
+    non-nil treat CAR as a regular expression string and otherwise
+    treat it like a string to be matched literally.")
+
+  (defvar drmrd-init/lib/latex-MathDelimiters
+    '(("$" . nil)
+      ("$$" . nil)
+      ("\\[" . nil)
+      ("\\]" . nil))
+    "An alist consisting of elements (CAR . CDR), in which CAR is
+    always a string representing a (Whatever)Tex math mode
+    delimiter (which is to say either an inline or displayed
+    equation). So, for instance, the default alist in a TeX or
+    LaTeX distribution would include strings for matching '$',
+    '$$', '\[', and '\]'. In each list element, if CDR is non-nil
+    treat CAR as a regular expression string and otherwise treat it
+    like a string to be matched literally.")
+
+  (defvar drmrd-init/lib/latex-EnvDelimiters
+    '(("\\begin{\w+}" . t) ("\\end{\w+}" . t))
+    "An alist consisting of elements (CAR . CDR), in which CAR is
+    always a string representing a (Whatever)Tex environment
+    beginning or ending delimiter (which is to say either an inline
+    or displayed equation). So, for instance, the default alist in
+    a LaTeX distribution would include strings for matching
+    '\begin{<valid env-name>}' and '\end{<valid env-name>}'. In
+    each list element, if CDR is non-nil treat CAR as a regular
+    expression string and otherwise treat it like a string to be
+    matched literally.")
+
+  (defvar drmrd-init/lib/latex-BoundaryDelimiter
+    (append drmrd-init/lib/latex-TokenDelimiters
+            drmrd-init/lib/latex-MathDelimiters
+            drmrd-init/lib/latex-EnvDelimiters)
+    "The complete alist of 'LaTeX Boundary Delimiters' (delimiters
+    of tokens, math modes, and environments) used, e.g., in
+    conjunction with the `forward-LaTeX-boundary-delimiter'
+    function. In each element (CAR . CDR), CAR is always a string
+    representing a LaTeX boundary delimiter either as a string
+    literal or an elisp regular expression string, with a non-nil
+    CDR indicating that it is the latter.")
+    
+
+  (defun forward-LaTeX-boundary-delimiter (&optional arg)
+    "Move forward to the next instance of a delimiter of a TeX
+  token, math mode, or environment. With ARG, do it that many
+  times.  Negative arg -N means find the N-th instance of such a
+  delimiter in the backwards direction.  The definition of a LaTeX
+  boundary delimiter may be configured by modifying the
+  `drmrd-init/lib/latex-BoundaryDelimiter' variable."
+    (interactive "^p") ; Recall that "^" makes this compatible with
+                       ; shift selection and "p" converts the prefix
+                       ; argument to a number if present.
+    (or arg (setq arg 1)) ; Set ARG equal to 1 if not provided.
+    (goto-char (or (scan-latex-boundary-delimiters (point) arg) (buffer-end arg)))
+    (if (< arg 0) (backward-prefix-chars)))
+
+  (defun scan-latex-boundary-delimiters (from count)
+    "Scan from character number FROM forward or backward depending
+  on the sign of COUNT. Scan until |COUNT|
+  LaTeX-boundary-delimiters have been found and return the
+  character number of the |COUNT|-th delimiter. Returns nil if the
+  beginning or end of (the accessible part of) the buffer is
+  reached before |COUNT|-many matches are found."
+    (sleep-for 1))
+#+END_SRC
+
+
+*** TODO Decide on a name for these functions
+* Navigation Tweaks
 * Filling
 ** Disable Auto Fill Mode in LaTeX modes (for now)
 I still haven't customized the fill commands for LaTeX files in a
