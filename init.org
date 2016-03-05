@@ -1,6 +1,7 @@
 #+TITLE: Emacs Init File for Mac OSX
 #+AUTHOR: DRMRD
 #+OPTIONS: toc:nil num:nil ^:nil
+#+PROPERTY: header-args    :comments link
 #+STARTUP: indent
 
 * Changelog
@@ -441,8 +442,8 @@ reducing load time.
 Disable the welcome screen and instead display a welcome message as a
 comment in the scratch buffer.
 #+BEGIN_SRC emacs-lisp
-  (setq inhibit-startup-screen t)   ; Disable Emacs's welcome screen
-  (setq initial-scratch-message ";; Welcome to Emacs!\n")
+    (setq inhibit-startup-screen t)   ; Disable Emacs's welcome screen
+    (setq initial-scratch-message ";; Welcome to Emacs!\n") 
 #+END_SRC
 
 ** Loading Other Customization Files
@@ -850,13 +851,13 @@ template creation and reuse. Store snippets in the
 #+BEGIN_SRC emacs-lisp
   (use-package yasnippet 
     :config
-      (setq yas-snippet-dirs
-        (append yas-snippet-dirs
-          '("~/.emacs.d/snippets"
-            "~/Downloads/ThirdPartySnippets")))
+      (add-to-list 'yas-snippet-dirs
+        "~/.emacs.d/snippets")
+      (add-to-list 'yas-snippet-dirs
+        "~/Downloads/ThirdPartySnippets")
       (yas-reload-all)
       (yas-global-mode))
-#+END_SRC 
+#+END_SRC
 ** Auto-YASnippet: Create Temporary YASnippets
 Create a temporary snippet for reproducing similar code repeatedly in
 a file. To get an idea of how to use this, the following example is
