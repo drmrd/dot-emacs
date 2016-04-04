@@ -1,0 +1,8 @@
+# -*- mode: snippet; require-final-newline: nil -*-
+# name: \begin{<type>block}{Title} ... \end{<type>block}
+# key: block
+# group: environments
+# --
+\begin{$1block}{$2}
+    $0
+\end{$1block}

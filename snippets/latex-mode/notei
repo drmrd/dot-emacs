@@ -1,0 +1,8 @@
+# -*- mode: snippet; require-final-newline: nil -*-
+# name: \note[itemize]{...}
+# key: notei
+# group: beamer
+# --
+\note[itemize]{
+    \item $0
+}
