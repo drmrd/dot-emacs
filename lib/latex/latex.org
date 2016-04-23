@@ -4,36 +4,21 @@
 #+OPTIONS: toc:nil num:nil ^:nil
 #+STARTUP: indent
 
-* Changelog
-** <2015-12-14 Mon> 
-*** Fixed that obnoxious \item indentation behavior (I think!)
-Recall that the problem was that setting LaTeX-item-indent to 4
-indented \item's in enumerate-like environments by 8 for some
-inexplicable reason. Also, commenting out the line in the
-configuration below in which this default value was set ultimately
-made \item's appear at the same indentation level as their parents,
-which is again really odd based on its description. The solution? It
-turns out that the default value of LaTeX-item-indent is -4 (idk why),
-and the items are correctly receiving the right indentation from their
-ancestors, so the desired behavior is achieved by setting
-LaTeX-item-indent equal to 0.
-** <2015-12-05 Sat>
-- Fixed a bug with our section-indenting advice for LaTeX-indent-line
-  that was causing it to mess up the LaTeX-insert-environment calls.
-- Corrected the regex in my font-lock-add-keywords call
 * Startup
 ** Load AucTeX and Preview LaTeX
 AucTeX is the bread-and-butter LaTeX editor for Emacs and should
-always be enabled to complement the built-in modes. Preview LaTeX Mode
-allows you to preview the output of a LaTeX file in a split-window
-environment.
+always be enabled to complement the built-in modes.
 
 #+BEGIN_SRC emacs-lisp
   (sit-for 1)
-  (load "auctex.el" nil t t)
-  ;(load "preview-latex.el" nil t t)
+  (message "Loading LaTeX configuration...")
+  (load "auctex.el" nil t t) 
 #+END_SRC
 
+*** TODO Test whether the sit-for call is necessary
+I no longer remember why I added that. Perhaps the problem has fixed
+itself? Either way, this is why we document our config files,
+children! 
 ** AUCTeX Initialization/Configuration 
 *** Parse Document on Load and Save
 #+BEGIN_SRC emacs-lisp
@@ -64,6 +49,13 @@ First, we turn on RefTeX for AUCTeX http://www.gnu.org/s/auctex/manual/reftex/re
 #+BEGIN_SRC emacs-lisp
   (setq reftex-default-bibliography
           '("~/workspace/citations/library.bib"))
+#+END_SRC
+** PreviewLaTeX
+Preview LaTeX Mode allows you to preview the output of a LaTeX file in
+a split-window environment. I currently don't enable it by default,
+since I've been using Skim/external viewers instead.
+#+BEGIN_SRC emacs-lisp :tangle no
+  (load "preview-latex.el" nil t t)
 #+END_SRC
 * Loading Minor Modes
 ** Outline Minor Mode
@@ -142,6 +134,71 @@ this myself!
 **** TODO Consider expanding on this
 For instance, we could add support for TODO comments that appear like
 the ones in Org.
+** Visual Line Mode
+A WYSIWYG mode for Emacs's navigation keybindings, which binds keys
+like C-f, C-e, and C-k to new commands that respect soft-wrapping
+(and, hence, the visually-displayed line instead of the logical line
+you are on in the current file).
+
+As we should have been doing from the beginning in our config files,
+we begrudgingly define a visual-line-mode-on function that ensures the
+mode is active and then add that to the relevant hooks. This is to
+ensure backwards compatibility, e.g., with the pre-v24.1 Emacsen I
+encounter regularly. If by some wonderful twist of fate I eventually
+only ever work with v24.1 and above, then this can simply be changed
+to (add-hook 'relevant-mode-hook #'visual-line-mode) (note the
+function-quoting #' used on the function symbol to allow for byte
+compilation).
+#+BEGIN_SRC emacs-lisp
+  (defun visual-line-mode-on()
+    "Turn on `visual-line-mode' minor mode."
+    (interactive)
+    (visual-line-mode 1)) 
+  (add-hook 'TeX-mode-hook #'visual-line-mode-on)
+  (add-hook 'LaTeX-mode-hook #'visual-line-mode-on) 
+#+END_SRC
+*** TODO Consider using visual-fill-column to wrap at a fixed column
+See [[http://melpa.org/#/visual-fill-column][here]] for its MELPA documentation page. It's a small minor mode
+that does this one thing and this one thing quite well. More
+convention implementations of soft line wrapping at a fixed column
+could be somewhat buggy.
+** Adaptive Wrap Prefix Mode
+#+BEGIN_SRC emacs-lisp 
+  (defun adaptive-wrap-prefix-mode-on()
+    "Turn on `adaptive-wrap-prefix-mode' minor mode."
+    (interactive)
+    (adaptive-wrap-prefix-mode 1))
+  (add-hook 'TeX-mode-hook #'adaptive-wrap-prefix-mode-on)
+  (add-hook 'LaTeX-mode-hook #'adaptive-wrap-prefix-mode-on)
+#+END_SRC
+** LaTeX Math Mode
+Load [[help:LaTeX-math-mode][LaTeX Math Mode]] by default. This is usually bound to 'C-c ~' (and
+can still be toggled using that keybinding, but it's useful enough to
+enable it outright.
+
+#+BEGIN_SRC emacs-lisp
+  (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
+#+END_SRC
+
+With this mode activated, pressing ` followed by a symbol will execute
+a specific command as defined in the [[help:LaTeX-math-list][LaTeX-math-list]] alist (or one of
+the built-in expansions. As explained in the documentation each
+element of LaTeX-math-list is a list of the form
+(KEY VALUE [opt: MENU CHARACTER]) for
+ * KEY: a key such that `KEY will be replaced by VALUE
+   - Can be nil, if you just want the VALUE to appear in the specified
+     menu(s) but not bound to some `KEY
+ * VALUE: the desired replacement string or a function to be called(!)
+ * MENU: a string (e.g., "Greek"), list of strings (e.g., ("AMS"
+   "Delimiters")), or nil, specifying which menu(s) this key/value
+   should appear in. No menu items are created if this is nil.
+ * CHARACTER: A unicode character to be displayed in the menu (can be
+   nil if none is desired/applicable).
+Note that this works with [[info:emacs#Init%20Syntax][all characters]], including "shifted"
+characters like '?\C-a' or '?\M-b', if you use the correct syntax.
+#+BEGIN_SRC emacs-lisp tangle: no
+    (setq LaTeX-math-list '((?c "cong ")))
+#+END_SRC
 * Appearance
 ** Disable Aquamacs's Auto-Face Mode
 Use this to disable Aquamacs's Auto-Face Mode, which should then allow
@@ -171,8 +228,7 @@ softly wrapped lines to the appropriate levels.
 ** Change Built-In Templates
 
 * Support for Custom Macros & Environments
-** Make AUCTeX Aware of Custom Theorem Environments
-
+** Make AUCTeX Aware of Custom Theorem Environments 
 #+BEGIN_SRC emacs-lisp
   (add-hook 'LaTeX-mode-hook
     (lambda ()
@@ -195,7 +251,7 @@ delimiter: *$*, *$$*, *\[$, or *\]$; or an environment *begin* or
 delimiters*, although reserve the right to change this name later.
 
 #+SRC_NAME TeX-BoundaryDelimiters
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (defvar drmrd-init/lib/latex-TokenDelimiters 
     '(("{" . nil)
       ("}" . nil))
@@ -208,8 +264,8 @@ delimiters*, although reserve the right to change this name later.
     treat it like a string to be matched literally.")
 
   (defvar drmrd-init/lib/latex-MathDelimiters
-    '(("$" . nil)
-      ("$$" . nil)
+    '(("$$" . nil)
+      ("$" . nil)
       ("\\[" . nil)
       ("\\]" . nil))
     "An alist consisting of elements (CAR . CDR), in which CAR is
@@ -223,15 +279,14 @@ delimiters*, although reserve the right to change this name later.
 
   (defvar drmrd-init/lib/latex-EnvDelimiters
     '(("\\begin{\w+}" . t) ("\\end{\w+}" . t))
-    "An alist consisting of elements (CAR . CDR), in which CAR is
-    always a string representing a (Whatever)Tex environment
-    beginning or ending delimiter (which is to say either an inline
-    or displayed equation). So, for instance, the default alist in
-    a LaTeX distribution would include strings for matching
-    '\begin{<valid env-name>}' and '\end{<valid env-name>}'. In
-    each list element, if CDR is non-nil treat CAR as a regular
-    expression string and otherwise treat it like a string to be
-    matched literally.")
+    "An alist consisting of pairs of elements (CAR . CDR), in which CAR
+    is always a string representing a (Whatever)Tex environment
+    beginning or ending delimiter (which is to say either an inline or
+    displayed equation). So, for instance, the default alist in a LaTeX
+    distribution would include strings for matching '\begin{<valid
+    env-name>}' and '\end{<valid env-name>}'. In each list element, if
+    CDR is non-nil treat CAR as a regular expression string and
+    otherwise treat it like a string to be matched literally.")
 
   (defvar drmrd-init/lib/latex-BoundaryDelimiter
     (append drmrd-init/lib/latex-TokenDelimiters
@@ -256,7 +311,7 @@ delimiters*, although reserve the right to change this name later.
     (interactive "^p") ; Recall that "^" makes this compatible with
                        ; shift selection and "p" converts the prefix
                        ; argument to a number if present.
-    (or arg (setq arg 1)) ; Set ARG equal to 1 if not provided.
+    (or arg (setq arg 1)) ; Set `arg` equal to 1 if not provided.
     (goto-char (or (scan-latex-boundary-delimiters (point) arg) (buffer-end arg)))
     (if (< arg 0) (backward-prefix-chars)))
 
@@ -267,12 +322,11 @@ delimiters*, although reserve the right to change this name later.
   character number of the |COUNT|-th delimiter. Returns nil if the
   beginning or end of (the accessible part of) the buffer is
   reached before |COUNT|-many matches are found."
-    (sleep-for 1))
+    (sleep-for 1)) 
 #+END_SRC
 
 
 *** TODO Decide on a name for these functions
-* Navigation Tweaks
 * Filling
 ** Disable Auto Fill Mode in LaTeX modes (for now)
 I still haven't customized the fill commands for LaTeX files in a
@@ -355,7 +409,7 @@ This command is bound to "M-j".
   ; number of unmatched instances of "\begin{<environment>}" and "{":
   (setq-default LaTeX-indent-level 4)
   (setq-default TeX-brace-indent-level 4)
-  ; Add 4m to indentation level of current line where m is the number
+  ; Add 0m to indentation level of current line where m is the number
   ; currently-unmatched, enumerate-like environments at our current
   ; location (and the cursor is on a line beginning with "\item" or
   ; something "\item-like":
@@ -442,18 +496,16 @@ few months ago. Today (<2015-12-02 Wed>) I did it in 1.5 hours.
           )
       )
   )
-  (add-hook 'TeX-mode-hook '(lambda () (setq TeX-command-default "latexmk")))
-#+END_SRC
-
+  ;(add-hook 'TeX-mode-hook '(lambda () (setq TeX-command-default "latexmk")))
+#+END_SRC 
 ** Set how TeX handles DVI files
 #+BEGIN_SRC emacs-lisp
   (setq tex-dvi-print-command "dvips")
   (setq tex-dvi-view-command "xdvi")
 #+END_SRC
-* All the other code that I need to organize
+* Wrap Up
+There is nothing to do here for the time being, but we'll at least
+record that we've loaded the file successfully in the *Messages* buffer.
 #+BEGIN_SRC emacs-lisp
-;(load "~/workspace/elisp/emacs_latex_reftex")
-
-;; AucTeX
-(add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
+  (message "Finished loading LaTeX configuration!")
 #+END_SRC
