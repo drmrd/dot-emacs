@@ -1,8 +1,6 @@
 # -*- mode: snippet; require-final-newline: nil -*-
-# name: enumerate
-# key: enum
+# name: jc
+# key: jc
 # binding: direct-keybinding
 # --
-\begin{enumerate}
-    \item $0
-\end{enumerate}
+\todo{\textbf{Dan's Note (`(current-d-m-y-string)`):} $1}$0

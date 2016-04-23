@@ -1,0 +1,13 @@
+# -*- mode: snippet; require-final-newline: nil -*-
+# name: Corollary
+# key: cor
+# binding: direct-keybinding
+# --
+\begin{cor}$1
+    \label{cor:$2}
+    $0
+\end{cor}
+\begin{proof}
+    \label{proof:$2}
+    
+\end{proof}

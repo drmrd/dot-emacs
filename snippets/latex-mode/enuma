@@ -1,8 +1,8 @@
 # -*- mode: snippet; require-final-newline: nil -*-
-# name: enumerate
-# key: enum
+# name: enumerate (a), (b), (c) ...
+# key: enuma
 # binding: direct-keybinding
 # --
-\begin{enumerate}
+\begin{enumerate}[(a)]
     \item $0
 \end{enumerate}

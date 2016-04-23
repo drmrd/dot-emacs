@@ -4,22 +4,6 @@
 #+PROPERTY: header-args    :comments link
 #+STARTUP: indent
 
-* Changelog
-** <2015-12-12 Sat>
-- Added documentation of built-in bookmark functionality.
-- Modified =org-catch-invisible-edits= to help prevent editing
-  invisible regions of org buffers.
-- Changed the contexts in which M-[Return] will split the current line
-  at the cursor in org buffers.
-- Asked and answered a new FAQ question.
-** <2015-12-06 Sun>
-- Various small improvements
-- Disabled magit-auto-fill-mode
-- Changed the initial-scratch-message variable
-** <2015-12-05 Sat>
-- Finished implementing [[*org-babel-reload-file:%20org-babel-load-file%20but%20defaulting%20to%20the%20current%20file][org-babel-reload-file]], and it's working beautifully.
-- Various corrections to the documentation here and in latex.org.
-- Simplified logic in and repaired the kill-aquamacs-autoface-mode function
 * General Information/Notes
 ** What should go into init.org?
 The init.org file is loaded at startup, rather than on demand. Hence
@@ -319,6 +303,7 @@ Use the [[help:append][append]] command.
   (append l1 l2)
     => (a b c x y z)
 #+END_EXAMPLE
+*** Iterate on a list
 ** Org Mode Notes and Techniques
 *** Edit a code block in its default major mode (e.g. =lisp-mode= or =LaTeX-mode=)
 While the pointer is in the code block hit C-c ' to open a new frame
@@ -366,7 +351,22 @@ form conditionals in Emacs.
   system (e.g. X or a terminal) that are currently running.
 
 
-* Initializing the Initializers:
+* Startup
+Enable debugging while loading configuration files. This is disabled
+later in the config file.
+
+#+BEGIN_SRC emacs-lisp
+  (setq debug-on-error t)
+  (setq debug-on-quit t)
+#+END_SRC
+
+Now start tracking how long loading the config files takes.
+
+#+BEGIN_SRC emacs-lisp
+  (message (concat "Loading Emacs configuration started at " (current-time-string))) 
+#+END_SRC
+
+* Load Package Manager and Package-Loader
 ** Configure =package=
 The following code loads =package= for package management, sets the
 default package repositories, and then initializes =package=.
@@ -704,11 +704,12 @@ Replace the usual M-x keybinding with an equivalent that also list all
 completions of the partial command name you've typed in much the same
 way Ido Mode does for buffers and files.
 
-#+SRCNAME: rebind-Mx-to-smex
+#+SRCNAME: configure-smex
 #+BEGIN_SRC emacs-lisp
-  (use-package smex
+  (use-package smex 
     :bind
-      ("M-x" . smex))
+      ("M-x" . smex)
+      ("M-X" . smex-major-mode-commands))
 #+END_SRC
 ** Re-Builder (Regex Builder/Helper)
 The Re-Builder (REgular expression BUILDER) package aids in
@@ -732,9 +733,14 @@ natural to me (and involves the fewest number of excess backslashes).
       (setq recentf-max-menu-items 25)
     :config
       (recentf-mode 1)
+      (add-to-list 'recentf-exclude "ido.last")
     :bind
       ("C-x C-r" . recentf-open-files))
 #+END_SRC
+*** TODO Determine why changing recentf-max-menu-items hasn't had the desired effect
+For some reason the resulting list is only displaying 20, not 25,
+items, even though I've confirmed the variable is not being reset by
+some other configuration file.
 ** Magit: Robust Git Porcelain (open with C-x g)
 [[http://www.emacswiki.org/emacs/Magit][Magit]] is a Git porcelain (aka front end) for Emacs.  We load Magit and
 bind C-x g to the magit-status function (really the only command
@@ -1077,11 +1083,10 @@ See [[*Color-Theme%20Mode%20(Custom%20Themes)][Color-Theme Mode (Custom Themes)]
   ;(set-face-attribute 'fringe nil :background "#333333")
   ;(set-face-attribute 'linum nil :background "#CCC") 
 #+END_SRC
-** Highlight the current row
-Highlights the current row in gray. (taken from [[http://tex.stackexchange.com/questions/50827/a-simpletons-guide-to-tex-workflow-with-emacs][here]])
-#+BEGIN_SRC emacs-lisp :tangle no
-  (global-hl-line-mode 1); Highlight current row
-  (set-face-background hl-line-face "#0e1717"); Same color as greyness in gtk
+** Highlight the current line
+Highlights the current line in every buffer by default
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (global-hl-line-mode 1); Highlight current line in buffer
 #+END_SRC 
 ** Set the default font
 Naturally, fonts are quite OS and machine-specific, so this portion of
@@ -1218,7 +1223,7 @@ See the following if similar issues arise in other modes:
 Loads the file ~/.emacs.d/lib/latex.org, which contains and/or
 dynamically loads all of our custom LaTeX settings.
 
-#+BEGIN_SRC emacs-lisp :tangle no
+#+BEGIN_SRC emacs-lisp
   (org-babel-load-file
     (expand-file-name "~/.emacs.d/lib/latex/latex.org"))
 #+END_SRC
@@ -1484,4 +1489,15 @@ loading everything. At present, this doesn't seem to work.
 #+BEGIN_SRC emacs-lisp
   (if (eq system-type 'darwin)
     (delete-other-frames))
+#+END_SRC
+** Disable Debugging
+Now that we've loaded all of our config files, disable debugging.
+#+BEGIN_SRC emacs-lisp
+  (setq debug-on-error nil)
+  (setq debug-on-quit nil)
+#+END_SRC
+** Record when config finishes loading
+Record the time when all config files have finished loading.
+#+BEGIN_SRC emacs-lisp 
+  (message (concat "Finished loading Emacs configuration at " (current-time-string)))
 #+END_SRC

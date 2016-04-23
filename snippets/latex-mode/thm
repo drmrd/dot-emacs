@@ -1,0 +1,13 @@
+# -*- mode: snippet; require-final-newline: nil -*-
+# name: Theorem
+# key: thm
+# binding: direct-keybinding
+# --
+\begin{thm}$1
+    \label{thm:$2}
+    $0
+\end{thm}
+\begin{proof}
+    \label{proof:$2}
+    
+\end{proof}

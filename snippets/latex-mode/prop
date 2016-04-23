@@ -1,0 +1,13 @@
+# -*- mode: snippet; require-final-newline: nil -*-
+# name: Proposition
+# key: prop
+# binding: direct-keybinding
+# --
+\begin{prop}$1
+    \label{prop:$2}
+    $0
+\end{prop}
+\begin{proof}
+    \label{proof:$2}
+    
+\end{proof}
