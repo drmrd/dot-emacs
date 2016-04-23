@@ -862,7 +862,7 @@ template creation and reuse. Store snippets in the
       (add-to-list 'yas-snippet-dirs
         "~/Downloads/ThirdPartySnippets")
       (yas-reload-all)
-      (yas-global-mode))
+      (yas-global-mode 1))
 #+END_SRC
 ** Auto-YASnippet: Create Temporary YASnippets
 Create a temporary snippet for reproducing similar code repeatedly in
