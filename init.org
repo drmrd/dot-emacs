@@ -89,7 +89,7 @@ packages.
 ** Notes on Aquamacs Configuration Oddities
 Since Aquamacs is obnoxious, my .emacs and .emacs.d files were
 originally found in
-    
+
     ~/Library/Preferences/Aquamacs Emacs/Preferences.el
 
 and
@@ -123,7 +123,7 @@ Use =describe-variable= via "C-h v", type the name of the package (or
 part of it) in the minibuffer, and then tab twice to get an
 autocompletion list. Since a typical package will begin its variable
 names with its own name, this generates a reasonably complete list.
-** Elisp Notes and Techniques 
+** Elisp Notes and Techniques
 *** Q: What's an alist?
 **** A: An association list
 An alist is a list =mylist= of cons cells =(car . cdr)= (in dotted
@@ -234,7 +234,7 @@ To add 4 to an unnamed list containing 1, 2, and 3.
 #+BEGIN_EXAMPLE
   (add-to-list '(1 2 3) 4)
   ; Returns (4 1 2 3)
-  
+
   (add-to-list '(1 2 3) 4 t)
   ; Returns (1 2 3 4)
 #+END_EXAMPLE
@@ -283,7 +283,7 @@ One way to represent these visually is as follows:
      |            |                      |
      |            |                      |
       --> elt1     --> elt2               --> eltn
-#+END_EXAMPLE 
+#+END_EXAMPLE
 *** Replace an element in an alist
 Use the assq-delete-all and rassq-delete-all commands to delete all
 elements in the alist with a given CAR or CDR, and then prepend the
@@ -363,7 +363,7 @@ later in the config file.
 Now start tracking how long loading the config files takes.
 
 #+BEGIN_SRC emacs-lisp
-  (message (concat "Loading Emacs configuration started at " (current-time-string))) 
+  (message (concat "Loading Emacs configuration started at " (format-time-string "%I:%M%p (%S.%3Ns)")))
 #+END_SRC
 
 * Load Package Manager and Package-Loader
@@ -398,12 +398,21 @@ package-archives list to include ELPA, GNU, MELPA, and Marmalade.
 ** Bootstrap =use-package=
 Next, we ensure that =use-package= is installed on our system.
 
+It's mentioned in the [[https://github.com/jwiegley/use-package][use-package README on GitHub]] that it's no longer
+necessary (as of v2.0) to load =use-package= at runtime. It suggests
+putting the following code at the start of our config, which uses
+=eval-when-compile= to load =use-package= only when necessary, further
+reducing load time.
+
 #+BEGIN_SRC emacs-lisp
-  ;; Install `use-package'
+  ;; Install `use-package' (if not already done)
   (unless (package-installed-p 'use-package)
     (package-refresh-contents)
     (package-install 'use-package))
-  
+
+  ;; "Lazily" load use-package, and also load the diminish and
+  ;; bind-key packages for hiding minor modes with in the modeline
+  ;; with :diminish and using :bind for setting keybindings (resp.).
   (eval-when-compile
     (require 'use-package))
   (require 'diminish)
@@ -414,22 +423,9 @@ We also ensure that all packages loaded through =use-package= are
 automatically installed on the current system.
 
 #+BEGIN_SRC emacs-lisp
+  ;; Install packages from a repo that we attempt to load but are not
+  ;; present on the system.
   (setq use-package-always-ensure t)
-#+END_SRC
-
-*** DONE Consider only loading =use-package= at compile time
-CLOSED: [2015-12-09 Wed 13:31]
-It's mentioned in the [[https://github.com/jwiegley/use-package][use-package README on GitHub]] that it's no longer
-necessary (as of v2.0) to load =use-package= at runtime. It suggests
-putting the following code at the start of our config, which uses
-=eval-when-compile= to load =use-package= only when necessary, further
-reducing load time.
-
-#+BEGIN_SRC emacs-lisp :tangle no
-  (eval-when-compile
-    (require 'use-package))
-  (require 'diminish)                ;; if you use :diminish
-  (require 'bind-key)                ;; if you use any :bind variant
 #+END_SRC
 
 * Global Settings
@@ -443,10 +439,9 @@ Disable the welcome screen and instead display a welcome message as a
 comment in the scratch buffer.
 #+BEGIN_SRC emacs-lisp
     (setq inhibit-startup-screen t)   ; Disable Emacs's welcome screen
-    (setq initial-scratch-message ";; Welcome to Emacs!\n") 
+    (setq initial-scratch-message ";; Welcome to Emacs!\n")
 #+END_SRC
-
-** Loading Other Customization Files
+** Load Other Customization Files
 We now add several directories to the load-path. The directory
 ~/workspace/elisp is a git repository containing some older
 configuration file, which I should probably just incorporate into this
@@ -474,7 +469,7 @@ registers "e", "l", and "p" (resp.) so that they can be opened easily with
   (set-register ?l (cons 'file "~/.emacs.d/lib/latex/latex.org"))
   ;; Also set a register for Preferences.el if on a Mac
   (if (eq system-type 'darwin)
-    (set-register ?p (cons 'file "~/Library/Preferences/Aquamacs Emacs/Preferences.el"))) 
+    (set-register ?p (cons 'file "~/Library/Preferences/Aquamacs Emacs/Preferences.el")))
 #+END_SRC
 
 *** DONE Determine how to evaluate this file without reloading Aquamacs
@@ -511,19 +506,16 @@ about this on StackExchange at some point.
 
 #+BEGIN_SRC emacs-lisp
   (setq require-final-newline t)
-#+END_SRC 
+#+END_SRC
 ** Other Default Settings
 #+BEGIN_SRC emacs-lisp
-  (setq apropos-do-all         t)   ; Make all apropos commands perform
-                                    ; more extensive searches
-#+END_SRC 
+  (setq apropos-do-all t)   ; Make all apropos commands perform more
+                            ; extensive searches
+#+END_SRC
 * Load and Configure Packages (Built-in and Otherwise)
 The following list comprises all packages that are loaded by default
 and in such a way that they affect all (or most) modes (or enable
-minor-modes in all major-modes).
-** DONE Use-Package: A Uniform Framework for Loading and Configuring Packages
-This is now loaded [[*Bootstrap%20%3Duse-package%3D][above]].
-CLOSED: [2015-12-09 Wed 12:37]
+minor-modes in all major-modes). 
 ** GnuTLS: (TLS and SSL support in Emacs)
 By default, GnuTLS accepts primes of bit length at least 256 in key
 exchanges. We beef this number up to add a bit more
@@ -706,7 +698,7 @@ way Ido Mode does for buffers and files.
 
 #+SRCNAME: configure-smex
 #+BEGIN_SRC emacs-lisp
-  (use-package smex 
+  (use-package smex
     :bind
       ("M-x" . smex)
       ("M-X" . smex-major-mode-commands))
@@ -855,12 +847,25 @@ Yet Another Snippet is a templating package for Emacs, enabling rapid
 template creation and reuse. Store snippets in the
 ~/.emacs.d/snippets/ directory.
 #+BEGIN_SRC emacs-lisp
-  (use-package yasnippet 
+  (use-package yasnippet
     :config
-      (add-to-list 'yas-snippet-dirs
-        "~/.emacs.d/snippets")
-      (add-to-list 'yas-snippet-dirs
-        "~/Downloads/ThirdPartySnippets")
+      ; Override built-in snippet directories
+      ;
+      ; NOTE: ~/.emacs.d/snippets should ALWAYS be the first directory
+      ; in this list, since we want it to override all other snippet
+      ; commands in other directories (preference is always given to
+      ; earlier instance of a given key in the list) and to be the
+      ; default save location for new snippets. Accordingly, don't use
+      ; add-to-list if you're going to add a directory to this
+      ; list. (add-to-list pushes its second argument onto the top of
+      ; its first.) Instead, use
+      ;
+      ;     (setq yas-snippet-dirs (append yas-snippet-dirs
+      ;                                '(<other directories>))
+      ;
+      ; to add <other directories> to the list.
+      (setq yas-snippet-dirs
+        '("~/.emacs.d/snippets" "~/Downloads/ThirdPartySnippets"))
       (yas-reload-all)
       (yas-global-mode 1))
 #+END_SRC
@@ -900,6 +905,7 @@ provided by the package.
 #+BEGIN_SRC emacs-lisp :tangle no
   (add-hook 'after-init-hook 'global-company-mode)
   (require 'company-auctex)
+  (require 'company-math)
   (company-auctex-init)
 #+END_SRC
 ** TODO Popwin (Popup Windows at Bottom of Screen)
@@ -935,6 +941,13 @@ Right now this isn't a problem, since flyspell is loaded via major
 mode hooks (see the ./lib/latex.org config file for an example), but
 should we decide to use it globally this code might need to be
 moved.
+** Strings: Make Miscellaneous String Functions Available
+#+BEGIN_SRC emacs-lisp
+  (use-package strings
+    :config
+      (add-hook 'pre-command-hook 'erase-nonempty-inactive-minibuffer))
+#+END_SRC
+*** TODO Ensure the second command doesn't create any conflicts with other packages
 * Utility Functions
 ** my-reb-copy: Yank Into Minibuffer Without Doubling Backslashes
 Yank text into the minibuffer without backslashes being doubled. This
@@ -943,7 +956,7 @@ is especially useful when working with regular expressions.
 #+BEGIN_SRC emacs-lisp
     (defun my-reb-copy ()
         "Copy current RE into the kill ring without quotes and single
-backslashes for later insertion."
+         backslashes for later insertion."
         (interactive)
         (reb-update-regexp)
         (let* ((re (with-output-to-string
@@ -987,7 +1000,7 @@ foo-mode
         (aquamacs-autoface-mode -1)
         (message "Aquamacs Autoface Mode is already disabled.")
       )
-      (message "Attempted to disable Aquamacs Autoface Mode, but there's no need; you're not using Aquamacs!") 
+      (message "Attempted to disable Aquamacs Autoface Mode, but there's no need; you're not using Aquamacs!")
     )
   )
 #+END_SRC
@@ -1010,8 +1023,8 @@ CLOSED: [2015-12-05 Sat 17:57]
                    (
                      (insert-default-directory nil)
                      (filename
-                       (read-file-name 
-                         (concat "File to load" 
+                       (read-file-name
+                         (concat "File to load"
                            (if (not (null (buffer-file-name)))
                              (concat " [Default: '" (buffer-file-name) "']: ")
                              ": "
@@ -1026,7 +1039,7 @@ CLOSED: [2015-12-05 Sat 17:57]
                    )
                    (message "The file name is '%s'" filename)
                    (list filename)
-                 )) 
+                 ))
     (message "Reloading '%s'" FILE)
     (org-babel-load-file FILE COMPILE)
   )
@@ -1036,8 +1049,52 @@ CLOSED: [2015-12-05 Sat 17:57]
 CLOSED: [2015-12-05 Sat 12:54]
 *** DONE Make the interactive prompt string say "default: [current buffer name here]"
 CLOSED: [2015-12-05 Sat 12:55]
+
+** string-length: Get the length of a string you input in a buffer (or have selected)
+The built-in function [[help:string-width][string-width]] is made for exactly this purpose,
+but it's not interactive (and, hence, can't be called for this
+purpose). So this is just a wrapper function.
+#+BEGIN_SRC emacs-lisp
+  (defun string-length (string)
+    "Get the length of a string input in the minibuffer."
+    (interactive "^sString: ")
+    (message (number-to-string (string-width string))))
+#+END_SRC
+** day-ordinal: Add ordinals to the current day of the month and a new format specifier %o
+Provide support for displaying the current day's ordinal in
+format-time-string calls without overriding anything.
+
+#+BEGIN_SRC emacs-lisp
+  (defun ordinal (n)
+    "Special day of month format."
+    (format
+     (concat
+      "%d"
+      (if (memq n '(11 12 13)) "th"
+        (let ((last-digit (% n 10)))
+          (case last-digit
+            (1 "st")
+            (2 "nd")
+            (3 "rd")
+            (otherwise "th"))))) n))
+
+  (defadvice format-time-string (before ordinal activate)
+    "Add ordinal to %d."
+    (let ((day (nth 3 (decode-time (or time (current-time))))))
+      (setq format-string
+        (replace-regexp-in-string "%o"
+                      (ordinal day)
+                      format-string))))
+#+END_SRC
+** today-is: Get today's date
+#+BEGIN_SRC emacs-lisp
+  (defun today-is ()
+    "Displays the current date."
+    (interactive)
+    (message (format-time-string "Today is %A, %B %o, %Y")))
+#+END_SRC
 * Appearance Settings
-** Color-Theme Mode (Custom Themes)
+** Color-Theme Mode
 Color-Theme Mode is Emacs's standard theming engine for customizing
 faces throughout the UI and editor. We first load the package and
 initialize it.
@@ -1051,44 +1108,19 @@ Now we choose a color theme to load. I've commented out several other
 nice candidates, and other themes showing potential should also be
 added here.
 
-#+BEGIN_SRC emacs-lisp 
+#+BEGIN_SRC emacs-lisp
   ;(color-theme-bharadwaj-slate)
   (color-theme-charcoal-black)
   ;(color-theme-classic)
   ;(color-theme-deep-blue )
-  ;(color-theme-ld-dark)	
+  ;(color-theme-ld-dark)
   ;(color-theme-midnight)
   ;(color-theme-pok-wog)
-  ;(color-theme-resolve)	
+  ;(color-theme-resolve)
   ;(color-theme-shaman)
   ;(color-theme-subtle-hacker)
 #+END_SRC
-*** DONE Consider moving theme selection into an "appearance" section of the file.
-CLOSED: [2015-12-01 Tue 17:24]
-** Load a color theme
-See [[*Color-Theme%20Mode%20(Custom%20Themes)][Color-Theme Mode (Custom Themes)]] in the last section.
-** Mode Line Configuration
-*** Display the current column number in the mode line
-#+BEGIN_SRC emacs-lisp
-  (column-number-mode 1)
-#+END_SRC
-*** Display the current time in the baseline of each frame 
-#+BEGIN_SRC emacs-lisp
-  (display-time)
-#+END_SRC
-** Display line numbers on the left of each frame
-#+BEGIN_SRC emacs-lisp
-  (add-hook 'find-file-hook (lambda () (nlinum-mode 1)))
-  ;(setq linum-format "%4d \u2502 ")
-  ;(set-face-attribute 'fringe nil :background "#333333")
-  ;(set-face-attribute 'linum nil :background "#CCC") 
-#+END_SRC
-** Highlight the current line
-Highlights the current line in every buffer by default
-#+BEGIN_SRC emacs-lisp :tangle yes
-  (global-hl-line-mode 1); Highlight current line in buffer
-#+END_SRC 
-** Set the default font
+** Set Default Font(s)
 Naturally, fonts are quite OS and machine-specific, so this portion of
 the configuration will probably grow a bit with time. For now, the
 following configuration is appropriate. On Mac OS X, the Vera Sans
@@ -1100,7 +1132,34 @@ font family is used, while on Linux we employ DejaVu Sans Mono.
   (if (eq system-type 'gnu/linux)
     (set-default-font "-unknown-DejaVu Sans Mono-normal-normal-normal-*-15-*-*-*-m-0-iso10646-1"))
 #+END_SRC
-** Disable cursor blinking
+** Configure Mode Line
+*** Display the current column number in the mode line
+#+BEGIN_SRC emacs-lisp
+  (column-number-mode 1)
+#+END_SRC
+*** Display the current time in the baseline of each frame
+#+BEGIN_SRC emacs-lisp
+  (display-time)
+#+END_SRC
+** Display Line Numbers
+Ah yes, the somewhat notorious problem of displaying line numbers in
+Emacs in a way that doesn't break/get terribly affected by different
+modes and font locking schemes. Most recently I've been using nlinum
+mode for this purpose, but I can't seem to use it while loading
+multiple frames. This is only an issue on my laptop, not at the
+office, so I'm now testing to see if it's some kind of timing issue.
+#+BEGIN_SRC emacs-lisp
+  (add-hook 'find-file-hook (lambda () (sit-for 1) (nlinum-mode 1)))
+  ;(setq linum-format "%4d \u2502 ")
+  ;(set-face-attribute 'fringe nil :background "#333333")
+  ;(set-face-attribute 'linum nil :background "#CCC")
+#+END_SRC
+** Highlight the Current Line
+Highlights the current line in every buffer by default
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (global-hl-line-mode 1); Highlight current line in buffer
+#+END_SRC
+** Disable Cursor Blinking
 The enemy of civil society. I disable cursor blinking not only
 because I find it obnoxious and distracting, but because it's *the
 right thing to do*.
@@ -1111,13 +1170,13 @@ right thing to do*.
 This deserves its own section, since it is always the part of text
 editors I tweak the most.
 ** Default to indenting with spaces, four at a time
-#+BEGIN_SRC emacs-lisp 
+#+BEGIN_SRC emacs-lisp
   ;; make return key also do indent, globally
   ; (electric-indent-mode 1)
-
+  
   ;; Set tab width to 4
   (setq tab-stop-list (number-sequence 4 200 4))
-
+  
   ;; Force emacs to only indent with spaces and never tabs
   (setq-default indent-tabs-mode nil)
 #+END_SRC
@@ -1134,6 +1193,7 @@ and otherwise literally insert a TAB character, and =t=, which makes
 #+BEGIN_SRC emacs-lisp
   (setq-default tab-always-indent 'complete)
 #+END_SRC emacs-lisp
+
 *** Bind M-q to =indent-relative=
 #+BEGIN_SRC emacs-lisp
   ;;
@@ -1301,7 +1361,7 @@ which can in turn be used for organizing TODO/agenda items.
       ("proving"      . ?p)
       ("revisions"    . ?r)
       (:startgroup    . nil)
-        ("urgent"     . ?u) 
+        ("urgent"     . ?u)
       (:endgroup      . nil)))
 #+END_SRC
 *** Configure Capture Mode and Capture Templates
@@ -1314,7 +1374,7 @@ templates that we could also setup, but these should suffice for now.)
 A task may be started with the "C-c C-c" command in this mode, which
 will make org-capture start monitoring time spent on the given task.
 
-#+BEGIN_SRC emacs-lisp 
+#+BEGIN_SRC emacs-lisp
   (global-set-key (kbd "C-c c") 'org-capture)
 #+END_SRC
 
@@ -1351,7 +1411,7 @@ to the minibuffer and *Messages* buffers.
   and h to start capturing a todo, response-needed, note, journal,
   org-protocols, logging a meeting, logging a phonecall, and
   logging a habit (resp.).")
-#+END_SRC 
+#+END_SRC
 
 Now we add code to remove logbook entries that are created but empty,
 which occur when we spend less than a minute capturing something.
@@ -1404,7 +1464,7 @@ are not displayed in a new element.
 **** Explanation
 The variable org-babel-default-header-args contains the default
 
-*** Ensure that syntax highlighting is enabled while in Org Mode 
+*** Ensure that syntax highlighting is enabled while in Org Mode
 #+BEGIN_SRC emacs-lisp
   (add-hook 'org-mode-hook 'turn-on-font-lock) ; not needed when global-font-lock-mode is on
 #+END_SRC
@@ -1424,7 +1484,7 @@ them entirely.
   ;(add-hook 'org-mode-hook 'nolinums)
 #+END_SRC
 **** TODO Figure out why this isn't working
-*** Load Minor Modes 
+*** Load Minor Modes
 **** Auto Fill Mode
 auto-fill-mode works beautifully in Org files, and we enable it
 accordingly.
@@ -1435,7 +1495,7 @@ accordingly.
 
 #+BEGIN_SRC emacs-lisp
   ;; Access the Org Agenda with "C-c a"
-  ;; 
+  ;;
   ;;     From the Agenda, you can view all todos and other things in org that
   ;;     have looming deadlines.
   (global-set-key "\C-ca" 'org-agenda)
@@ -1446,7 +1506,7 @@ accordingly.
   ;;     The same link can be inserted elsewhere later from the
   ;;     org-stored-links variable using "C-c C-l"
   (global-set-key "\C-cl" 'org-store-link)
-  
+
   ;; Switch to another org buffer with "C-c b"
   ;;
   ;;     Switches to the org buffer with a given name.
@@ -1461,7 +1521,7 @@ entire block start or end tag. Better still, we can create our own!
 
 #+BEGIN_SRC emacs-lisp [:results output silent]
   ;; Creates an "el" Easy Template in Org Mode.
-  ;; 
+  ;;
   ;;     Typing "<el" followed by [TAB] replaces <el with
   ;;
   ;;         #+BEGIN_SRC emacs-lisp
@@ -1498,6 +1558,6 @@ Now that we've loaded all of our config files, disable debugging.
 #+END_SRC
 ** Record when config finishes loading
 Record the time when all config files have finished loading.
-#+BEGIN_SRC emacs-lisp 
-  (message (concat "Finished loading Emacs configuration at " (current-time-string)))
+#+BEGIN_SRC emacs-lisp
+  (message (concat "Finished loading Emacs configuration at " (format-time-string "%I:%M%p (%S.%3Ns)")))
 #+END_SRC
