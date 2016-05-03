@@ -455,7 +455,7 @@ seems).
   (add-to-list 'load-path "~/.emacs.d/lib")
 #+end_src
 
-** Load Third-Party Elisp not Manage by *Package*
+** Load Third-Party Elisp not Managed by *Package*
 #+BEGIN_SRC emacs-lisp
   (add-to-list 'load-path "~/elisp")
 #+END_SRC
@@ -506,6 +506,24 @@ about this on StackExchange at some point.
 
 #+BEGIN_SRC emacs-lisp
   (setq require-final-newline t)
+#+END_SRC
+** Configure Backup Settings and Location
+#+BEGIN_SRC emacs-lisp
+  ; Store all backup files created by Emacs in the same directory
+  (setq backup-directory-alist '(("." . "~/.backups_emacs")))
+
+  ; Make Emacs create backups by copying files. If this leads to a
+  ; performance hit, see the other available backup methods (or just
+  ; comment out this line), as described in the documentation of the
+  ; make-backup-files variable.
+  (setq backup-by-copying t)
+
+
+  (setq delete-old-versions t
+        kept-new-versions   6
+        kept-old-versions   2
+        version-control     t) ; Use version numbers in backup file
+                               ; names
 #+END_SRC
 ** Other Default Settings
 #+BEGIN_SRC emacs-lisp
@@ -841,8 +859,7 @@ All of the following keybindings are defaults.
 |            |                       | *Bookmark List*.                |
 |------------+-----------------------+---------------------------------|
 
-** DONE YASnippet
-CLOSED: [2016-01-11 Mon 13:04]
+** YASnippet
 Yet Another Snippet is a templating package for Emacs, enabling rapid
 template creation and reuse. Store snippets in the
 ~/.emacs.d/snippets/ directory.
@@ -901,13 +918,21 @@ provided by the package.
       ("H-w" . aya-create)
       ("H-y" . aya-expand))
 #+END_SRC
+** ace-window: Easy Window Navigation with M-p
+The ace-window package makes switching between more than two windows
+much easier in Emacs. See the documentation for complete details, but
+the ace-window command will be bound to M-p here.
+#+BEGIN_SRC emacs-lisp
+  (use-package ace-window
+    :bind ("M-p" . ace-window))
+#+END_SRC
 ** TODO Company (Auto-Completion Support): COMPlete ANYthing
 #+BEGIN_SRC emacs-lisp :tangle no
   (add-hook 'after-init-hook 'global-company-mode)
   (require 'company-auctex)
   (require 'company-math)
   (company-auctex-init)
-#+END_SRC
+#+END_SRC 
 ** TODO Popwin (Popup Windows at Bottom of Screen)
 ** TODO Color-identifiers-mode (Unique display colors for unique variables)
 ** TODO Origami: A Multi-Language Folding Mode
@@ -1094,12 +1119,20 @@ format-time-string calls without overriding anything.
     (message (format-time-string "Today is %A, %B %o, %Y")))
 #+END_SRC
 * Appearance Settings
-** Color-Theme Mode
+** Load a Color Theme
+#+BEGIN_SRC emacs-lisp
+  (load-theme 'dracula)
+#+END_SRC 
+*** (Obsolete) Using color-theme to load a theme
+(I've kept these notes here for reference, in case I'm stranded on a
+desert island with no internet and an old copy of Emacs. They are
+irrelevant in versions beyond v24.)
+
 Color-Theme Mode is Emacs's standard theming engine for customizing
 faces throughout the UI and editor. We first load the package and
 initialize it.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (require 'color-theme)
   (color-theme-initialize)
 #+END_SRC
@@ -1108,7 +1141,7 @@ Now we choose a color theme to load. I've commented out several other
 nice candidates, and other themes showing potential should also be
 added here.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   ;(color-theme-bharadwaj-slate)
   (color-theme-charcoal-black)
   ;(color-theme-classic)
@@ -1158,6 +1191,7 @@ office, so I'm now testing to see if it's some kind of timing issue.
 Highlights the current line in every buffer by default
 #+BEGIN_SRC emacs-lisp :tangle yes
   (global-hl-line-mode 1); Highlight current line in buffer
+  
 #+END_SRC
 ** Disable Cursor Blinking
 The enemy of civil society. I disable cursor blinking not only
