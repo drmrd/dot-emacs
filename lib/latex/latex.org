@@ -12,7 +12,8 @@ always be enabled to complement the built-in modes.
 #+BEGIN_SRC emacs-lisp
   (sit-for 1)
   (message "Loading LaTeX configuration...")
-  (load "auctex.el" nil t t) 
+  ; Don't try to load auctex.el. ELPA takes care of this
+  ; (load "auctex.el" nil t t) 
 #+END_SRC
 
 *** TODO Test whether the sit-for call is necessary
@@ -94,13 +95,17 @@ suffixes for just about every command we could ask for.
   (global-set-key "\M-o" cm-map)
 #+END_SRC
 *** Load outline-magic and bind outline-cycle to C-tab
-This allows for org-like cycling of folded regions
+This allows for org-like cycling of folded regions. Note the =:after=
+keyword in the use-package call ensures that outline-magic is only
+loaded after outline. This is the (MUCH) cleaner version of the old
+=(eval-after-load 'outline '(progn [code for loading outline-magic]))=
+construct!
 #+BEGIN_SRC emacs-lisp
-  (eval-after-load 'outline
-  '(progn
-    (require 'outline-magic)
-    (define-key outline-minor-mode-map (kbd "<C-tab>") 'outline-cycle)))
+  (use-package outline-magic
+      :after outline
+      :bind ("C-<tab>" . outline-cycle))
 #+END_SRC
+
 *** Adding extra outline headings
 In [[http://emacs.stackexchange.com/a/3076/8643][a brilliant answer]] on Emacs.SE, a most-excellently-named user
 described some of his configuration. In particular, for adding fake

@@ -380,21 +380,11 @@ which loads all packages specified in the variable
 package-load-list. After loading the default packages, we redefine the
 package-archives list to include ELPA, GNU, MELPA, and Marmalade.
 
-#+SRCNAME: package-startup
-#+BEGIN_SRC emacs-lisp
-  ;; Load `package'
-  (require 'package)
-  (setq
-    package-enable-at-startup nil
-    package-archives
-      '(("melpa-stable" . "https://stable.melpa.org/packages/")
-        ("melpa"        . "https://melpa.org/packages/")
-        ("marmalade"    . "http://marmalade-repo.org/packages/")
-        ("org"          . "http://orgmode.org/elpa/")
-        ("gnu"          . "http://elpa.gnu.org/packages/")))
-  (package-initialize)
-#+END_SRC
-
+*Update:* I now do all of the above in the .emacs (or Preferences.el
+ in the case of Aquamacs) file instead, so that I can initialize
+ =package= before calling =org= for the first time. This ensures that
+ the up-to-date version of =org= from ELPA is used instead of the
+ built-in version.
 ** Bootstrap =use-package=
 Next, we ensure that =use-package= is installed on our system.
 
@@ -433,6 +423,10 @@ automatically installed on the current system.
 *** Email Address
 #+BEGIN_SRC emacs-lisp
   (setq user-mail-address "moore@math.osu.edu")
+#+END_SRC
+*** Paradox Github Token
+#+BEGIN_SRC emacs-lisp
+  (setq paradox-github-token "1b15148340702c047e71e9db9f3dcf6501df1051")
 #+END_SRC
 ** What to Display at Startup
 Disable the welcome screen and instead display a welcome message as a
@@ -530,7 +524,7 @@ about this on StackExchange at some point.
   (setq apropos-do-all t)   ; Make all apropos commands perform more
                             ; extensive searches
 #+END_SRC
-* Load and Configure Packages (Built-in and Otherwise)
+* Packages
 The following list comprises all packages that are loaded by default
 and in such a way that they affect all (or most) modes (or enable
 minor-modes in all major-modes). 
@@ -918,6 +912,22 @@ provided by the package.
       ("H-w" . aya-create)
       ("H-y" . aya-expand))
 #+END_SRC
+** fixmee: A package for displaying and navigating TODOs, FIXMEs, etc.
+A package that displays @@@, TODO, FIXME, and XXX comments in a
+separate face and allows for easy navigation between them.
+
+Tags are case-insensitive except for XXX, and priority (used in
+priority-based navigation) is increased by adding more of the last
+letter to the end of a tag. (For example FIXMEEEE has higher priority
+than FIXME.)
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package fixmee
+    :after button-lock
+    :config
+      (global-fixmee-mode 1))
+#+END_SRC
+*** TODO Come up with a good replacement for the fixmee-goto-next-by-position keybinding
+This is M-p by default, but that is currently being used by ace-window.
 ** ace-window: Easy Window Navigation with M-p
 The ace-window package makes switching between more than two windows
 much easier in Emacs. See the documentation for complete details, but
@@ -926,6 +936,10 @@ the ace-window command will be bound to M-p here.
   (use-package ace-window
     :bind ("M-p" . ace-window))
 #+END_SRC
+** paradox: An updated package manager
+See the documentation. Run it by calling M-x paradox-list-packages.
+Note that the Github token provided to paradox for Github integration
+is [[*Paradox%20Github%20Token][set in an earlier section]].
 ** TODO Company (Auto-Completion Support): COMPlete ANYthing
 #+BEGIN_SRC emacs-lisp :tangle no
   (add-hook 'after-init-hook 'global-company-mode)
@@ -1121,7 +1135,7 @@ format-time-string calls without overriding anything.
 * Appearance Settings
 ** Load a Color Theme
 #+BEGIN_SRC emacs-lisp
-  (load-theme 'dracula)
+  (load-theme 'dracula t)
 #+END_SRC 
 *** (Obsolete) Using color-theme to load a theme
 (I've kept these notes here for reference, in case I'm stranded on a
@@ -1495,9 +1509,6 @@ are not displayed in a new element.
     (cons '(:results . "silent")
           (assq-delete-all :results org-babel-default-header-args)))
 #+END_SRC
-**** Explanation
-The variable org-babel-default-header-args contains the default
-
 *** Ensure that syntax highlighting is enabled while in Org Mode
 #+BEGIN_SRC emacs-lisp
   (add-hook 'org-mode-hook 'turn-on-font-lock) ; not needed when global-font-lock-mode is on
@@ -1509,15 +1520,6 @@ The following uses "native fontification" to enable syntax highlighting in code 
   (setq org-src-fontify-natively t)
 #+END_SRC
 
-*** Disable Line Numbers in Org Mode
-Line numbers are rather useless in org-mode, and they also are hard to
-make look right (and not bug out) in indentation mode. So we disable
-them entirely.
-
-#+BEGIN_SRC emacs-lisp
-  ;(add-hook 'org-mode-hook 'nolinums)
-#+END_SRC
-**** TODO Figure out why this isn't working
 *** Load Minor Modes
 **** Auto Fill Mode
 auto-fill-mode works beautifully in Org files, and we enable it
