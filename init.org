@@ -117,6 +117,16 @@ Aquamacs will also find libraries contained in
 
 which is why I originally moved mine there from "~/.emacs.d".
 ** FAQ
+*** Q: How can I interactively evaluate lisp statements?
+**** A: Call =ielm= (*Inferior Emacs Lisp Mode*)
+=ielm= (Inferior Emacs Lisp Mode) is essentially an elisp shell
+environment, used exactly for this purpose. It's way, WAY easier than,
+e.g., writing and evaluating statements in =*Scratch*=. When you run
+=ielm= (which is done with the command =M-x ielm=) a new =*ielm*=
+buffer is created that serves as the elisp shell.
+
+This is great for evaluating code as you go and designing new
+functions.
 *** Q: How can I access a complete list of variables defined by a package?
 **** A: The easy (if not completely reliable) way
 Use =describe-variable= via "C-h v", type the name of the package (or
@@ -745,82 +755,6 @@ natural to me (and involves the fewest number of excess backslashes).
 For some reason the resulting list is only displaying 20, not 25,
 items, even though I've confirmed the variable is not being reset by
 some other configuration file.
-** Magit: Robust Git Porcelain (open with C-x g)
-[[http://www.emacswiki.org/emacs/Magit][Magit]] is a Git porcelain (aka front end) for Emacs.  We load Magit and
-bind C-x g to the magit-status function (really the only command
-you'll ever invoke).
-
-Use "s" to stage a file, "c c" to start a commit, "C-c C-c" to finish
-a commit, "b b" to switch branches, "P P" to do a git push, and "F F"
-to do a git pull. [Tab] is also a nice key.
-
-#+SRCNAME load-and-configure-magit
-#+BEGIN_SRC emacs-lisp
-  (use-package magit
-    :bind
-      ("C-x g" . magit-status))
-#+END_SRC
-*** Safety Settings
-Magit makes reverting files accidentally easier than it is by
-default. For instance, the following warning appeared after installing
-version 1.4.0.
-
-#+BEGIN_EXAMPLE
-  Warning (:warning): for magit-1.4.0
-
-  You have just updated to version 1.4.0 of Magit, and have to
-  make a choice.
-
-  Before running Git, Magit by default reverts all unmodified
-  buffers that visit files tracked in the current repository.
-  This can potentially lead to data loss, so you might want to
-  disable this by adding the following line to your init file:
-
-    (setq magit-auto-revert-mode nil)
-
-  The risk is not as high as it might seem.  Snapshots on MELPA
-  and MELPA-Stable have had this enabled for a long time, so if
-  you have not experienced any data loss in the past, you should
-  probably keep this enabled.
-
-  Keeping this mode enabled is only problematic if you, for
-  example, use `git reset --hard REV' or `magit-reset-head-hard'
-  and expect Emacs to preserve the old state of some file in a
-  buffer.  If you turn off this mode then file-visiting buffers and
-  the Magit buffer will no longer be in sync, which can be confusing
-  and would complicate many operations.  Note that it is possible
-  to undo an automatic buffer reversion using `C-x u' (`undo').
-
-  To prevent this message from being shown each time you start
-  Emacs, you must add the following line to your init file:
-
-    (setq magit-last-seen-setup-instructions "1.4.0")
-
-  You might also want to read the release notes:
-  https://raw.githubusercontent.com/magit/magit/next/Documentation/RelNotes/1.4.0.txt
-#+END_EXAMPLE
-
-[[http://magit.vc/manual/magit/Wip-modes.html#Wip-modes][The documentation]] mentions at least a couple other reasons why
-untracked changes are at times vulnerable to deletion, and (since why
-risk having to rewrite a chunk of our dissertation?) we should account
-for these (relatively minor) risks by following the safe instructions
-in the above warning and configuring a [[*Configure%20Wip%20mode][Wip mode]].
-
-**** Disable Magit-Auto-Revert-Mode by Default
-#+BEGIN_SRC emacs-lisp
-  ; Disable the warning message about magit-auto-revert-mode
-  (setq magit-last-seen-setup-instructions "1.4.0")
-  ; Disable magit-auto-revert-mode
-  (setq magit-auto-revert-mode nil)
-#+END_SRC
-
-**** Enable Wip (Work In Progress) Mode
-Since Magit "makes it easy to modify uncommitted changes" to both the
-working tree and index of a repository (and uncommitted changes aren't
-tracked by Git), Magit provides three different "Wip" modes to track
-these automatically, without unnecessary commit to the repository.
-***** TODO Configure Wip mode
-Refer to [[http://magit.vc/manual/magit/Wip-modes.html#Wip-modes][the documentation]].
 ** Undo Tree: Represent Buffer Changes as a Tree
 Use undo-tree-visualize to browse the undo tree.
 #+BEGIN_SRC emacs-lisp
@@ -832,7 +766,6 @@ Use undo-tree-visualize to browse the undo tree.
 Bookmarks are supported by default in recent versions of Emacs, but
 there are possible enhancement packages, notably =bookmarks+=, that we
 should consider using.
-
 *** Keybindings
 All of the following keybindings are defaults.
 
@@ -852,7 +785,6 @@ All of the following keybindings are defaults.
 |            |                       | bookmarks in a buffer entitled  |
 |            |                       | *Bookmark List*.                |
 |------------+-----------------------+---------------------------------|
-
 ** YASnippet
 Yet Another Snippet is a templating package for Emacs, enabling rapid
 template creation and reuse. Store snippets in the
@@ -880,38 +812,62 @@ template creation and reuse. Store snippets in the
       (yas-reload-all)
       (yas-global-mode 1))
 #+END_SRC
-** Auto-YASnippet: Create Temporary YASnippets
-Create a temporary snippet for reproducing similar code repeatedly in
-a file. To get an idea of how to use this, the following example is
-provided by the package.
-#+SRC_NAME:Auto-YASnippet_JavaExample
-#+BEGIN_EXAMPLE
-  In Java write:
-  class Light$On implements Runnable {
-    public Light$On() {}
-    public void run() {
-      System.out.println("Turning $on lights");
-      light = $true;
-    }
-  }
-  This differs from the code that you wanted to write only by 4 $ chars.
-  Since it's more than one line, select the region and call `create-auto-yasnippet'.
-  The $ chars disappear, yielding valid code.
-  `*current-auto-yasnippet-template* becomes:
-  "class Light$1 implements Runnable {
-    public Light$1() {}
-    public void run() {
-      System.out.println(\"Turning $2 lights\");
-      light = $3;
-    }
-  }"
-#+END_EXAMPLE
-#+BEGIN_SRC emacs-lisp
-  (use-package auto-yasnippet
-    :bind
-      ("H-w" . aya-create)
-      ("H-y" . aya-expand))
+** Company (Auto-Completion Support): COMPlete ANYthing 
+#+BEGIN_SRC emacs-lisp :tangle no
+  (use-package company
+    :after yasnippet
+    :config
+      (add-hook 'after-init-hook 'global-company-mode)
+      (global-company-mode)
+      
+      ; Set # of seconds after typing and before suggestions are shown
+      (setq company-idle-delay 0.5)
+      
+      ; Weight suggestions by use frequency
+      (setq company-transformers '(company-sort-by-occurrence))
 #+END_SRC
+The configuration here that ensures yasnippet and company play well
+together is adapted from [[https://www.reddit.com/r/emacs/comments/3r9fic/best_practicestip_for_companymode_andor_yasnippet/][this reddit post]].
+#+BEGIN_SRC emacs-lisp :tangle no
+      ;; Code for yasnippet compatibility
+      ; Add yasnippet support for all company backends
+      ;     (See https://github.com/syl20bnr/spacemacs/pull/179)
+      (defvar company-mode/enable-yas t
+              "Enable yasnippet for all company backends.")
+      (defun company-mode/backend-with-yas (backend)
+        "Add `company-yasnippet' to the backend if it is not already
+        present and yasnippet is enabled in company mode. Otherwise do
+        nothing."
+        (if (or (not company-mode/enable-yas)
+                (and (listp backend)
+                  (member 'company-yasnippet backend)))
+            backend
+            (append (if (consp backend) backend (list backend))
+              '(:with company-yasnippet))))
+      ; Apply the company-mode/backend-with-yas function to all
+      ; company backends (if yasnippet is enabled in company mode).
+      (setq company-backends (mapcar #'company-mode/backend-with-yas
+                               company-backends))
+      ;; End of company/yasnippet compatibility code
+#+END_SRC
+Next we add hooks for company mode backends for particular major
+modes. (I'm still debating on whether or not it would be better to
+move this code down to where each major mode is defined, but it will
+stay here for the time being, the rationale being that it will be
+easier to disable/modify the full company configuration if all of this
+code is in one place.)
+#+BEGIN_SRC emacs-lisp :tangle no
+    ;; Configure company-mode for editing LaTeX files
+    (defun drmrd/company-mode/load-latex-backends ()
+      ; Add LaTeX backends to company-backends
+      (setq-local company-backends
+        (append '((company-math-symbols-latex company-latex-commands))
+                company-backends))
+      ; Right-align annotation symbols in completion windows
+      (setq-local company-tooltip-align-annotations t))
+  )
+#+END_SRC
+
 ** fixmee: A package for displaying and navigating TODOs, FIXMEs, etc.
 A package that displays @@@, TODO, FIXME, and XXX comments in a
 separate face and allows for easy navigation between them.
@@ -920,9 +876,12 @@ Tags are case-insensitive except for XXX, and priority (used in
 priority-based navigation) is increased by adding more of the last
 letter to the end of a tag. (For example FIXMEEEE has higher priority
 than FIXME.)
+
+Note that 
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package fixmee
-    :after button-lock
+    :init
+      (require 'button-lock)
     :config
       (global-fixmee-mode 1))
 #+END_SRC
@@ -940,13 +899,6 @@ the ace-window command will be bound to M-p here.
 See the documentation. Run it by calling M-x paradox-list-packages.
 Note that the Github token provided to paradox for Github integration
 is [[*Paradox%20Github%20Token][set in an earlier section]].
-** TODO Company (Auto-Completion Support): COMPlete ANYthing
-#+BEGIN_SRC emacs-lisp :tangle no
-  (add-hook 'after-init-hook 'global-company-mode)
-  (require 'company-auctex)
-  (require 'company-math)
-  (company-auctex-init)
-#+END_SRC 
 ** TODO Popwin (Popup Windows at Bottom of Screen)
 ** TODO Color-identifiers-mode (Unique display colors for unique variables)
 ** TODO Origami: A Multi-Language Folding Mode
@@ -987,6 +939,49 @@ moved.
       (add-hook 'pre-command-hook 'erase-nonempty-inactive-minibuffer))
 #+END_SRC
 *** TODO Ensure the second command doesn't create any conflicts with other packages
+** DISABLED Packages
+Here is a list of packages that I used to load globally but whose
+functionality has been replaced by something else.
+*** (DISABLED) Auto-YASnippet: Create Temporary YASnippets
+Create a temporary snippet for reproducing similar code repeatedly in
+a file. To get an idea of how to use this, the following example is
+provided by the package.
+#+SRC_NAME:Auto-YASnippet_JavaExample
+#+BEGIN_EXAMPLE
+  In Java write:
+  class Light$On implements Runnable {
+    public Light$On() {}
+    public void run() {
+      System.out.println("Turning $on lights");
+      light = $true;
+    }
+  }
+  This differs from the code that you wanted to write only by 4 $ chars.
+  Since it's more than one line, select the region and call `create-auto-yasnippet'.
+  The $ chars disappear, yielding valid code.
+  `*current-auto-yasnippet-template* becomes:
+  "class Light$1 implements Runnable {
+    public Light$1() {}
+    public void run() {
+      System.out.println(\"Turning $2 lights\");
+      light = $3;
+    }
+  }"
+#+END_EXAMPLE
+#+BEGIN_SRC emacs-lisp :tangle no
+  (use-package auto-yasnippet
+    :bind
+      ("H-w" . aya-create)
+      ("H-y" . aya-expand))
+#+END_SRC
+**** *Update (2016-05-04):* Disable auto-yasnippet
+I've disabled this package since I have yet to actually use
+it. I don't see a good use case for it that in my work that isn't
+already covered by other packages (or could be covered in a more
+broadly-applicable manner, e.g., by the multiple-cursors package). The
+package does its job great, though, so I've left it here in case I
+wish to enable it in the future, possibly for specific modes instead
+of globally.
 * Utility Functions
 ** my-reb-copy: Yank Into Minibuffer Without Doubling Backslashes
 Yank text into the minibuffer without backslashes being doubled. This
@@ -1306,6 +1301,10 @@ functions, etc. are eating up the most startup time.
             (insert (current-time-microseconds))))))
 #+END_SRC
 * Major Mode Customization
+** Change Log Mode
+[[help:change-log-mode][=change-log-mode=]] is enabled by default for files case-insensitively
+entitled =CHANGELOG=. While I'm sure this is a wonderful mode for
+certain changelogs, it defaults to 8 spaces of indentation in the body.
 ** Emacs-Lisp Mode
 We use the built-in emacs-lisp-mode for editing .el files, but with a
 couple quality of life tweaks incorporated.
@@ -1577,6 +1576,82 @@ entire block start or end tag. Better still, we can create our own!
                  ("\\subsection\{%s\}" . "\\subsection*\{%s\}")
                  ("\\subsubsection\{%s\}" . "\\subsubsection*\{%s\}")))
 #+END_EXAMPLE
+** Magit: Robust Git Porcelain (open with C-x g)
+[[http://www.emacswiki.org/emacs/Magit][Magit]] is a Git porcelain (aka frontend) for Emacs. We load Magit and
+bind C-x g to the magit-status function (really the only command
+you'll ever invoke).
+
+Use "s" to stage a file, "c c" to start a commit, "C-c C-c" to finish
+a commit, "b b" to switch branches, "P P" to do a git push, and "F F"
+to do a git pull. [Tab] is also a nice key.
+
+#+SRCNAME load-and-configure-magit
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package magit
+    :bind
+      ("C-x g" . magit-status))
+#+END_SRC
+*** Safety Settings
+Magit makes reverting files accidentally easier than it is by
+default. For instance, the following warning appeared after installing
+version 1.4.0.
+
+#+BEGIN_EXAMPLE
+  Warning (:warning): for magit-1.4.0
+
+  You have just updated to version 1.4.0 of Magit, and have to
+  make a choice.
+
+  Before running Git, Magit by default reverts all unmodified
+  buffers that visit files tracked in the current repository.
+  This can potentially lead to data loss, so you might want to
+  disable this by adding the following line to your init file:
+
+    (setq magit-auto-revert-mode nil)
+
+  The risk is not as high as it might seem.  Snapshots on MELPA
+  and MELPA-Stable have had this enabled for a long time, so if
+  you have not experienced any data loss in the past, you should
+  probably keep this enabled.
+
+  Keeping this mode enabled is only problematic if you, for
+  example, use `git reset --hard REV' or `magit-reset-head-hard'
+  and expect Emacs to preserve the old state of some file in a
+  buffer.  If you turn off this mode then file-visiting buffers and
+  the Magit buffer will no longer be in sync, which can be confusing
+  and would complicate many operations.  Note that it is possible
+  to undo an automatic buffer reversion using `C-x u' (`undo').
+
+  To prevent this message from being shown each time you start
+  Emacs, you must add the following line to your init file:
+
+    (setq magit-last-seen-setup-instructions "1.4.0")
+
+  You might also want to read the release notes:
+  https://raw.githubusercontent.com/magit/magit/next/Documentation/RelNotes/1.4.0.txt
+#+END_EXAMPLE
+
+[[http://magit.vc/manual/magit/Wip-modes.html#Wip-modes][The documentation]] mentions at least a couple other reasons why
+untracked changes are at times vulnerable to deletion, and (since why
+risk having to rewrite a chunk of our dissertation?) we should account
+for these (relatively minor) risks by following the safe instructions
+in the above warning and configuring a [[*Configure%20Wip%20mode][Wip mode]].
+
+**** Disable Magit-Auto-Revert-Mode by Default
+#+BEGIN_SRC emacs-lisp
+  ; Disable the warning message about magit-auto-revert-mode
+  (setq magit-last-seen-setup-instructions "1.4.0")
+  ; Disable magit-auto-revert-mode
+  (setq magit-auto-revert-mode nil)
+#+END_SRC
+
+**** Enable Wip (Work In Progress) Mode
+Since Magit "makes it easy to modify uncommitted changes" to both the
+working tree and index of a repository (and uncommitted changes aren't
+tracked by Git), Magit provides three different "Wip" modes to track
+these automatically, without unnecessary commit to the repository.
+***** TODO Configure Wip mode
+Refer to [[http://magit.vc/manual/magit/Wip-modes.html#Wip-modes][the documentation]].
 * Clean Up
 ** Close Extra Frames in Aquamacs
 For some reason (in Aquamacs only) my configuration files open
