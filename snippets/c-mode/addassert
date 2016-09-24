@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: Assert Sums are Equal
+# key: addassert
+# --
+START_TEST($1_plus_$2_equals_$3)
+    assert_sum_equals("$1", "$2", "$3");
+END_TEST
+$0tcase_add_test(addition_test_case, $1_plus_$2_equals_$3);

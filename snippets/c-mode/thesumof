@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: the_sum_of_FOO_and_BAR_is_BAZ
+# key: thesumof
+# --
+START_TEST(the_sum_of_${1:augend}_and_${2:addend}_is_${3:sum})
+{
+    ck_assert_str_eq(add_roman_numerals("$1", "$2"), "$3");
+}
+END_TEST

@@ -1,0 +1,21 @@
+# -*- mode: snippet -*-
+# name: use-package template
+# key: use-package
+# --
+(use-package ${1:package}
+  ;; `:init'
+  ;;
+  ;; Code executed before loading `${1:package}'. Keep only a small
+  ;; amount of fast-executing code here, preferring `:config' whenever
+  ;; possible.
+  ;;
+  ;; NOTE: In v2.0+ this code ALWAYS runs before `$1' is
+  ;; loaded, regardless of whether or not `:config' code execution has
+  ;; been deferred.
+  :init ${2:init code}
+  ;; `:config'
+  ;;
+  ;; Code executed after loading ${1:package}. If lazy loading is
+  ;; enabled, this code is executed after the autoload for the
+  ;; package.
+  :config ${0:config code})

@@ -1,9 +1,17 @@
 #+TITLE: LaTeX Emacs Configuration
 #+AUTHOR: DRMRD
-#+PROPERTY: header-args    :tangle ~/.emacs.d/lib/latex/latex_config.el
+#+PROPERTY: header-args    :tangle ~/.emacs.d/lib/latex.el
 #+OPTIONS: toc:nil num:nil ^:nil
 #+STARTUP: indent
 
+* latex.el Reference
+** Determining the document structure at the current point
+| Structure (@ Point) | Function                     |
+|---------------------+------------------------------|
+| Environment         | [[help:LaTeX-current-environment][LaTeX-current-environment]]    |
+| Section             | [[help:LaTeX-current-section][LaTeX-current-section]]        |
+| Indentation         | [[help:LaTeX-current-indentation][LaTeX-current-indentation]]    |
+| Verbatim Macro      | [[help:LaTeX-current-verbatim-macro][LaTeX-current-verbatim-macro]] | 
 * Startup
 ** Load AucTeX and Preview LaTeX
 AucTeX is the bread-and-butter LaTeX editor for Emacs and should
@@ -58,7 +66,7 @@ since I've been using Skim/external viewers instead.
 #+BEGIN_SRC emacs-lisp :tangle no
   (load "preview-latex.el" nil t t)
 #+END_SRC
-* Loading Minor Modes
+* Configuring Minor Modes
 ** Outline Minor Mode
 This allows us to fold sections/environments like in Org Mode.
 *** Load outline-minor-mode 
@@ -204,6 +212,83 @@ characters like '?\C-a' or '?\M-b', if you use the correct syntax.
 #+BEGIN_SRC emacs-lisp tangle: no
     (setq LaTeX-math-list '((?c "cong ")))
 #+END_SRC
+** Projectile Mode
+Load =projectile= for project management.
+#+BEGIN_SRC emacs-lisp
+  (add-hook 'TeX-mode-hook #'projectile-mode)
+  (add-hook 'LaTeX-mode-hook #'projectile-mode)
+#+END_SRC
+** ispell Mode
+Note that the =ispell-tex-arg-end= function I mention below is defined
+in =ispell.el= as follows.
+#+BEGIN_SRC emacs-list :tangle no 
+  (defun ispell-tex-arg-end (&optional arg)
+    "Skip across ARG number of braces."
+    (condition-case nil
+        (progn
+          (while (looking-at "[ \t\n]*\\[") (forward-sexp))
+          (forward-sexp (or arg 1)))
+      (error
+       (message "Error skipping s-expressions at point %d." (point))
+       (beep)
+       (sit-for 2))))
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp 
+  ;;; Per the documentation, `ispell-tex-skip-alists' is a list of two
+  ;;; alists, each of these themselves being lists of 2- and 3-
+  ;;; tuples. The tuples are all of the form
+  ;;;     (BEGINREGEX ENDFUNCTION &optional BRACESCOUNT)
+  ;;; where `BEGINREGEX' (the "key" referred to in this variable's
+  ;;; documentation) is the regular expression (as a string) to match at
+  ;;; the beginning of the region we want ispell to skip over,
+  ;;; `ENDFUNCTION' is a function that moves the point forward to the
+  ;;; end of the region we wish to skip. The optional argument
+  ;;; `BRACESCOUNT' is a numeric argument passed to `ENDFUNCTION',
+  ;;; which, for the built-in `ENDFUNCTION' (always
+  ;;; `ispell-tex-arg-end') states the number of sexps to skip,
+  ;;; defaulting to 1. The `ispell-tex-arg-end' function normally just
+  ;;; moves past all optional arguments in the tex command, skips
+  ;;; max(1,`BRACESCOUNT') matched sets of {}'s, and returns, catching
+  ;;; any errors along the way. AFAICT, specifying a different value of
+  ;;; `ENDFUNCTION' should just handle finding the end of the region to
+  ;;; skip in a different manner without any side effects. That said,
+  ;;; use at your own risk, since the source's documentation is pretty
+  ;;; terrible.
+  ;;;
+  ;;; Actually, it looks like BOTH `BEGINREGEX' and `ENDFUNCTION' can be
+  ;;; regular expressions (given as strings) and/or functions!  The
+  ;;; result of each should be to move the mark to wherever you damn
+  ;;; well please.
+  ;;; 
+  ;;; The difference between the first and second entries in
+  ;;; `ispell-tex-skip-alists' is that each `BEGINREGEX' inside the
+  ;;; second list is matched from within a \begin{...} environment
+  ;;; delimiter.  Haven't looked into how this affects the behavior of
+  ;;; `ENDFUNCTION', but from the source of `ispell-tex-arg-end', the
+  ;;; regexs used for `ENDFUNCTION' in the default value of
+  ;;; `ispell-tex-skip-alists', and a brief read through function that
+  ;;; loads the latter in `ispell.el', my guess is that `ENDFUNCTION'
+  ;;; behavior is totally unaffected. (So you should look for an end
+  ;;; block if you want to skip the entirety of an environment, not,
+  ;;; e.g., just the environment name.)
+  ;;;
+  ;;; Note: `ispell-tex-arg-end' passes (or `BRACESCOUNT' 1) to
+  ;;; `forward-sexp', so specifying `BRACESCOUNT' to 0 does have the
+  ;;; expected effect of *only* skipping optional arguments. This is
+  ;;; useful, for instance, when wanting to skip the arguments of a
+  ;;; table environment (where there are never things to spellcheck),
+  ;;; but you don't want to skip the table's contents.
+  (setq ispell-tex-skip-alists
+        (list (append (car ispell-tex-skip-alists)
+                      '(("\\\\def\\\\" . ispell-tex-arg-end)))
+              ;; Feel free to append to the 2nd alist, too. I've no use
+              ;; for it at the moment, so it's just going back as is. Of
+              ;; course, this means this whole command is rather
+              ;; unnecessarily verbose for the time being. But hey, it's
+              ;; readable and ready for extension.
+              (cdr ispell-tex-skip-alists)))
+#+END_SRC
 * Appearance
 ** Disable Aquamacs's Auto-Face Mode
 Use this to disable Aquamacs's Auto-Face Mode, which should then allow
@@ -229,9 +314,14 @@ softly wrapped lines to the appropriate levels.
   (add-hook 'LaTeX-mode-hook 'visual-line-mode)
   (add-hook 'visual-line-mode-hook 'adaptive-wrap-prefix-mode)
 #+END_SRC
-* Customizing Environment Templates
-** Change Built-In Templates
-
+* TODO Improving Help Commands
+Wouldn't it be amazing if there was a =describe-latex-macro= command
+for Emacs with the same functionality as =describe-function=? This is
+a cool idea for a project that we should totally start working on.
+* Customizing Environment Templates/Insertion Behavior
+** Inserting Items with Alt + Ret                           :enumerate:item:
+Within enumerate-like environments (in fact, at any point in a LaTeX
+buffer), hitting [Alt] + [Return] invokes [[help:LaTeX-insert-item][LaTeX-insert-item]]
 * Support for Custom Macros & Environments
 ** Make AUCTeX Aware of Custom Theorem Environments 
 #+BEGIN_SRC emacs-lisp
@@ -374,12 +464,14 @@ This command is bound to "M-j".
       (indent-relative)
       (let ((beg (point)))
         (forward-sentence)
-        (fill-region-as-paragraph beg (point))
-      )
-    )
-  )
-  (global-set-key "\ej" 'fill-sentence)
-#+END_SRC 
+        (fill-region-as-paragraph beg (point)))))
+
+  (add-hook 'LaTeX-mode-hook
+            (lambda ()
+              (define-key LaTeX-mode-map
+                          (kbd "M-j")
+                          'fill-sentence)))
+#+END_SRC
 ** Advise fill-region to start each sentence on a new line
 #+BEGIN_SRC emacs-lisp
   (defadvice LaTeX-fill-region-as-paragraph (around LaTeX-sentence-filling)
@@ -490,17 +582,36 @@ few months ago. Today (<2015-12-02 Wed>) I did it in 1.5 hours.
 #+BEGIN_SRC emacs-lisp
   (setq TeX-PDF-mode t)
 #+END_SRC
-** Enable support for latexmk via C-c C-c
+** Create Custom Compilation Commands (& Tweak Built-In Ones)
+#+BEGIN_SRC emacs-lisp
+    (defun drmrd/latex/string=-cars (cons1 cons2)
+      "Determine if two cons are equal by comparing their cars as
+      strings. The car comparison is done using `string='. No
+      type-checking is performed before attempting to compare cons, so
+      this can lead to unexpected outcomes if CONS1 and CONS2 are not
+      lists (or if their cars are not strings)."
+      (string= (car cons1) (car cons2)))
+#+END_SRC
 #+BEGIN_SRC emacs-lisp
   (add-hook 'LaTeX-mode-hook 
-      (lambda ()
-          (push
-              '("latexmk" "latexmk -outdir=/tmp %t -pdf %s" TeX-run-TeX nil t
-                  :help "Run latexmk on file")
-              TeX-command-list
-          )
-      )
-  )
+    (lambda ()
+      (add-to-list 'TeX-command-list
+                   '("latexmk" "latexmk -outdir=./tmp %t -pdf %s"
+                     TeX-run-TeX nil t :help "Run latexmk on file")
+                   nil 'drmrd/latex/string=-cars)))
+#+END_SRC 
+#+BEGIN_SRC emacs-lisp
+  (add-hook 'LaTeX-mode-hook
+    (lambda ()
+      (add-to-list 'TeX-command-list
+                   '("LaTeX+" "latexmk -auxdir=./tmp %t -pdf %s"
+                     TeX-run-TeX nil t :help
+                     "Run latexmk, storing temporary files in ./tmp")
+                     nil 'drmrd/latex/string=-cars)))
+#+END_SRC
+** Enable support for latexmk via C-c C-c
+#+BEGIN_SRC emacs-lisp
+  
   ;(add-hook 'TeX-mode-hook '(lambda () (setq TeX-command-default "latexmk")))
 #+END_SRC 
 ** Set how TeX handles DVI files
@@ -508,6 +619,8 @@ few months ago. Today (<2015-12-02 Wed>) I did it in 1.5 hours.
   (setq tex-dvi-print-command "dvips")
   (setq tex-dvi-view-command "xdvi")
 #+END_SRC
+** Store temporary files in ./tmp
+
 * Wrap Up
 There is nothing to do here for the time being, but we'll at least
 record that we've loaded the file successfully in the *Messages* buffer.

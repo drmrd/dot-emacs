@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: Label
+# key: label
+# --
+    \label{$1}
+    $0

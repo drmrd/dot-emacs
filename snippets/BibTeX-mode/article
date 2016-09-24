@@ -1,0 +1,15 @@
+# -*- mode: snippet -*-
+# name: BibTeX Article
+# key: article
+# --
+@article{${1:key},
+    author  =   "${2:author}",
+    title   =   "${3:title}",
+    journal =   "${4:journal}",
+    year    =   ${5:year}
+%    series  =   "",
+%    volume  =   ,
+%    number  =   ,
+%    pages   =   "",
+%    month   =   ""
+}

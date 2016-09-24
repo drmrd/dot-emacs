@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: New Glossary Adjective
+# key: newadj
+# --
+\newglossaryentry{${1:key}}{
+    name        =   {${2:name}},
+    description =   {${0:description}}
+}

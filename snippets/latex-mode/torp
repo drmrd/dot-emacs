@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: texorpdfstring
+# key: torp
+# --
+\texorpdfstring{${1:TeX String}}{${2:PDF String}}$0

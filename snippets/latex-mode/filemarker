@@ -1,0 +1,6 @@
+# -*- mode: snippet; require-final-newline: nil -*-
+# name: File Marker
+# key: filemarker
+# binding: direct-keybinding
+# --
+\todo{${1:$$(yas-choose-value '("Beginning" "End"))} of source file: `(abbreviate-file-name (buffer-file-name))`}$0

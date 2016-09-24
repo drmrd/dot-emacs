@@ -1,0 +1,436 @@
+DRMRD INIT -*- mode: org -*-
+#+TITLE: drmrd's Org Init File
+#+AUTHOR: drmrd
+#+OPTIONS: toc:nil num:nil ^:nil
+#+PROPERTY: header-args    :comments link
+#+STARTUP: indent
+* Description & Warnings
+This file contains most of the settings and customizations pertaining
+to org-mode contained in my Emacs configuration. It has only recently
+been branched into its own file from [[file:~/.emacs.d/init.org][my main init file]], and so it is
+nowhere near as organized as I'd like it to be. I also have a tendency
+to tweak my org configuration constantly, probably at a frequency
+second only to how often I tweak various LaTeX-related modes, and
+sometimes the documentation included in this file gets a bit behind
+its current state. All that to say, sorry for the mess, take what's
+said in this file with a grain of salt, and use this config file (and,
+really, all my config files) at your own risk!
+
+It's also worth noting that I have to require Org before using
+org-babel in my [[file:~/.emacs.d/.emacs][.emacs]] file to ensure that the most recent version of
+Org is always loaded (instead of the built-in one). (Yes there are
+probably other solutions, but they might involve modifying built-in
+file names that I don't have write privileges for on campus PCs. This
+is just a good fool-proof way to address the problem without too big a
+cost to the structure of my config files.) Some org libraries must be
+loaded prior to tangling [[file:~/.emacs.d/init.org][init.org]] (org-crypt, for instance), and so a
+minimal configuration for these is provided in my [[file:~/.emacs.d/.emacs][.emacs]] file.
+
+* Configure Default Directory, Agenda Directory, and Notes File
+For now the org-agenda-files list simply contains ~/org, but it can
+readily be modified to a list of subdirectories, files, etc. if
+necessary.
+#+BEGIN_SRC emacs-lisp
+  (setq org-directory "~/org")
+  (setq org-agenda-files '("~/org"))
+  (setq org-agenda-file-regexp "\\`\\(dissertating\\|inbox\\|tasks\\|quickref\\|research\\)\\.org\\'")
+  (setq org-default-notes-file "~/org/inbox.org")
+#+END_SRC
+* Hyperlinks
+** Custom Hyperlinks
+#+SRCNAME org_custom_hyperlink_names
+#+BEGIN_SRC emacs-lisp
+  ;;; Create custom hyperlink prefixes for org-mode. For any prefix
+  ;;; `foo' defined in this list, writing (in any org file)
+  ;;;     [[foo:suffix][description]]
+  ;;; will display a link in org with text `description' and pointing to
+  ;;; the expansion of `foo' in this list, with the following
+  ;;; replacement rules:
+  ;;;
+  ;;;     - If the expansion text is a string without any of the
+  ;;;       items listed in the next three bullets as substrings, simply
+  ;;;       insert the contatenation of this replacement string and
+  ;;;       `suffix'.
+  ;;;     - "%s" is replaced by `suffix'
+  ;;;     - "%h" is replaced by `suffix' converted into a url-encoded
+  ;;;            string using the `url-hexify-string' function
+  ;;;     - "%(some-function)" is replaced by the output of
+  ;;;            `some-function'. It is assumed that `some-function'
+  ;;;            takes a single argument (which will be `suffix' here)
+  ;;;            as input and outputs a string.
+  ;;;     - The expansion of `foo' can also be a function (instead of a
+  ;;;       string), which is assumed to be of the same form (in terms
+  ;;;       of inputs and outputs) as `some-function' in the previous
+  ;;;       bullet.
+  ;;;
+  ;;; See the description of this variable for more info.
+  (setq org-link-abbrev-alist
+        '(("google" . "http://www.google.com/search?q=")
+          ("map"    . "http://maps.google.com/maps?q=%s")
+          ("wiki"   . "https://en.wikipedia.org/wiki/%s")))
+#+END_SRC
+*** TODO Test these further and improve with %(some-function) calls
+For instance, check to see if I need to change the "wiki" linkkey's
+expansion to either %h or something like %(drmrd/spaces-to-underlines)
+to ensure that Wikipedia links are working as expected.
+* Task Management (TODO Keywords, Tags, etc.)
+** Settings for TODOs
+*** Set the TODO keywords
+The globally-defined TODO keywords are stored in the
+[[help:org-todo-keywords][=org-todo-keywords=]] variable. There is a
+lot you can do with these, so see the documentation of this variable
+for all the details. In summary, it is a list of "TODO entry keyword
+sequences" which are themselves lists of the form
+
+#+BEGIN_EXAMPLE
+  (<sequence or type>
+    "K1" [...] "Km"
+    [optionally "|" "DK1" [...] "DKn"])
+#+END_EXAMPLE
+
+where the first element is =sequence= if the subsequent elements should
+be interpreted as a sequence of "action steps" and =type= if the
+subsequent elements should be interpreted as specifying different types
+of TODO items. Additionally, if the first element is =sequence= then
+ 1. "K1",...,"K<m-1>" always represent states requiring action, as does
+    "Km" if "|" appears in the list. Otherwise "Km" represents a (unique)
+    DONE state in which no additional action is necessary.
+ 2. "DK1",...,"DKn" represent states in which no further action is
+    necessary.
+
+By default the value is =((sequence "TODO" "DONE"))=
+
+#+SRC_NAME redef_org-todo-keywords
+#+BEGIN_SRC emacs-lisp
+  (setq org-todo-keywords
+    '((sequence "TODO(t)" "MAYBE(m)" "STARTED(s)" "WAITING(w)" "|" "DONE(d)" "CANCELED(c)")))
+#+END_SRC
+*** Toggle timestamps and/or notes when TODOs are toggled between =TODO= and =DONE=
+The behavior of the =org-todo= command, bound to C-c C-t by default,
+is controlled in part by the [[help:org-log-done][=org-log-done=]] variable. If this is set
+to =nil= then no timestamp or note is inserted when a task is marked
+as =DONE= (this is the default behavior). If it is set to =time=, then
+the timestamp from when the task was completed is inserted on the next
+line (and removed if the task is marked as incomplete later). If set
+to =note=, the timestamp is inserted and the user is prompted for
+input to insert onto an additional line in the format specified by the
+[[help:org-log-note-headings][org-log-note-headings]] variable.
+#+BEGIN_SRC emacs-lisp
+  (setq org-log-done 'time)
+#+END_SRC
+
+* CANCELED Configuring Tags
+CLOSED: [2016-06-14 Tue 16:20]
+The [[help:org-tag-alist][org-tag-alist]] variable can be configured to include default tags,
+which can in turn be used for organizing TODO/agenda items.
+#+SRC_NAME redef_org-tag-alist
+#+BEGIN_SRC emacs-lisp :tangle no
+  (setq org-tag-alist
+    '(;(:startgroup . nil)
+      ;  ("@home" . ?h)
+      ;  ("@work" . ?w)
+      ;(:endgroup . nil)
+      ("fun"          . ?f)
+      ("work"         . ?w)
+      ("organizing"   . ?o)
+      ("proving"      . ?p)
+      ("revisions"    . ?r)
+      (:startgroup    . nil)
+        ("urgent"     . ?u)
+      (:endgroup      . nil)))
+#+END_SRC
+** DONE Consider reverting to Org's default behavior
+CLOSED: [2016-06-14 Tue 16:20]
+From the documentation, it sounds like Org usually just creates a list
+of tags based on the current org document. For buffers where it would
+be nice to have very task-specific, GTD-like tags, we could configure
+this variable locally via document properties.
+* Org Refile Configuration
+** Setting up refile targets
+By default, org-refile only supports refiling trees in the current
+buffer to beneath other top level headers in the same buffer. We can
+change this by configuring [[help:org-refile-targets][org-refile-targets]] appropriately.
+#+SRC_NAME custom_org-refile-targets_setup
+#+BEGIN_SRC emacs-lisp
+    (setq org-refile-targets
+          '((org-agenda-files . (:maxlevel . 1))
+            ("dissertating.org" . (:maxlevel . 2))))
+#+END_SRC
+* Org Capture Configuration & Templates
+Enables [[help:org-capture][org-capture]] mode with C-c c. This and the capture templates
+that follow will allow us to automatically create TODOs, notes, etc.,
+linked to the current pointer location in another file, and store them
+in our default notes file. (Of course, there are unlimited other
+possibilities here for automating this further/creating additional
+templates that we could also setup, but these should suffice for now.)
+A task may be started with the "C-c C-c" command in this mode, which
+will make org-capture start monitoring time spent on the given task.
+
+#+BEGIN_SRC emacs-lisp
+  (global-set-key (kbd "C-c c") 'org-capture)
+#+END_SRC
+
+Next we define some templates. These began as modifications of the
+templates found in [[http://doc.norang.ca/org-mode.html#CaptureTemplates][this guide]] when I first started using
+org-capture. Over time they've become my own. Be sure to read the
+[[help:org-capture-template][help page]] for the =org-capture-templates= variable for the full
+documentation. It's worth summarizing some key points here,
+however. First, =org-capture=templates= is a list of lists. Each of
+the inner lists is of the following form:
+
+#+NAME org-capture-template-entry-format
+#+BEGIN_EXAMPLE
+  (keys description type target template property1 property2 ...)
+#+END_EXAMPLE
+for
+ - keys :: the key(s) that will select this template
+   - This is usually a single-character string. If using multiple
+     characters and the same prefix character occurs in more than one
+     of your templates, you must keep all of the items using that
+     prefix together in the list and immediately following a 2-item
+     list containing the prefix and a description of the prefix's
+     meaning. See the "nn" and "nl" templates' defitions below for an
+     example.
+ - description :: a /short/ description of the template (shown during
+      selection)
+ - type :: the type of entry to be created from captured material. The
+      valid types are =entry= (for a headline), =item= (in a plain
+      list), =checkitem= (in a checklist), =table-line= (in the first
+      table at the target location), and =plain= (as-is insertion).
+ - target :: where the captured thing should be stored. Too many to
+      list here, but most are some mix of files, headlines, functions,
+      clocks, etc.
+ - template :: the template string, file, or function to use. Most
+      commonly a string, using the format specified in the
+      documentation for [[help:org-capture-templates][org-capture-templates]] (and similar to other
+      templating conventions used in Emacs).
+ - properties :: these are items of the form =:property= for one of
+      about ten or fifteen built-in properties (as described in the
+      [[help:org-capture-templates][documentation]]).
+Every item in the list is required with the exception of the
+trailing properties. (This is, of course, not the case for template
+key prefix entries, which require (and can only contain) the key and
+description entries.)
+
+#+BEGIN_SRC emacs-lisp
+  (setq org-capture-templates
+        '(("d" "Dissertating-related templates")
+          ("dc" "citation needed" entry
+                (file+olp "~/org/dissertating.org"
+                          "Inbox"
+                          "Citation Requests")
+                "* TODO Citation Needed: [[%l][%^{(Short) Cite Link Name|Here}]] :CITEME:\nCreated: %u\n%^{Comments|}\n"
+                :prepend t :immediate-finish t :kill-buffer t)
+          ("dn" "note" entry
+                (file+olp "~/org/dissertating.org" "Inbox" "Notes")
+                "* TODO %u %^{Note Headline} %^g:NOTE:\n%^{Description (optional)}\n"
+                :prepend t :immediate-finish t :kill-buffer t)
+          ("dq" "quickref" item
+                (file+olp "~/org/dissertating.org" "Inbox" "QuickRefs")
+                " - %^{Result Description} :: %^{Label or Citation}"
+                :prepend t :immediate-finish t :kill-buffer t)
+          ("dt" "task" entry
+                (file+olp "~/org/dissertating.org" "Inbox" "Tasks")
+                "* TODO [[%l][Link]] %u %^{Task Headline} %^g\n%^{Description (optional)}\n"
+                :prepend t :immediate-finish t :kill-buffer t)
+          ("t" "General task and note templates")
+          ("tm" "maybe" entry
+                (file+olp "~/org/inbox.org" "Tasks Inbox")
+                "* MAYBE [[%l][Link]] %u %^{Task Headline} %^g\n%^{Description (optional)}\n"
+                :prepend t :immediate-finish t :kill-buffer t)
+          ("tt" "todo" entry
+                (file+olp "~/org/inbox.org" "Tasks Inbox")
+                "* TODO [[%l][Link]] %u %^{Task Headline} %^g\n%^{Description (optional)}\n"
+                :prepend t :immediate-finish t :kill-buffer t)
+          ("n" "Learn something new? Jot it down here!")
+          ("nn" "anything and everything" entry
+                (file+olp "~/org/inbox.org" "Notes Inbox")
+                "* TODO %u %^{Note Headline} %^g:NOTE:\n%^{Description (optional)}\n"
+                :prepend t :immediate-finish nil :kill-buffer t)))
+          ;; ("t" "Templates for creating tasks")
+          ;; ("tt" "todo (no link)" entry (file "~/org/inbox.org")
+          ;;      "* TODO %?\n%U\n" :prepend t)
+          ;; ("tl" "todo (link)" entry (file "~/org/inbox.org")
+          ;;      "* TODO %?\n%U\n%a\n" :prepend t)
+          ;; ;; ("r" "respond" entry (file "~/org/inbox.org")
+          ;; ;;      "* NEXT Respond to %:from on %:subject\nSCHEDULED: %t\n%U\n%a\n"
+          ;; ;;      :clock-in t :clock-resume t :immediate-finish t)
+          ;; ("n" "Templates for creating notes")
+          ;; ("nn" "note (no link)" entry (file "~/org/inbox.org")
+          ;;      "* %? :NOTE:\n%U\n" :clock-in t :clock-resume t)
+          ;; ("nl" "note (link)" entry (file "~/org/inbox.org")
+          ;;      "* %? :NOTE:\n%U\n%a\n" :clock-in t :clock-resume t)
+          ;; ("nd" "dissertating note" entry (file "~/org/dissertating.org")
+          ;;      "* %? :NOTE:\n%U\n%a\n" :clock-in t :clock-resume t)))
+          ;; ;; ("j" "Journal" entry (file+datetree "~/org/diary.org")
+          ;; ;;      "* %?\n%U\n" :clock-in t :clock-resume t)
+          ;; ;; ("w" "org-protocol" entry (file "~/org/inbox.org")
+          ;; ;;      "* TODO Review %c\n%U\n" :immediate-finish t)
+          ;; ;; ("m" "Meeting" entry (file "~/org/inbox.org")
+          ;; ;;      "* MEETING with %? :MEETING:\n%U" :clock-in t :clock-resume t)
+          ;; ;; ("p" "Phone call" entry (file "~/org/inbox.org")
+          ;; ;;      "* PHONE %? :PHONE:\n%U" :clock-in t :clock-resume t)
+          ;; ;; ("h" "Habit" entry (file "~/org/inbox.org")
+          ;; ;;      "* NEXT %?\n%U\n%a\nSCHEDULED: %(format-time-string \"%<<%Y-%m-%d %a .+1d/3d>>\")\n:PROPERTIES:\n:STYLE: habit\n:REPEAT_TO_STATE: NEXT\n:END:\n")))
+#+END_SRC
+
+Let's also print a reminder about the shortcut and capture template
+keys to the minibuffer and *Messages* buffers.
+
+*EDIT:* (May 2016) We've disabled this, since we know the keys by now, and the
+feature is pretty self-documenting if you can remember the C-c c and
+C-c C-c keybindings.
+#+SRC_NAME org-capture-init-message-reminder
+#+BEGIN_SRC emacs-lisp :tangle no
+  (message "Reminder: You can toggle org-capture mode for easy task
+  management using \"C-c c\". While org-capture mode is active, use
+  \"C-c C-c\" followed by one of the letters t, r, n, j, w, m, p,
+  and h to start capturing a todo, response-needed, note, journal,
+  org-protocols, logging a meeting, logging a phonecall, and
+  logging a habit (resp.).")
+#+END_SRC
+
+Now we add code to remove logbook entries that are created but empty,
+which occur when we spend less than a minute capturing something.
+
+#+BEGIN_SRC emacs-lisp
+  ;; Remove empty LOGBOOK drawers on clock out
+  (defun bh/remove-empty-drawer-on-clock-out ()
+    (interactive)
+    (save-excursion
+      (beginning-of-line 0)
+      (org-remove-empty-drawer-at (point))))
+
+  (add-hook 'org-clock-out-hook 'bh/remove-empty-drawer-on-clock-out 'append)
+#+END_SRC
+* M-Return Settings
+** Add setting to separate headings other than tasks by newlines (not enabled by default)
+The following serves as a simple example of how to tweak M-Return's
+behavior to contextually insert lines between headings. It replaces
+the usual =org-meta-return= function bound to M-Return with
+=smart-org-meta-return-dwim=, which sets =org-blank-before-new-entry=
+to =nil= contextually.
+#+BEGIN_SRC emacs-lisp :tangle no
+  (setq org-blank-before-new-entry
+        '((heading . always)
+          (plain-list-item . nil)))
+
+  (defun call-rebinding-org-blank-behaviour (fn)
+    (let ((org-blank-before-new-entry
+           (copy-tree org-blank-before-new-entry)))
+      (when (org-at-heading-p)
+        (rplacd (assoc 'heading org-blank-before-new-entry) nil))
+      (call-interactively fn)))
+
+  (defun smart-org-meta-return-dwim ()
+    (interactive)
+    (call-rebinding-org-blank-behaviour 'org-meta-return))
+
+  ;;; TODO: Is this function ever needed?
+  (defun smart-org-insert-todo-heading-dwim ()
+    (interactive)
+    (call-rebinding-org-blank-behaviour 'org-insert-todo-heading))
+
+  (define-key org-mode-map (kbd "M-<return>")
+    'smart-org-meta-return-dwim)
+#+END_SRC
+** Determine when M-Return may split lines
+I've lost track of the number of times I've hit M-[Return] in the
+middle of a headline intending to create a new headline at the same
+level beneath the current one, only to then split the current headline
+in two at the cursor's location and form two headlines instead. The
+following built-in variable allows this behavior to be tweaked in
+different contexts. For contexts in which the variable is =nil=, the
+cursor will move to the end of the line before creating a new one. It
+might take some tweaking to figure out in which of these contexts I
+want which behavior, but here's a start.
+#+BEGIN_SRC emacs-lisp
+    ;;; Determine when M-Return can split lines
+    (setq org-M-RET-may-split-line
+      '((default  . t)
+        (headline . nil)
+        (item     . nil)
+        (table    . t)))
+#+END_SRC
+* Prevent Editing of Invisible Regions
+#+BEGIN_SRC emacs-lisp
+  ;; Have org try to prevent editing of invisible regions (e.g., folded
+  ;; sections). Refer to the variable's docstring for all of its
+  ;; possible settings (there are five in total).
+  (setq org-catch-invisible-edits 'smart)
+#+END_SRC
+* Org Babel: Set Default Header Arguments
+The global defaults for how code-blocks are evaluated in org-mode are
+stored in *=org-babel-default-header-args=*. Change the default
+setting for code-block evaluation, so that the results of evaluation
+are not displayed in a new element.
+#+BEGIN_SRC emacs-lisp
+  (setq org-babel-default-header-args
+    (cons '(:results . "silent")
+          (assq-delete-all :results org-babel-default-header-args)))
+#+END_SRC
+* Ensure that syntax highlighting is enabled while in Org Mode
+#+BEGIN_SRC emacs-lisp
+  (add-hook 'org-mode-hook 'turn-on-font-lock) ; not needed when `global-font-lock-mode' is on
+#+END_SRC
+* Syntax Highlighting in Code Blocks
+The following uses "native fontification" to enable syntax highlighting in code blocks.
+#+BEGIN_SRC emacs-lisp
+  (setq org-src-fontify-natively t)
+#+END_SRC
+* Load Minor Modes
+** Auto Fill Mode
+auto-fill-mode works beautifully in Org files, and we enable it
+accordingly.
+#+BEGIN_SRC emacs-lisp
+  (add-hook 'org-mode-hook 'auto-fill-mode)
+#+END_SRC
+* Keybindings
+
+#+BEGIN_SRC emacs-lisp
+  ;;; Access the Org Agenda with "C-c a"
+  ;;;
+  ;;;     From the Agenda, you can view all todos and other things in org that
+  ;;;     have looming deadlines.
+  (global-set-key "\C-ca" 'org-agenda)
+
+  ;;; Store an org-link to the current location in org-stored-links
+  ;;; with "C-c l"
+  ;;;
+  ;;;     The same link can be inserted elsewhere later from the
+  ;;;     org-stored-links variable using "C-c C-l"
+  (global-set-key "\C-cl" 'org-store-link)
+
+  ;;; Switch to another org buffer with "C-c b"
+  ;;;
+  ;;;     Switches to the org buffer with a given name.
+  (global-set-key "\C-cb" 'org-iswitchb)
+#+END_SRC
+
+* Create Custom Easy Templates
+[[http://orgmode.org/manual/Easy-Templates.html][Easy Templates]] serve as a simple way to enter code blocks, quotes,
+examples, LaTeX code, etc. in Org files without having to type out an
+entire block start or end tag. Better still, we can create our own!
+(See the code below for inspiration.)
+
+#+BEGIN_SRC emacs-lisp [:results output silent]
+  ;;; Creates an "el" Easy Template in Org Mode.
+  ;;;
+  ;;;     Typing "<el" followed by [TAB] replaces <el with
+  ;;;
+  ;;;         #+BEGIN_SRC emacs-lisp
+  ;;;           [Cursor Here]
+  ;;;         #+END_SRC
+  (add-to-list 'org-structure-template-alist
+       '("el" "#+BEGIN_SRC emacs-lisp\n  ?\n#+END_SRC" ""))
+#+END_SRC
+* Org-Latex Configuration
+#+BEGIN_EXAMPLE
+  (require 'ox-latex)
+  (add-to-list 'org-latex-classes
+               '("beamer"
+                 "\\documentclass\[presentation\]\{beamer\}"
+                 ("\\section\{%s\}" . "\\section*\{%s\}")
+                 ("\\subsection\{%s\}" . "\\subsection*\{%s\}")
+                 ("\\subsubsection\{%s\}" . "\\subsubsection*\{%s\}")))
+#+END_EXAMPLE
