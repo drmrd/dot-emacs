@@ -1,0 +1,17 @@
+
+.cask
+/**/*.bak
+auto-save-list
+backups
+elpa
+eshell
+/init.el
+/**/*.el~
+/lib/**/*.el
+/places
+secure
+session.*
+url
+var
+request
+.trello

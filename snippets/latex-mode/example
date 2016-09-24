@@ -1,9 +1,9 @@
 # -*- mode: snippet; require-final-newline: nil -*-
-# name: Corollary
-# key: cor
+# name: Example
+# key: example
 # binding: direct-keybinding
 # --
-\begin{cor}$1
-    \label{cor:$2}
+\begin{example}$1
+    \label{example:$2}
     $0
-\end{cor}
+\end{example}

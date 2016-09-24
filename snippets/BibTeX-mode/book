@@ -1,0 +1,16 @@
+# -*- mode: snippet -*-
+# name: BibTeX Book
+# key: book
+# --
+@book{${1:key},
+    author    =   "${2:author}",
+    title     =   "${3:title}",
+    publisher =   "${4:publisher}",
+    year      =   ${5:year}
+%    editor    =   "", % (req'd only if no author & vice versa)
+%    series    =   "",
+%    volume    =   ,
+%    number    =   ,
+%    pages     =   "",
+%    month     =   ""
+}

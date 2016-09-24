@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: Inline LaTeX Block
+# key: ilatex
+# --
+src_LaTeX[${1:Header Args}]{${0:LaTeX Code Here}}

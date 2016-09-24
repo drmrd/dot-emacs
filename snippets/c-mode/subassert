@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: Assert Differences are Equal
+# key: subassert
+# --
+START_TEST($1_minus_$2_equals_$3)
+    assert_difference_equals("$1", "$2", "$3");
+END_TEST
+$0tcase_add_test(subtraction_test_case, $1_minus_$2_equals_$3);

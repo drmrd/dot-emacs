@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: New Glossary Noun
+# key: newnoun
+# --
+\newglossaryentry{${1:key}}{
+    name        =   {${2:name}},
+    plural      =   {${3:plural}},
+    description =   {${0:description}}
+}
