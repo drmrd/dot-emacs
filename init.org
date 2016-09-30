@@ -712,6 +712,7 @@ automatically installed on the current system.
   ;; meaningful emoji and warning/error counts
   (use-package flycheck-status-emoji
       :ensure t
+      :init (set-fontset-font t nil "Symbola")
       :config (add-hook 'flycheck-mode-hook 'flycheck-status-emoji-mode))
 
   ;; Support adding C/C++ libraries to `flycheck-clang-include-path' using
