@@ -2052,7 +2052,7 @@ these automatically, without unnecessary commit to the repository.
 ***** TODO Configure Wip mode
 Refer to [[http://magit.vc/manual/magit/Wip-modes.html#Wip-modes][the documentation]].
 * Emacs Server Setup
-This is currently handled in our [[file:~/.bash_profile][.bash_profile]].
+This is currently handled in our [[file:~/.bashrc][.bashrc]] config.
 * Clean Up
 ** Close Extra Frames in Aquamacs
 For some reason (in Aquamacs only) my configuration files open
