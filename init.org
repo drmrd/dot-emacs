@@ -1617,6 +1617,48 @@ Note that
 #+END_SRC
 *** TODO Come up with a good replacement for the fixmee-goto-next-by-position keybinding
 This is M-p by default, but that is currently being used by ace-window.
+** flycheck & friends: On-the-fly error checking & linting :flycheck:Lint:ErrorChecking:
+#+SRC_NAME enable_global-flycheck-mode
+#+BEGIN_SRC emacs-lisp
+  ;;; Flycheck Mode (and friends)
+  ;;;
+  ;;;     Enable and configure `flycheck' for a powerful, customizable,
+  ;;;     extensible, drop-in replacement for `flymake'.
+
+  ;; Load flycheck
+  (use-package flycheck
+      :ensure t
+      :init (global-flycheck-mode))
+#+END_SRC
+
+#+SRC_NAME enable_flycheck_extensions
+#+BEGIN_SRC emacs-lisp
+  ;; Change the color of the modeline based on flycheck's current status
+  (use-package flycheck-color-mode-line
+      :ensure t
+      :config (add-hook 'flycheck-mode-hook 'flycheck-color-mode-line-mode))
+
+  ;; Display a tooltip at the cursor position when on a flycheck error
+  (use-package flycheck-pos-tip
+      :ensure t
+      :if window-system
+      :config (add-hook 'flycheck-mode-hook 'flycheck-pos-tip-mode))
+
+  ;; Replace `flycheck''s built-in modeline status indicators with cute, compact,
+  ;; meaningful emoji and warning/error counts
+  (use-package flycheck-status-emoji
+      :ensure t
+      :config (add-hook 'flycheck-mode-hook 'flycheck-status-emoji-mode))
+
+  ;; Support adding C/C++ libraries to `flycheck-clang-include-path' using
+  ;; `pkg-config' and completion. This simplifies getting `flycheck' to recognize
+  ;; appropriate libraries in a system-independent way.
+  ;;
+  ;; Note: This is not a minor mode. Call `flycheck-pkg-config' interactively to
+  ;; lookup (with completion) the correct path to add to
+  ;; `flycheck-clang-include-path' by library name.
+  (use-package flycheck-pkg-config :ensure t)
+#+END_SRC
 ** ace-window: Easy Window Navigation with M-p :acewindow:Navigation:Frames:Windows:
 The ace-window package makes switching between more than two windows
 much easier in Emacs. See the documentation for complete details, but
