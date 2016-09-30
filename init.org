@@ -404,7 +404,7 @@ function.
   ;; Bad
   (when (condition)
       (action))
-  
+
   ;; Bad
   (when (condition)
         (action))
@@ -448,11 +448,11 @@ a special argument, so it is indented by 4 spaces.
 #+BEGIN_EXAMPLE
   ;; Good
   (foo (bar baz) qux)
-  
+
   ;; Bad
   (foo(bar baz)qux)
   (foo( bar baz )qux)
-  
+
   ;; Are you even trying anymore?
   ( foo ( bar baz ) qux )
 #+END_EXAMPLE
@@ -471,7 +471,7 @@ a special argument, so it is indented by 4 spaces.
 #+BEGIN_EXAMPLE
   ;; Good
   (defvar foo ...)
-  
+
   (defun bar ...)
 
   ;; Bad
@@ -596,7 +596,7 @@ Now start tracking how long loading config files takes.
   ;;; debugging/benchmarking the init file.
   (setq drmrd/debug/timeformat "%I:%M%p (%S.%3Ns)")
 
-  (message (concat "Loading Emacs configuration started at " 
+  (message (concat "Loading Emacs configuration started at "
                    (format-time-string drmrd/debug/timeformat)))
 #+END_SRC
 ** Benchmark Initialization
@@ -621,8 +621,7 @@ etc. are eating up the most startup time.
     (if (not (string-equal (ad-get-arg 0) "%s%s"))
         (let ((deactivate-mark nil)
               (inhibit-read-only t))
-          (save-excursion
-            (set-buffer "*Messages*")
+          (with-current-buffer "*Messages*"
             (goto-char (point-max))
             (if (not (bolp))
                 (newline))
@@ -821,7 +820,7 @@ and nlinum modes in a particular mode, not globally.
          ; Aquamacs).
          (if (eq system-type 'darwin)
              (remove-hook 'text-mode-hook 'auto-detect-wrap)))
-#+END_SRC 
+#+END_SRC
 ** kill-aquamacs-autoface-mode: Disable aquamacs-autoface-mode (use as a hook)
 #+BEGIN_SRC emacs-lisp
   (defun kill-aquamacs-autoface-mode ()
@@ -998,7 +997,7 @@ loading new ones, and the pros and cons of using color-theme vs
 Emacs24's built-in custom themes.
 #+BEGIN_SRC emacs-lisp
   (defadvice load-theme (before theme-dont-propagate activate)
-                        (mapcar #'disable-theme custom-enabled-themes))
+                        (mapc #'disable-theme custom-enabled-themes))
 #+END_SRC
 *** Set Default Font(s)
 Naturally, fonts are quite OS and machine-specific, so this portion of
@@ -1060,7 +1059,7 @@ office, so I'm now testing to see if it's some kind of timing issue.
 Highlights the current line in every buffer by default
 #+BEGIN_SRC emacs-lisp :tangle yes
   (global-hl-line-mode 1); Highlight current line in buffer
-  
+
 #+END_SRC
 *** Disable Cursor Blinking
 The enemy of civil society. I disable cursor blinking not only
@@ -1140,7 +1139,7 @@ registers "e", "l", and "p" (resp.) so that they can be opened easily with
   (set-register ?o '(file . "~/.emacs.d/lib/org.org"))
   (set-register ?L '(file . "~/.emacs.d/lib/"))
   (set-register ?W '(file . "~/workspace/"))
-  
+
   ;; Also set a register for Preferences.el if on a Mac
   (if (eq system-type 'darwin)
     (set-register ?p (cons 'file "~/Library/Preferences/Aquamacs Emacs/Preferences.el")))
@@ -1253,9 +1252,8 @@ function to F5.
              "make -f %s" (get-nearest-compilation-file)))))
 #+END_SRC
 * Packages
-The following list comprises all packages that are loaded by default
-and in such a way that they affect all (or most) modes (or enable
-minor-modes in all major-modes).
+The following list comprises all of the packages that (a) are loaded by default
+in most major modes and (b) don't fit elsewhere in this configuration (yet).
 ** GnuTLS: (TLS and SSL support in Emacs)                   :gnutls:TLS:SSL:
 By default, GnuTLS accepts primes of bit length at least 256 in key
 exchanges. We beef this number up to add a bit more
@@ -1551,10 +1549,10 @@ template creation and reuse. Store snippets in the
     :config
       (add-hook 'after-init-hook 'global-company-mode)
       (global-company-mode)
-      
+
       ; Set # of seconds after typing and before suggestions are shown
       (setq company-idle-delay 0.5)
-      
+
       ; Weight suggestions by use frequency
       (setq company-transformers '(company-sort-by-occurrence))
 #+END_SRC
@@ -1578,8 +1576,8 @@ together is adapted from [[https://www.reddit.com/r/emacs/comments/3r9fic/best_p
               '(:with company-yasnippet))))
       ; Apply the company-mode/backend-with-yas function to all
       ; company backends (if yasnippet is enabled in company mode).
-      (setq company-backends (mapcar #'company-mode/backend-with-yas
-                               company-backends))
+      (setq company-backends (mapc #'company-mode/backend-with-yas
+                                   company-backends))
       ;; End of company/yasnippet compatibility code
 #+END_SRC
 Next we add hooks for company mode backends for particular major
@@ -1609,7 +1607,7 @@ priority-based navigation) is increased by adding more of the last
 letter to the end of a tag. (For example FIXMEEEE has higher priority
 than FIXME.)
 
-Note that 
+Note that
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package fixmee
     :init
@@ -1653,7 +1651,6 @@ is [[*Paradox%20Github%20Token][set in an earlier section]].
 ** TODO Popwin (Popup Windows at Bottom of Screen)
 ** TODO Color-identifiers-mode (Unique display colors for unique variables)
 ** TODO Origami: A Multi-Language Folding Mode
-** TODO Eww: Emacs Web Browser
 ** TODO Visible-Mark: Make the Current Mark Visible
 ** Pomodoro Mode: The Pomodoro Technique in Emacs!
 The *pomodoro.el* script adds pomodoro technique indicators to the
@@ -1692,7 +1689,7 @@ moved.
 *** TODO Ensure the second command doesn't create any conflicts with other packages
 ** STARTED Projectile: PROJECT Interaction Library for Emacs
 ** TODO Dired+: Extensions to Dired
-** STARTED org-projectile: Manage TODOs associated with a projectile project 
+** STARTED org-projectile: Manage TODOs associated with a projectile project
 #+SRC_NAME: org-projectile-setup
 #+BEGIN_SRC emacs-lisp
   (use-package org-projectile
@@ -1753,10 +1750,10 @@ editors I tweak the most.
 #+BEGIN_SRC emacs-lisp
   ;; make return key also do indent, globally
   ; (electric-indent-mode 1)
-  
+
   ;; Set tab width to 4
   (setq tab-stop-list (number-sequence 4 200 4))
-  
+
   ;; Force emacs to only indent with spaces and never tabs
   (setq-default indent-tabs-mode nil)
 #+END_SRC
@@ -1893,14 +1890,14 @@ dynamically loads all of our custom LaTeX settings.
 #+SRCNAME load-latex-config
 #+BEGIN_SRC emacs-lisp
   ;;; (La)TeX Mode
-  ;;; 
+  ;;;
   ;;;     Loads our configuration library for LaTeX-related major modes
   ;;;     and AUCTeX. Naturally it is primarily focused on `TeX-mode'
   ;;;     and `LaTeX-mode', but it also includes settings and hooks for,
   ;;;     e.g., `outline-minor-mode', the `outline-magic' package, and
   ;;;     (depending on my mood) `preview-latex'.
   (org-babel-load-file (expand-file-name "~/.emacs.d/lib/latex.org"))
-#+END_SRC 
+#+END_SRC
 ** Org Mode
 Our Org mode configuration has been slowly but surely growing to a
 size where it now deserves its own config library.

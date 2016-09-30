@@ -11,7 +11,7 @@
 | Environment         | [[help:LaTeX-current-environment][LaTeX-current-environment]]    |
 | Section             | [[help:LaTeX-current-section][LaTeX-current-section]]        |
 | Indentation         | [[help:LaTeX-current-indentation][LaTeX-current-indentation]]    |
-| Verbatim Macro      | [[help:LaTeX-current-verbatim-macro][LaTeX-current-verbatim-macro]] | 
+| Verbatim Macro      | [[help:LaTeX-current-verbatim-macro][LaTeX-current-verbatim-macro]] |
 * Startup
 ** Load AucTeX and Preview LaTeX
 AucTeX is the bread-and-butter LaTeX editor for Emacs and should
@@ -21,14 +21,14 @@ always be enabled to complement the built-in modes.
   (sit-for 1)
   (message "Loading LaTeX configuration...")
   ; Don't try to load auctex.el. ELPA takes care of this
-  ; (load "auctex.el" nil t t) 
+  ; (load "auctex.el" nil t t)
 #+END_SRC
 
 *** TODO Test whether the sit-for call is necessary
 I no longer remember why I added that. Perhaps the problem has fixed
 itself? Either way, this is why we document our config files,
-children! 
-** AUCTeX Initialization/Configuration 
+children!
+** AUCTeX Initialization/Configuration
 *** Parse Document on Load and Save
 #+BEGIN_SRC emacs-lisp
   (setq TeX-auto-save t)
@@ -52,7 +52,7 @@ First, we turn on RefTeX for AUCTeX http://www.gnu.org/s/auctex/manual/reftex/re
 #+END_SRC
 *** Add Custom Keybindings
 #+BEGIN_SRC emacs-lisp
-  (setq reftex-label-alist '((nil ?e nil "~\\eqref{%s}" nil nil))) 
+  (setq reftex-label-alist '((nil ?e nil "~\\eqref{%s}" nil nil)))
 #+END_SRC
 *** Set Default Bibliography
 #+BEGIN_SRC emacs-lisp
@@ -69,7 +69,7 @@ since I've been using Skim/external viewers instead.
 * Configuring Minor Modes
 ** Outline Minor Mode
 This allows us to fold sections/environments like in Org Mode.
-*** Load outline-minor-mode 
+*** Load outline-minor-mode
 #+BEGIN_SRC emacs-lisp
   (add-hook 'TeX-mode-hook 'outline-minor-mode)
   (add-hook 'LaTeX-mode-hook 'outline-minor-mode)
@@ -123,7 +123,7 @@ but things that are not compiled by LaTeX (comments)), and I'm dead
 set on trying this out. Frankly, I can't believe I hadn't thought of
 this myself!
 #+BEGIN_SRC emacs-lisp
-  ;; extra outline headers 
+  ;; extra outline headers
   (setq TeX-outline-extra
         '(("%chapter" 1)
           ("%section" 2)
@@ -140,8 +140,8 @@ this myself!
      ("^\\s-*%chapter{\\(.*\\)}"       1 'font-latex-sectioning-1-face t)
      ("^\\s-*%section{\\(.*\\)}"       1 'font-latex-sectioning-2-face t)
      ("^\\s-*%subsection{\\(.*\\)}"    1 'font-latex-sectioning-3-face t)
-     ("^\\s-*%subsubsection{\\(.*\\)}" 1 'font-latex-sectioning-4-face t) 
-     ("^\\s-*%paragraph{\\(.*\\)}"     1 'font-latex-sectioning-5-face t) 
+     ("^\\s-*%subsubsection{\\(.*\\)}" 1 'font-latex-sectioning-4-face t)
+     ("^\\s-*%paragraph{\\(.*\\)}"     1 'font-latex-sectioning-5-face t)
      ("^\\s-*%proof{\\(.*\\)}"         1 'font-latex-sectioning-5-face t)))
 #+END_SRC
 **** TODO Consider expanding on this
@@ -166,9 +166,9 @@ compilation).
   (defun visual-line-mode-on()
     "Turn on `visual-line-mode' minor mode."
     (interactive)
-    (visual-line-mode 1)) 
+    (visual-line-mode 1))
   (add-hook 'TeX-mode-hook #'visual-line-mode-on)
-  (add-hook 'LaTeX-mode-hook #'visual-line-mode-on) 
+  (add-hook 'LaTeX-mode-hook #'visual-line-mode-on)
 #+END_SRC
 *** TODO Consider using visual-fill-column to wrap at a fixed column
 See [[http://melpa.org/#/visual-fill-column][here]] for its MELPA documentation page. It's a small minor mode
@@ -176,7 +176,7 @@ that does this one thing and this one thing quite well. More
 convention implementations of soft line wrapping at a fixed column
 could be somewhat buggy.
 ** Adaptive Wrap Prefix Mode
-#+BEGIN_SRC emacs-lisp 
+#+BEGIN_SRC emacs-lisp
   (defun adaptive-wrap-prefix-mode-on()
     "Turn on `adaptive-wrap-prefix-mode' minor mode."
     (interactive)
@@ -221,7 +221,7 @@ Load =projectile= for project management.
 ** ispell Mode
 Note that the =ispell-tex-arg-end= function I mention below is defined
 in =ispell.el= as follows.
-#+BEGIN_SRC emacs-list :tangle no 
+#+BEGIN_SRC emacs-list :tangle no
   (defun ispell-tex-arg-end (&optional arg)
     "Skip across ARG number of braces."
     (condition-case nil
@@ -234,7 +234,7 @@ in =ispell.el= as follows.
        (sit-for 2))))
 #+END_SRC
 
-#+BEGIN_SRC emacs-lisp 
+#+BEGIN_SRC emacs-lisp
   ;;; Per the documentation, `ispell-tex-skip-alists' is a list of two
   ;;; alists, each of these themselves being lists of 2- and 3-
   ;;; tuples. The tuples are all of the form
@@ -260,7 +260,7 @@ in =ispell.el= as follows.
   ;;; regular expressions (given as strings) and/or functions!  The
   ;;; result of each should be to move the mark to wherever you damn
   ;;; well please.
-  ;;; 
+  ;;;
   ;;; The difference between the first and second entries in
   ;;; `ispell-tex-skip-alists' is that each `BEGINREGEX' inside the
   ;;; second list is matched from within a \begin{...} environment
@@ -323,7 +323,7 @@ a cool idea for a project that we should totally start working on.
 Within enumerate-like environments (in fact, at any point in a LaTeX
 buffer), hitting [Alt] + [Return] invokes [[help:LaTeX-insert-item][LaTeX-insert-item]]
 * Support for Custom Macros & Environments
-** Make AUCTeX Aware of Custom Theorem Environments 
+** Make AUCTeX Aware of Custom Theorem Environments
 #+BEGIN_SRC emacs-lisp
   (add-hook 'LaTeX-mode-hook
     (lambda ()
@@ -331,9 +331,9 @@ buffer), hitting [Alt] + [Return] invokes [[help:LaTeX-insert-item][LaTeX-insert
         '("thm" LaTeX-env-label)
         '("lem" LaTeX-env-label)
         '("proof" LaTeX-env-label)
-	    '("cor" LaTeX-env-label)
-	    '("rem" LaTeX-env-label)
-	    '("claim" LaTeX-env-label))))
+            '("cor" LaTeX-env-label)
+            '("rem" LaTeX-env-label)
+            '("claim" LaTeX-env-label))))
 #+END_SRC
 * Custom Functions
 ** TODO Forward/Backward Token/Mode/Environment Boundary Functions
@@ -347,7 +347,7 @@ delimiters*, although reserve the right to change this name later.
 
 #+SRC_NAME TeX-BoundaryDelimiters
 #+BEGIN_SRC emacs-lisp :tangle no
-  (defvar drmrd-init/lib/latex-TokenDelimiters 
+  (defvar drmrd-init/lib/latex-TokenDelimiters
     '(("{" . nil)
       ("}" . nil))
     "An alist consisting of elements (CAR . CDR), in which CAR is
@@ -394,7 +394,7 @@ delimiters*, although reserve the right to change this name later.
     representing a LaTeX boundary delimiter either as a string
     literal or an elisp regular expression string, with a non-nil
     CDR indicating that it is the latter.")
-    
+
 
   (defun forward-LaTeX-boundary-delimiter (&optional arg)
     "Move forward to the next instance of a delimiter of a TeX
@@ -417,7 +417,7 @@ delimiters*, although reserve the right to change this name later.
   character number of the |COUNT|-th delimiter. Returns nil if the
   beginning or end of (the accessible part of) the buffer is
   reached before |COUNT|-many matches are found."
-    (sleep-for 1)) 
+    (sleep-for 1))
 #+END_SRC
 
 
@@ -443,7 +443,7 @@ crude support for indentation built-in, to the point where this is
 actually surprisingly complicated. Longterm, this definitely seems
 like a worthy endeavor, though, as automatic filling would really
 speed up writing, e.g., large lists. Part of this might also be
-implemented "softly" using soft word wrap. 
+implemented "softly" using soft word wrap.
 ** Fill Sentences (Instead of Paragraphs)
 The following function is due to Luca de Alfaro, and it allows you to
 fill individual sentences instead of full paragraphs. This is useful
@@ -491,7 +491,7 @@ This command is bound to "M-j".
           (LaTeX-newline)))
       (set-marker to-marker nil)))
   (ad-activate 'LaTeX-fill-region-as-paragraph)
-#+END_SRC 
+#+END_SRC
 * Indentation
 ** Set default indentation level to 4 spaces
 #+BEGIN_SRC emacs-lisp
@@ -512,18 +512,18 @@ This command is bound to "M-j".
   ; something "\item-like":
   (setq-default LaTeX-item-indent 0)
 #+END_SRC
-** Advise indent command to indent inside parts, chapters, sections, etc. 
+** Advise indent command to indent inside parts, chapters, sections, etc.
 #+BEGIN_SRC emacs-lisp
   (defadvice LaTeX-indent-line (after LaTeX-indent-line-in-sections-advice activate)
     "A function designed to advise the indent command to indent within
-     parts, chapters, sections, subsections, etc." 
+     parts, chapters, sections, subsections, etc."
     (interactive)
     (let (
            (section-list ; Make a copy of LaTeX-section-headers
              (copy-list LaTeX-section-list)
            )
            (prevline ; Set equal to the previous line as a string
-             (save-excursion 
+             (save-excursion
                (forward-line -1)
                (thing-at-point 'line t)
              )
@@ -536,14 +536,14 @@ This command is bound to "M-j".
          ; The while loop essentially uses section-list, a copy of
          ; LaTeX-section-list, as a stack, pushing another section
          ; name off the stack with each iteration until it is empty.
-         ; 
+         ;
          ; The entire while loop is wrapped in a save-excursion call
          ; to avoid moving the pointer around. I'm not sure if this
          ; is less efficient than just putting it in the conditional
          ; or if it matters at all. Perhaps something to look into
          ; another time.
          (save-excursion
-           (while section-list 
+           (while section-list
              (if (string-match (concat "\s-+\\" (caar section-list) ".*\s-") prevline)
                (progn
                  ; Move to first non-whitespace character in line
@@ -571,7 +571,7 @@ few months ago. Today (<2015-12-02 Wed>) I did it in 1.5 hours.
 ** Enable Flyspell Mode
 #+BEGIN_SRC emacs-lisp
   (add-hook 'LaTeX-mode-hook 'flyspell-mode)
-#+END_SRC 
+#+END_SRC
 * Debugging
 ** Change TeX debugging mode (for more informative error messages)
 #+BEGIN_SRC emacs-lisp
@@ -593,13 +593,13 @@ few months ago. Today (<2015-12-02 Wed>) I did it in 1.5 hours.
       (string= (car cons1) (car cons2)))
 #+END_SRC
 #+BEGIN_SRC emacs-lisp
-  (add-hook 'LaTeX-mode-hook 
+  (add-hook 'LaTeX-mode-hook
     (lambda ()
       (add-to-list 'TeX-command-list
                    '("latexmk" "latexmk -outdir=./tmp %t -pdf %s"
                      TeX-run-TeX nil t :help "Run latexmk on file")
                    nil 'drmrd/latex/string=-cars)))
-#+END_SRC 
+#+END_SRC
 #+BEGIN_SRC emacs-lisp
   (add-hook 'LaTeX-mode-hook
     (lambda ()
@@ -611,9 +611,9 @@ few months ago. Today (<2015-12-02 Wed>) I did it in 1.5 hours.
 #+END_SRC
 ** Enable support for latexmk via C-c C-c
 #+BEGIN_SRC emacs-lisp
-  
+
   ;(add-hook 'TeX-mode-hook '(lambda () (setq TeX-command-default "latexmk")))
-#+END_SRC 
+#+END_SRC
 ** Set how TeX handles DVI files
 #+BEGIN_SRC emacs-lisp
   (setq tex-dvi-print-command "dvips")
