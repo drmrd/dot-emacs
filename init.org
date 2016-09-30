@@ -680,6 +680,298 @@ automatically installed on the current system.
   ;; present on the system.
   (setq use-package-always-ensure t)
 #+END_SRC
+* IDE Features                                      :IDE:Convenience:Editing:
+** flycheck & friends: On-the-fly error checking & linting :Lint:ErrorChecking:flycheck:
+#+SRC_NAME enable_global-flycheck-mode
+#+BEGIN_SRC emacs-lisp
+  ;;; Flycheck Mode (and friends)
+  ;;;
+  ;;;     Enable and configure `flycheck' for a powerful, customizable,
+  ;;;     extensible, drop-in replacement for `flymake'.
+
+  ;; Load flycheck
+  (use-package flycheck
+      :ensure t
+      :init (global-flycheck-mode))
+#+END_SRC
+
+#+SRC_NAME enable_flycheck_extensions
+#+BEGIN_SRC emacs-lisp
+  ;; Change the color of the modeline based on flycheck's current status
+  (use-package flycheck-color-mode-line
+      :ensure t
+      :config (add-hook 'flycheck-mode-hook 'flycheck-color-mode-line-mode))
+
+  ;; Display a tooltip at the cursor position when on a flycheck error
+  (use-package flycheck-pos-tip
+      :ensure t
+      :if window-system
+      :config (add-hook 'flycheck-mode-hook 'flycheck-pos-tip-mode))
+
+  ;; Replace `flycheck''s built-in modeline status indicators with cute, compact,
+  ;; meaningful emoji and warning/error counts
+  (use-package flycheck-status-emoji
+      :ensure t
+      :config (add-hook 'flycheck-mode-hook 'flycheck-status-emoji-mode))
+
+  ;; Support adding C/C++ libraries to `flycheck-clang-include-path' using
+  ;; `pkg-config' and completion. This simplifies getting `flycheck' to recognize
+  ;; appropriate libraries in a system-independent way.
+  ;;
+  ;; Note: This is not a minor mode. Call `flycheck-pkg-config' interactively to
+  ;; lookup (with completion) the correct path to add to
+  ;; `flycheck-clang-include-path' by library name.
+  (use-package flycheck-pkg-config :ensure t)
+#+END_SRC
+** STARTED Projectile: PROJECT Interaction Library for Emacs :ProjectManagement:projectile:
+** STARTED org-projectile: Manage TODOs associated with a projectile project :ProjectManagement:OrgProjectile:TaskManagement:
+#+SRC_NAME: org-projectile-setup
+#+BEGIN_SRC emacs-lisp
+  (use-package org-projectile
+    :bind (("C-c n p" . org-projectile:project-todo-completing-read))
+    :config
+      (progn (setq org-projectile:projects-file "/home/dan/org/projects.org")
+             (setq org-agenda-files (append org-agenda-files (org-projectile:todo-files)))
+             (add-to-list 'org-capture-templates (org-projectile:project-todo-entry "p")))
+    :ensure t)
+#+END_SRC
+
+* Navigation                                                     :Navigation:
+** Ido Mode (Better, Interactive find-file Command) :ido:Completion:FileNavigation:
+Enable Ido Mode for a much improved buffer and file switching/finding
+experience. Configuring Ido Mode, based on the settings in [[http://xgarrido.github.io/emacs-starter-kit/starter-kit-ido.html][xgarrido's
+Emacs Starter Kit]].
+*** Enable Ido Mode
+#+srcname: enable-ido-mode
+#+begin_src emacs-lisp
+  (ido-mode t)
+#+end_src
+*** Basic Configuration
+Next, we change some basic settings to make our lives easier. The
+following table describes each setting. Note that, for Boolean
+variables, the Description column shows the behavior if non-nil, with
+the behavior being the opposite if nil (unless otherwise specified).
+
+|-----------------------+----------------------------------+----------------------------|
+| Setting (ido-[...])   | Description                      | Possible Values            |
+|-----------------------+----------------------------------+----------------------------|
+| everywhere            | Enable Ido Everywhere            | Boolean                    |
+| enable-prefix         | Match input only if prefix       | Boolean                    |
+| enable-flex-matching  | If no string match, match        | Boolean                    |
+|                       | filenames containing input chars |                            |
+| auto-merge-work       | Auto switch to merged work       | Integer N (disable if < 0) |
+| -directories-length   | directories after N typed chars  |                            |
+| use-filename-at-point | Use filename at point?           | Boolean                    |
+| max-prospects         | Max number of results to display | Integer N >= 0             |
+|                       | (infinite if set to 0)           |                            |
+| create-new-buffer     | Create a new buffer if no buffer | 'always                    |
+|                       | matches substring?               | 'prompt                    |
+|                       |                                  | 'never                     |
+| use-virtual-buffers   |                                  | Boolean                    |
+|                       |                                  |                            |
+| handle-duplicate      | ??? (...obsolete?)               | ???                        |
+| -virtual-buffers      |                                  |                            |
+| default-buffer-method | Determines where/how the         | selected-window            |
+|                       | selected buffer is opened        | other-window               |
+|                       |                                  | display                    |
+|                       |                                  | other-frame                |
+|                       |                                  | maybe-frame                |
+|                       |                                  | raise-frame                |
+|                       |                                  | already shown              |
+| default-file-method   | Determines where/how the         | Same as                    |
+|                       | selected file is opened          | default-buffer-method      |
+|-----------------------+----------------------------------+----------------------------|
+
+|------------------------------------------------------------------------------------------|
+| Notes                                                                                    |
+|------------------------------------------------------------------------------------------|
+| Several options mention =virtual buffers=, which are ido-mode's way of pretending        |
+| recently-closed buffers are open. So, for instance, if you set =ido-use-virtual-buffers= |
+| to =t=, ido-mode will keep a list of recently-closed buffers at the bottom of the buffer |
+| list (displayed in the font-face =ido-virtual=), enabling you to, e.g., switch to        |
+| recently-closed buffers after you exit and re-open Emacs.                                |
+|------------------------------------------------------------------------------------------|
+
+#+SRCNAME: ido-mode-basic-config
+#+BEGIN_SRC emacs-lisp
+  (setq ido-everywhere            t
+        ido-enable-prefix         nil
+        ido-enable-flex-matching  t
+        ido-auto-merge-work-directories-length nil
+        ido-use-filename-at-point t
+        ido-max-prospects         10
+        ido-create-new-buffer     'always
+        ;; ido-use-virtual-buffers   t
+        ;; ido-handle-duplicate-virtual-buffers 2
+        ido-default-buffer-method 'selected-window
+        ido-default-file-method   'selected-window)
+#+END_SRC
+
+*** Custom Keybindings
+Since we will configure Ido Mode to [[*Order%20Results%20Vertically][order results vertically]] below,
+rather than horizontally, we will also make the up and down arrow keys
+move up and down the list of results for easy browsing.
+
+#+SRCNAME: ido-mode-custom-keybindings
+#+BEGIN_SRC emacs-lisp
+  (defun ido-my-keys ()
+    (define-key ido-completion-map (kbd "<up>")   'ido-prev-match)
+    (define-key ido-completion-map (kbd "<down>") 'ido-next-match))
+
+  (add-hook 'ido-setup-hook 'ido-my-keys)
+#+END_SRC
+
+*** Order File Extensions
+Set the order in which Ido displays files based on their extensions.
+#+srcname: ido-mode-extension-order
+#+BEGIN_SRC emacs-lisp
+  (setq ido-file-extensions-order     '(".tex" ".org" ".log" ".cc"
+                                        ".h" ".sh" ".el" ".png"))
+#+END_SRC
+
+*** Set Ignored File Extensions and Buffers
+The following settings tell Ido Mode to ignore various types of files
+and buffers that we never actually look up/attempt to switch to.
+
+#+SRCNAME: ido-mode-ignored-extensions-and-buffers
+#+BEGIN_SRC emacs-lisp
+  (setq completion-ignored-extensions '(".o" ".elc" "~" ".bin" ".bak"
+                                        ".obj" ".map" ".a" ".so"
+                                        ".mod" ".aux" ".out" ".pyg"
+                                        ".bbl" ".blg" ".idx" ".ilg"
+                                        ".ind" ".rel" ".synctex.gz"
+                                        "_flymake.bcf" "_flymake.dvi"
+                                        "_flymake.run.xml"
+                                        "_flymake.tex" ".fdb_latexmk"
+                                        ".fls" ".DS_Store"))
+  (setq ido-ignore-extensions t)
+  (setq ido-ignore-buffers (list (rx (or (and bos  " ")
+                                         (and bos
+                                              (or "*Completions*"
+                                                  "*Shell Command Output*"
+                                                  "*vc-diff*")
+                                              eos)))))
+#+END_SRC
+**** TODO Create a new function/keybinding that lists EVERYTHING in the directory
+This would be nice for, e.g., hacking intermediate TeX files on the
+rare occasions when that's useful/necessary.
+
+*** Allow Spaces in ido-find-file
+By default, pressing [Space] does nothing when using ido-find-file,
+which makes it difficult to search with several words that you know
+occur in the file name. This snippet changes this behavior to be more
+intuitive.
+
+#+SRCNAME: ido-mode-enable-spaces
+#+BEGIN_SRC emacs-lisp
+  (add-hook 'ido-make-file-list-hook
+            (lambda ()
+              (define-key ido-file-dir-completion-map (kbd "SPC") 'self-insert-command)))
+#+END_SRC
+
+*** Order Results Vertically & Change Ido Result Formatting
+By default Ido Mode displays results in a multi-line horizontal list,
+which is, frankly, difficult to read at times. This code makes Ido
+list results in a vertical list instead.
+
+#+SRCNAME: ido-mode-list-results-vertically
+#+BEGIN_SRC emacs-lisp
+  (setq ido-decorations (quote ("\n-> "   ""      ; The "brackets" around the
+                                                  ; entire prospect list
+                                "\n "             ; The prospect separator
+                                "\n ..."          ; String inserted at end of a
+                                                  ; truncated list of prospects
+                                "["       "]"     ; Brackets around the common
+                                                  ; match string (that can be
+                                                  ; completed using [Tab])
+                                " [No match]"     ; The string to display when
+                                                  ; there are no matches
+                                " [Matched]"      ; The string to display when
+                                                  ; there is a unique match (and
+                                                  ; faces are not being used)
+                                " [Not readable]" ; The string to display when
+                                                  ; the current directory is not
+                                                  ; readable
+                                " [Too big]"      ; The string to display when
+                                                  ; the current directory
+                                                  ; is > ido-max-directory-size
+                                " [Confirm]"      ; The string to display when
+                                                  ; creating a new file buffer
+                                ; Absent 12th & 13th strings:
+                                ; Brackets around the sole remaining completion,
+                                ; if they should differ from 5 and 6.
+                        )))
+  (defun ido-disable-line-truncation () (set (make-local-variable 'truncate-lines) nil))
+  (add-hook 'ido-minibuffer-setup-hook 'ido-disable-line-truncation)
+#+END_SRC
+
+** SMEX Mode (Ido for M-x)               :smex:Completion:Mx:FileNavigation:
+Replace the usual M-x keybinding with an equivalent that also list all
+completions of the partial command name you've typed in much the same
+way Ido Mode does for buffers and files.
+
+#+SRCNAME: configure-smex
+#+BEGIN_SRC emacs-lisp
+  (use-package smex
+    :bind
+      ("M-x" . smex)
+      ("M-X" . smex-major-mode-commands))
+#+END_SRC
+
+** Recentf (Track Recent Files, Load via C-x C-r)   :recentf:FileNavigation:
+#+SRCNAME load-and-configure-recentf
+#+BEGIN_SRC emacs-lisp
+  (use-package recentf
+    :init
+      (setq recentf-max-menu-items 25)
+    :config
+      (recentf-mode 1)
+      (add-to-list 'recentf-exclude "ido.last")
+    :bind
+      ("C-x C-r" . recentf-open-files))
+#+END_SRC
+
+** Bookmarks                            :bookmarks:Bookmarks:FileNavigation:
+Bookmarks are supported by default in recent versions of Emacs, but
+there are possible enhancement packages, notably =bookmarks+=, that we
+should consider using.
+*** Keybindings
+All of the following keybindings are defaults.
+
+|------------+-----------------------+---------------------------------|
+| Keybinding | Command Name          | Description                     |
+|------------+-----------------------+---------------------------------|
+| C-x r m    | =bookmark-set=        | Create a new bookmark to the    |
+|            |                       | current location in a file      |
+|            |                       | buffer and prompt the user for  |
+|            |                       | its name.                       |
+|------------+-----------------------+---------------------------------|
+| C-x r b    | =bookmark-jump=       | Prompt the user for the name of |
+|            |                       | another bookmark and open it in |
+|            |                       | this buffer.                    |
+|------------+-----------------------+---------------------------------|
+| C-x r l    | =bookmark-bmenu-list= | Display a list of existing      |
+|            |                       | bookmarks in a buffer entitled  |
+|            |                       | *Bookmark List*.                |
+|------------+-----------------------+---------------------------------|
+
+** TODO Dired+: Extensions to Dired               :diredplus:FileNavigation:
+** ace-window: Easy Window Navigation with M-p :acewindow:WindowNavigation:Frames:Windows:
+The ace-window package makes switching between more than two windows
+much easier in Emacs. See the documentation for complete details, but
+the ace-window command will be bound to M-p here.
+#+BEGIN_SRC emacs-lisp
+  (use-package ace-window
+    :bind ("M-p" . ace-window)
+    :bind ("M-P" . ace-window)) ; To use when M-p is overridden
+#+END_SRC
+*** TODO Find a way to use S-M-p to alternate between the two most recently used windows
+This behavior doesn't seem to be cooked into ace-window by default,
+but it would be a real time-saver and convenience. Bonus points if I
+can come up with a way to also set the two windows to alternate
+between by selecting window numbers in ace-window's numeric window
+selection mode.
+
 * Utility Functions
 ** drmrd/load-library
 #+SRC_NAME: def_drmrd/load-library
@@ -1279,186 +1571,6 @@ GnuTLS and Emacs.
 #+BEGIN_SRC emacs-lisp
   (setq gnutls-log-level 2)
 #+END_SRC
-** Ido Mode (Better, Interactive find-file Command)         :ido:Completion:
-Enable Ido Mode for a much improved buffer and file switching/finding
-experience. Configuring Ido Mode, based on the settings in [[http://xgarrido.github.io/emacs-starter-kit/starter-kit-ido.html][xgarrido's
-Emacs Starter Kit]].
-*** Enable Ido Mode
-#+srcname: enable-ido-mode
-#+begin_src emacs-lisp
-  (ido-mode t)
-#+end_src
-*** Basic Configuration
-Next, we change some basic settings to make our lives easier. The
-following table describes each setting. Note that, for Boolean
-variables, the Description column shows the behavior if non-nil, with
-the behavior being the opposite if nil (unless otherwise specified).
-
-|-----------------------+----------------------------------+----------------------------|
-| Setting (ido-[...])   | Description                      | Possible Values            |
-|-----------------------+----------------------------------+----------------------------|
-| everywhere            | Enable Ido Everywhere            | Boolean                    |
-| enable-prefix         | Match input only if prefix       | Boolean                    |
-| enable-flex-matching  | If no string match, match        | Boolean                    |
-|                       | filenames containing input chars |                            |
-| auto-merge-work       | Auto switch to merged work       | Integer N (disable if < 0) |
-| -directories-length   | directories after N typed chars  |                            |
-| use-filename-at-point | Use filename at point?           | Boolean                    |
-| max-prospects         | Max number of results to display | Integer N >= 0             |
-|                       | (infinite if set to 0)           |                            |
-| create-new-buffer     | Create a new buffer if no buffer | 'always                    |
-|                       | matches substring?               | 'prompt                    |
-|                       |                                  | 'never                     |
-| use-virtual-buffers   |                                  | Boolean                    |
-|                       |                                  |                            |
-| handle-duplicate      | ??? (...obsolete?)               | ???                        |
-| -virtual-buffers      |                                  |                            |
-| default-buffer-method | Determines where/how the         | selected-window            |
-|                       | selected buffer is opened        | other-window               |
-|                       |                                  | display                    |
-|                       |                                  | other-frame                |
-|                       |                                  | maybe-frame                |
-|                       |                                  | raise-frame                |
-|                       |                                  | already shown              |
-| default-file-method   | Determines where/how the         | Same as                    |
-|                       | selected file is opened          | default-buffer-method      |
-|-----------------------+----------------------------------+----------------------------|
-
-|------------------------------------------------------------------------------------------|
-| Notes                                                                                    |
-|------------------------------------------------------------------------------------------|
-| Several options mention =virtual buffers=, which are ido-mode's way of pretending        |
-| recently-closed buffers are open. So, for instance, if you set =ido-use-virtual-buffers= |
-| to =t=, ido-mode will keep a list of recently-closed buffers at the bottom of the buffer |
-| list (displayed in the font-face =ido-virtual=), enabling you to, e.g., switch to        |
-| recently-closed buffers after you exit and re-open Emacs.                                |
-|------------------------------------------------------------------------------------------|
-
-#+SRCNAME: ido-mode-basic-config
-#+BEGIN_SRC emacs-lisp
-  (setq ido-everywhere            t
-        ido-enable-prefix         nil
-        ido-enable-flex-matching  t
-        ido-auto-merge-work-directories-length nil
-        ido-use-filename-at-point t
-        ido-max-prospects         10
-        ido-create-new-buffer     'always
-        ;; ido-use-virtual-buffers   t
-        ;; ido-handle-duplicate-virtual-buffers 2
-        ido-default-buffer-method 'selected-window
-        ido-default-file-method   'selected-window)
-#+END_SRC
-
-*** Custom Keybindings
-Since we will configure Ido Mode to [[*Order%20Results%20Vertically][order results vertically]] below,
-rather than horizontally, we will also make the up and down arrow keys
-move up and down the list of results for easy browsing.
-
-#+SRCNAME: ido-mode-custom-keybindings
-#+BEGIN_SRC emacs-lisp
-  (defun ido-my-keys ()
-    (define-key ido-completion-map (kbd "<up>")   'ido-prev-match)
-    (define-key ido-completion-map (kbd "<down>") 'ido-next-match))
-
-  (add-hook 'ido-setup-hook 'ido-my-keys)
-#+END_SRC
-
-*** Order File Extensions
-Set the order in which Ido displays files based on their extensions.
-#+srcname: ido-mode-extension-order
-#+BEGIN_SRC emacs-lisp
-  (setq ido-file-extensions-order     '(".tex" ".org" ".log" ".cc"
-                                        ".h" ".sh" ".el" ".png"))
-#+END_SRC
-
-*** Set Ignored File Extensions and Buffers
-The following settings tell Ido Mode to ignore various types of files
-and buffers that we never actually look up/attempt to switch to.
-
-#+SRCNAME: ido-mode-ignored-extensions-and-buffers
-#+BEGIN_SRC emacs-lisp
-  (setq completion-ignored-extensions '(".o" ".elc" "~" ".bin" ".bak"
-                                        ".obj" ".map" ".a" ".so"
-                                        ".mod" ".aux" ".out" ".pyg"
-                                        ".bbl" ".blg" ".idx" ".ilg"
-                                        ".ind" ".rel" ".synctex.gz"
-                                        "_flymake.bcf" "_flymake.dvi"
-                                        "_flymake.run.xml"
-                                        "_flymake.tex" ".fdb_latexmk"
-                                        ".fls" ".DS_Store"))
-  (setq ido-ignore-extensions t)
-  (setq ido-ignore-buffers (list (rx (or (and bos  " ")
-                                         (and bos
-                                              (or "*Completions*"
-                                                  "*Shell Command Output*"
-                                                  "*vc-diff*")
-                                              eos)))))
-#+END_SRC
-**** TODO Create a new function/keybinding that lists EVERYTHING in the directory
-This would be nice for, e.g., hacking intermediate TeX files on the
-rare occasions when that's useful/necessary.
-
-*** Allow Spaces in ido-find-file
-By default, pressing [Space] does nothing when using ido-find-file,
-which makes it difficult to search with several words that you know
-occur in the file name. This snippet changes this behavior to be more
-intuitive.
-
-#+SRCNAME: ido-mode-enable-spaces
-#+BEGIN_SRC emacs-lisp
-  (add-hook 'ido-make-file-list-hook
-            (lambda ()
-              (define-key ido-file-dir-completion-map (kbd "SPC") 'self-insert-command)))
-#+END_SRC
-
-*** Order Results Vertically & Change Ido Result Formatting
-By default Ido Mode displays results in a multi-line horizontal list,
-which is, frankly, difficult to read at times. This code makes Ido
-list results in a vertical list instead.
-
-#+SRCNAME: ido-mode-list-results-vertically
-#+BEGIN_SRC emacs-lisp
-  (setq ido-decorations (quote ("\n-> "   ""      ; The "brackets" around the
-                                                  ; entire prospect list
-                                "\n "             ; The prospect separator
-                                "\n ..."          ; String inserted at end of a
-                                                  ; truncated list of prospects
-                                "["       "]"     ; Brackets around the common
-                                                  ; match string (that can be
-                                                  ; completed using [Tab])
-                                " [No match]"     ; The string to display when
-                                                  ; there are no matches
-                                " [Matched]"      ; The string to display when
-                                                  ; there is a unique match (and
-                                                  ; faces are not being used)
-                                " [Not readable]" ; The string to display when
-                                                  ; the current directory is not
-                                                  ; readable
-                                " [Too big]"      ; The string to display when
-                                                  ; the current directory
-                                                  ; is > ido-max-directory-size
-                                " [Confirm]"      ; The string to display when
-                                                  ; creating a new file buffer
-                                ; Absent 12th & 13th strings:
-                                ; Brackets around the sole remaining completion,
-                                ; if they should differ from 5 and 6.
-                        )))
-  (defun ido-disable-line-truncation () (set (make-local-variable 'truncate-lines) nil))
-  (add-hook 'ido-minibuffer-setup-hook 'ido-disable-line-truncation)
-#+END_SRC
-
-** SMEX Mode (Ido for M-x)                              :smex:Completion:Mx:
-Replace the usual M-x keybinding with an equivalent that also list all
-completions of the partial command name you've typed in much the same
-way Ido Mode does for buffers and files.
-
-#+SRCNAME: configure-smex
-#+BEGIN_SRC emacs-lisp
-  (use-package smex
-    :bind
-      ("M-x" . smex)
-      ("M-X" . smex-major-mode-commands))
-#+END_SRC
 ** Re-Builder (Regex Builder/Helper)                       :rebuilder:RegEx:
 The Re-Builder (REgular expression BUILDER) package aids in
 constructing regular expressions by highlighting all matches of the
@@ -1473,18 +1585,6 @@ natural to me (and involves the fewest number of excess backslashes).
   (use-package re-builder
     :init (setq reb-re-syntax 'string))
 #+END_SRC
-** Recentf (Track Recent Files, Load via C-x C-r)       :recentf:Navigation:
-#+SRCNAME load-and-configure-recentf
-#+BEGIN_SRC emacs-lisp
-  (use-package recentf
-    :init
-      (setq recentf-max-menu-items 25)
-    :config
-      (recentf-mode 1)
-      (add-to-list 'recentf-exclude "ido.last")
-    :bind
-      ("C-x C-r" . recentf-open-files))
-#+END_SRC
 ** Undo Tree: Represent Buffer Changes as a Tree     :undotree:Undo:Editing:
 Use undo-tree-visualize to browse the undo tree.
 #+BEGIN_SRC emacs-lisp
@@ -1492,29 +1592,6 @@ Use undo-tree-visualize to browse the undo tree.
     :diminish undo-tree-mode
     :init     (global-undo-tree-mode))
 #+END_SRC
-** Bookmarks                                :bookmarks:Bookmarks:Navigation:
-Bookmarks are supported by default in recent versions of Emacs, but
-there are possible enhancement packages, notably =bookmarks+=, that we
-should consider using.
-*** Keybindings
-All of the following keybindings are defaults.
-
-|------------+-----------------------+---------------------------------|
-| Keybinding | Command Name          | Description                     |
-|------------+-----------------------+---------------------------------|
-| C-x r m    | =bookmark-set=        | Create a new bookmark to the    |
-|            |                       | current location in a file      |
-|            |                       | buffer and prompt the user for  |
-|            |                       | its name.                       |
-|------------+-----------------------+---------------------------------|
-| C-x r b    | =bookmark-jump=       | Prompt the user for the name of |
-|            |                       | another bookmark and open it in |
-|            |                       | this buffer.                    |
-|------------+-----------------------+---------------------------------|
-| C-x r l    | =bookmark-bmenu-list= | Display a list of existing      |
-|            |                       | bookmarks in a buffer entitled  |
-|            |                       | *Bookmark List*.                |
-|------------+-----------------------+---------------------------------|
 ** YASnippet                               :yasnippet:Completion:Templating:
 Yet Another Snippet is a templating package for Emacs, enabling rapid
 template creation and reuse. Store snippets in the
@@ -1617,63 +1694,6 @@ Note that
 #+END_SRC
 *** TODO Come up with a good replacement for the fixmee-goto-next-by-position keybinding
 This is M-p by default, but that is currently being used by ace-window.
-** flycheck & friends: On-the-fly error checking & linting :flycheck:Lint:ErrorChecking:
-#+SRC_NAME enable_global-flycheck-mode
-#+BEGIN_SRC emacs-lisp
-  ;;; Flycheck Mode (and friends)
-  ;;;
-  ;;;     Enable and configure `flycheck' for a powerful, customizable,
-  ;;;     extensible, drop-in replacement for `flymake'.
-
-  ;; Load flycheck
-  (use-package flycheck
-      :ensure t
-      :init (global-flycheck-mode))
-#+END_SRC
-
-#+SRC_NAME enable_flycheck_extensions
-#+BEGIN_SRC emacs-lisp
-  ;; Change the color of the modeline based on flycheck's current status
-  (use-package flycheck-color-mode-line
-      :ensure t
-      :config (add-hook 'flycheck-mode-hook 'flycheck-color-mode-line-mode))
-
-  ;; Display a tooltip at the cursor position when on a flycheck error
-  (use-package flycheck-pos-tip
-      :ensure t
-      :if window-system
-      :config (add-hook 'flycheck-mode-hook 'flycheck-pos-tip-mode))
-
-  ;; Replace `flycheck''s built-in modeline status indicators with cute, compact,
-  ;; meaningful emoji and warning/error counts
-  (use-package flycheck-status-emoji
-      :ensure t
-      :config (add-hook 'flycheck-mode-hook 'flycheck-status-emoji-mode))
-
-  ;; Support adding C/C++ libraries to `flycheck-clang-include-path' using
-  ;; `pkg-config' and completion. This simplifies getting `flycheck' to recognize
-  ;; appropriate libraries in a system-independent way.
-  ;;
-  ;; Note: This is not a minor mode. Call `flycheck-pkg-config' interactively to
-  ;; lookup (with completion) the correct path to add to
-  ;; `flycheck-clang-include-path' by library name.
-  (use-package flycheck-pkg-config :ensure t)
-#+END_SRC
-** ace-window: Easy Window Navigation with M-p :acewindow:Navigation:Frames:Windows:
-The ace-window package makes switching between more than two windows
-much easier in Emacs. See the documentation for complete details, but
-the ace-window command will be bound to M-p here.
-#+BEGIN_SRC emacs-lisp
-  (use-package ace-window
-    :bind ("M-p" . ace-window)
-    :bind ("M-P" . ace-window)) ; To use when M-p is overridden
-#+END_SRC
-*** TODO Find a way to use S-M-p to alternate between the two most recently used windows
-This behavior doesn't seem to be cooked into ace-window by default,
-but it would be a real time-saver and convenience. Bonus points if I
-can come up with a way to also set the two windows to alternate
-between by selecting window numbers in ace-window's numeric window
-selection mode.
 ** paradox: An updated package manager                     :paradox:PkgMgmt:
 See the documentation. Run it by calling M-x paradox-list-packages.
 Note that the Github token provided to paradox for Github integration
@@ -1729,19 +1749,6 @@ moved.
       (add-hook 'pre-command-hook 'erase-nonempty-inactive-minibuffer))
 #+END_SRC
 *** TODO Ensure the second command doesn't create any conflicts with other packages
-** STARTED Projectile: PROJECT Interaction Library for Emacs
-** TODO Dired+: Extensions to Dired
-** STARTED org-projectile: Manage TODOs associated with a projectile project
-#+SRC_NAME: org-projectile-setup
-#+BEGIN_SRC emacs-lisp
-  (use-package org-projectile
-    :bind (("C-c n p" . org-projectile:project-todo-completing-read))
-    :config
-      (progn (setq org-projectile:projects-file "/home/dan/org/projects.org")
-             (setq org-agenda-files (append org-agenda-files (org-projectile:todo-files)))
-             (add-to-list 'org-capture-templates (org-projectile:project-todo-entry "p")))
-    :ensure t)
-#+END_SRC
 ** smart-mode-line (sml): Enhancements and themes for the modeline :sml:SmartModeLine:modeline:appearance:
 #+SRC_NAME smart-mode-line_setup
 #+BEGIN_SRC emacs-lisp :tangle no
