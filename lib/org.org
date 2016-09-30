@@ -167,32 +167,37 @@ which require (and can only contain) the key and description entries.)
                           "Inbox"
                           "Citation Requests")
                 "* TODO Citation Needed: [[%l][%^{(Short) Cite Link Name|Here}]] :CITEME:\nCreated: %u\n%^{Comments|}\n"
-                :prepend t :immediate-finish t :kill-buffer t)
+                :prepend t :immediate-finish nil :kill-buffer t)
           ("dn" "note" entry
                 (file+olp "~/org/dissertating.org" "Inbox" "Notes")
                 "* TODO %u %^{Note Headline} %^g:NOTE:\n%^{Description (optional)}\n"
-                :prepend t :immediate-finish t :kill-buffer t)
+                :prepend t :immediate-finish nil :kill-buffer t)
           ("dq" "quickref" item
                 (file+olp "~/org/dissertating.org" "Inbox" "QuickRefs")
                 " - %^{Result Description} :: %^{Label or Citation}"
-                :prepend t :immediate-finish t :kill-buffer t)
+                :prepend t :immediate-finish nil :kill-buffer t)
           ("dt" "task" entry
                 (file+olp "~/org/dissertating.org" "Inbox" "Tasks")
                 "* TODO [[%l][Link]] %u %^{Task Headline} %^g\n%^{Description (optional)}\n"
-                :prepend t :immediate-finish t :kill-buffer t)
+                :prepend t :immediate-finish nil :kill-buffer t)
           ("t" "General task and note templates")
           ("tm" "maybe" entry
                 (file+olp "~/org/inbox.org" "Tasks Inbox")
                 "* MAYBE [[%l][Link]] %u %^{Task Headline} %^g\n%^{Description (optional)}\n"
-                :prepend t :immediate-finish t :kill-buffer t)
+                :prepend t :immediate-finish nil :kill-buffer t)
           ("tt" "todo" entry
                 (file+olp "~/org/inbox.org" "Tasks Inbox")
                 "* TODO [[%l][Link]] %u %^{Task Headline} %^g\n%^{Description (optional)}\n"
-                :prepend t :immediate-finish t :kill-buffer t)
+                :prepend t :immediate-finish nil :kill-buffer t)
           ("n" "Learn something new? Jot it down here!")
           ("nn" "anything and everything" entry
                 (file+olp "~/org/inbox.org" "Notes Inbox")
                 "* TODO %u %^{Note Headline} %^g:NOTE:\n%^{Description (optional)}\n"
+                :prepend t :immediate-finish nil :kill-buffer t)
+          ("e" "event" entry
+               (file+olp "~/org/calendar.org" "Default")
+               "* %^{Brief description} %^g\nSCHEDULED: %t\n%i\n%a")
+         ))
 #+END_SRC
 ** Remove empty logbook entries when capturing                     :Logbook:
 Now we add code to remove logbook entries that are created but empty,
