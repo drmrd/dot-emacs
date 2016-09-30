@@ -4,7 +4,7 @@ DRMRD INIT -*- mode: org -*-
 #+OPTIONS: toc:nil num:nil ^:nil
 #+PROPERTY: header-args    :comments link
 #+STARTUP: indent
-* Description & Warnings
+* Introduction
 This file contains most of the settings and customizations pertaining
 to org-mode contained in my Emacs configuration. It has only recently
 been branched into its own file from [[file:~/.emacs.d/init.org][my main init file]], and so it is
