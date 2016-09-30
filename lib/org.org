@@ -32,9 +32,6 @@ readily be modified to a list of subdirectories, files, etc. if
 necessary.
 #+BEGIN_SRC emacs-lisp
   (setq org-directory "~/org")
-  (setq org-agenda-files '("~/org"))
-  (setq org-agenda-file-regexp "\\`\\(dissertating\\|inbox\\|tasks\\|quickref\\|research\\)\\.org\\'")
-  (setq org-default-notes-file "~/org/inbox.org")
 #+END_SRC
 * Hyperlinks
 ** Custom Hyperlinks
@@ -119,99 +116,49 @@ input to insert onto an additional line in the format specified by the
   (setq org-log-done 'time)
 #+END_SRC
 
-* CANCELED Configuring Tags
-CLOSED: [2016-06-14 Tue 16:20]
-The [[help:org-tag-alist][org-tag-alist]] variable can be configured to include default tags,
-which can in turn be used for organizing TODO/agenda items.
-#+SRC_NAME redef_org-tag-alist
-#+BEGIN_SRC emacs-lisp :tangle no
-  (setq org-tag-alist
-    '(;(:startgroup . nil)
-      ;  ("@home" . ?h)
-      ;  ("@work" . ?w)
-      ;(:endgroup . nil)
-      ("fun"          . ?f)
-      ("work"         . ?w)
-      ("organizing"   . ?o)
-      ("proving"      . ?p)
-      ("revisions"    . ?r)
-      (:startgroup    . nil)
-        ("urgent"     . ?u)
-      (:endgroup      . nil)))
-#+END_SRC
-** DONE Consider reverting to Org's default behavior
-CLOSED: [2016-06-14 Tue 16:20]
-From the documentation, it sounds like Org usually just creates a list
-of tags based on the current org document. For buffers where it would
-be nice to have very task-specific, GTD-like tags, we could configure
-this variable locally via document properties.
-* Org Refile Configuration
-** Setting up refile targets
-By default, org-refile only supports refiling trees in the current
-buffer to beneath other top level headers in the same buffer. We can
-change this by configuring [[help:org-refile-targets][org-refile-targets]] appropriately.
-#+SRC_NAME custom_org-refile-targets_setup
+* Org Agenda
+** Set Agenda & Note Files
 #+BEGIN_SRC emacs-lisp
-    (setq org-refile-targets
-          '((org-agenda-files . (:maxlevel . 1))
-            ("dissertating.org" . (:maxlevel . 2))))
+  (setq org-agenda-files '("~/org/inbox.org"
+                           "~/org/calendar.org"
+                           "~/org/tasks.org"
+                           "~/org/dissertating.org"))
 #+END_SRC
-* Org Capture Configuration & Templates
-Enables [[help:org-capture][org-capture]] mode with C-c c. This and the capture templates
-that follow will allow us to automatically create TODOs, notes, etc.,
-linked to the current pointer location in another file, and store them
-in our default notes file. (Of course, there are unlimited other
-possibilities here for automating this further/creating additional
-templates that we could also setup, but these should suffice for now.)
-A task may be started with the "C-c C-c" command in this mode, which
-will make org-capture start monitoring time spent on the given task.
+* Org Capture
+Now we bind [[help:org-capture][org-capture]] mode globally to =C-c c=. This and the capture templates
+that follow will allow us to automatically create TODOs, notes, etc., linked to
+the current pointer location in another file, and store them in our default
+notes file. (Of course, there are unlimited other possibilities here for
+automating this further/creating additional templates that we could also setup,
+but these should suffice for now.)  A task may be started with the "C-c C-c"
+command in this mode, which will make org-capture start monitoring time spent on
+the given task.
 
 #+BEGIN_SRC emacs-lisp
   (global-set-key (kbd "C-c c") 'org-capture)
 #+END_SRC
-
-Next we define some templates. These began as modifications of the
-templates found in [[http://doc.norang.ca/org-mode.html#CaptureTemplates][this guide]] when I first started using
-org-capture. Over time they've become my own. Be sure to read the
-[[help:org-capture-template][help page]] for the =org-capture-templates= variable for the full
-documentation. It's worth summarizing some key points here,
-however. First, =org-capture=templates= is a list of lists. Each of
-the inner lists is of the following form:
+** Set Default Notes File
+#+BEGIN_SRC emacs-lisp
+  (setq org-default-notes-file "~/org/inbox.org")
+#+END_SRC
+** Templates                                                     :Templates:
+*** Overview
+:PROPERTIES:
+:VISIBILITY: folded
+:END:
+The syntax for capture templates is as follows (see [[help:org-capture-templates][the documentation]] for
+details):
 
 #+NAME org-capture-template-entry-format
 #+BEGIN_EXAMPLE
   (keys description type target template property1 property2 ...)
 #+END_EXAMPLE
-for
- - keys :: the key(s) that will select this template
-   - This is usually a single-character string. If using multiple
-     characters and the same prefix character occurs in more than one
-     of your templates, you must keep all of the items using that
-     prefix together in the list and immediately following a 2-item
-     list containing the prefix and a description of the prefix's
-     meaning. See the "nn" and "nl" templates' defitions below for an
-     example.
- - description :: a /short/ description of the template (shown during
-      selection)
- - type :: the type of entry to be created from captured material. The
-      valid types are =entry= (for a headline), =item= (in a plain
-      list), =checkitem= (in a checklist), =table-line= (in the first
-      table at the target location), and =plain= (as-is insertion).
- - target :: where the captured thing should be stored. Too many to
-      list here, but most are some mix of files, headlines, functions,
-      clocks, etc.
- - template :: the template string, file, or function to use. Most
-      commonly a string, using the format specified in the
-      documentation for [[help:org-capture-templates][org-capture-templates]] (and similar to other
-      templating conventions used in Emacs).
- - properties :: these are items of the form =:property= for one of
-      about ten or fifteen built-in properties (as described in the
-      [[help:org-capture-templates][documentation]]).
-Every item in the list is required with the exception of the
-trailing properties. (This is, of course, not the case for template
-key prefix entries, which require (and can only contain) the key and
-description entries.)
 
+Every item in the list is required with the exception of the trailing
+properties. (This is, of course, not the case for template key prefix entries,
+which require (and can only contain) the key and description entries.)
+*** Configuration
+#+SRC_NAME set_org-capture-templates
 #+BEGIN_SRC emacs-lisp
   (setq org-capture-templates
         '(("d" "Dissertating-related templates")
@@ -246,50 +193,8 @@ description entries.)
           ("nn" "anything and everything" entry
                 (file+olp "~/org/inbox.org" "Notes Inbox")
                 "* TODO %u %^{Note Headline} %^g:NOTE:\n%^{Description (optional)}\n"
-                :prepend t :immediate-finish nil :kill-buffer t)))
-          ;; ("t" "Templates for creating tasks")
-          ;; ("tt" "todo (no link)" entry (file "~/org/inbox.org")
-          ;;      "* TODO %?\n%U\n" :prepend t)
-          ;; ("tl" "todo (link)" entry (file "~/org/inbox.org")
-          ;;      "* TODO %?\n%U\n%a\n" :prepend t)
-          ;; ;; ("r" "respond" entry (file "~/org/inbox.org")
-          ;; ;;      "* NEXT Respond to %:from on %:subject\nSCHEDULED: %t\n%U\n%a\n"
-          ;; ;;      :clock-in t :clock-resume t :immediate-finish t)
-          ;; ("n" "Templates for creating notes")
-          ;; ("nn" "note (no link)" entry (file "~/org/inbox.org")
-          ;;      "* %? :NOTE:\n%U\n" :clock-in t :clock-resume t)
-          ;; ("nl" "note (link)" entry (file "~/org/inbox.org")
-          ;;      "* %? :NOTE:\n%U\n%a\n" :clock-in t :clock-resume t)
-          ;; ("nd" "dissertating note" entry (file "~/org/dissertating.org")
-          ;;      "* %? :NOTE:\n%U\n%a\n" :clock-in t :clock-resume t)))
-          ;; ;; ("j" "Journal" entry (file+datetree "~/org/diary.org")
-          ;; ;;      "* %?\n%U\n" :clock-in t :clock-resume t)
-          ;; ;; ("w" "org-protocol" entry (file "~/org/inbox.org")
-          ;; ;;      "* TODO Review %c\n%U\n" :immediate-finish t)
-          ;; ;; ("m" "Meeting" entry (file "~/org/inbox.org")
-          ;; ;;      "* MEETING with %? :MEETING:\n%U" :clock-in t :clock-resume t)
-          ;; ;; ("p" "Phone call" entry (file "~/org/inbox.org")
-          ;; ;;      "* PHONE %? :PHONE:\n%U" :clock-in t :clock-resume t)
-          ;; ;; ("h" "Habit" entry (file "~/org/inbox.org")
-          ;; ;;      "* NEXT %?\n%U\n%a\nSCHEDULED: %(format-time-string \"%<<%Y-%m-%d %a .+1d/3d>>\")\n:PROPERTIES:\n:STYLE: habit\n:REPEAT_TO_STATE: NEXT\n:END:\n")))
 #+END_SRC
-
-Let's also print a reminder about the shortcut and capture template
-keys to the minibuffer and *Messages* buffers.
-
-*EDIT:* (May 2016) We've disabled this, since we know the keys by now, and the
-feature is pretty self-documenting if you can remember the C-c c and
-C-c C-c keybindings.
-#+SRC_NAME org-capture-init-message-reminder
-#+BEGIN_SRC emacs-lisp :tangle no
-  (message "Reminder: You can toggle org-capture mode for easy task
-  management using \"C-c c\". While org-capture mode is active, use
-  \"C-c C-c\" followed by one of the letters t, r, n, j, w, m, p,
-  and h to start capturing a todo, response-needed, note, journal,
-  org-protocols, logging a meeting, logging a phonecall, and
-  logging a habit (resp.).")
-#+END_SRC
-
+** Remove empty logbook entries when capturing                     :Logbook:
 Now we add code to remove logbook entries that are created but empty,
 which occur when we spend less than a minute capturing something.
 
@@ -302,6 +207,17 @@ which occur when we spend less than a minute capturing something.
       (org-remove-empty-drawer-at (point))))
 
   (add-hook 'org-clock-out-hook 'bh/remove-empty-drawer-on-clock-out 'append)
+#+END_SRC
+* Org Refile
+** Setting up refile targets
+By default, org-refile only supports refiling trees in the current
+buffer to beneath other top level headers in the same buffer. We can
+change this by configuring [[help:org-refile-targets][org-refile-targets]] appropriately.
+#+SRC_NAME custom_org-refile-targets_setup
+#+BEGIN_SRC emacs-lisp
+    (setq org-refile-targets
+          '((org-agenda-files . (:maxlevel . 1))
+            ("dissertating.org" . (:maxlevel . 2))))
 #+END_SRC
 * M-Return Settings
 ** Add setting to separate headings other than tasks by newlines (not enabled by default)
