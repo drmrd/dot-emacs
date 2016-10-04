@@ -1515,6 +1515,9 @@ file variable when needed.
 #+BEGIN_SRC emacs-lisp
   (setq apropos-do-all t)   ; Make all apropos commands perform more
                             ; extensive searches
+
+  ;; Make y and n suffice for answers to yes or no questions
+  (fset 'yes-or-no-p 'y-or-n-p)
 #+END_SRC
 ** Compilation Behavior                              :Keybindings:Compiling:
 The following is brough to us by bpalmer and zigler on the
