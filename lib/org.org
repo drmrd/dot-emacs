@@ -99,8 +99,23 @@ By default the value is =((sequence "TODO" "DONE"))=
 
 #+SRC_NAME redef_org-todo-keywords
 #+BEGIN_SRC emacs-lisp
+  ; Courtesy of http://doc.norang.ca/org-mode.html#TasksAndStates
   (setq org-todo-keywords
-    '((sequence "TODO(t)" "MAYBE(m)" "STARTED(s)" "WAITING(w)" "|" "DONE(d)" "CANCELED(c)")))
+        (quote ((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d)")
+                (sequence "WAITING(w@/!)" "HOLD(h@/!)" "|" "CANCELLED(c@/!)" "PHONE" "MEETING"))))
+
+  (setq org-todo-keyword-faces
+        (quote (("TODO" :foreground "red" :weight bold)
+                ("NEXT" :foreground "blue" :weight bold)
+                ("DONE" :foreground "forest green" :weight bold)
+                ("WAITING" :foreground "orange" :weight bold)
+                ("HOLD" :foreground "magenta" :weight bold)
+                ("CANCELLED" :foreground "forest green" :weight bold)
+                ("MEETING" :foreground "forest green" :weight bold)
+                ("PHONE" :foreground "forest green" :weight bold))))
+
+  ;(setq org-todo-keywords
+  ;  '((sequence "TODO(t)" "MAYBE(m)" "STARTED(s)" "WAITING(w)" "|" "DONE(d)" "CANCELED(c)")))
 #+END_SRC
 *** Toggle timestamps and/or notes when TODOs are toggled between =TODO= and =DONE=
 The behavior of the =org-todo= command, bound to C-c C-t by default,
@@ -119,10 +134,12 @@ input to insert onto an additional line in the format specified by the
 * Org Agenda
 ** Set Agenda & Note Files
 #+BEGIN_SRC emacs-lisp
-  (setq org-agenda-files '("~/org/inbox.org"
+  (setq org-agenda-files '("~/org/refile.org"
                            "~/org/calendar.org"
+                           "~/org/habits.org"
                            "~/org/tasks.org"
-                           "~/org/dissertating.org"))
+                           ;"~/org/dissertating.org"
+                           ))
 #+END_SRC
 * Org Capture
 Now we bind [[help:org-capture][org-capture]] mode globally to =C-c c=. This and the capture templates
@@ -139,7 +156,7 @@ the given task.
 #+END_SRC
 ** Set Default Notes File
 #+BEGIN_SRC emacs-lisp
-  (setq org-default-notes-file "~/org/inbox.org")
+  (setq org-default-notes-file "~/org/refile.org")
 #+END_SRC
 ** Templates                                                     :Templates:
 *** Overview
@@ -163,40 +180,41 @@ which require (and can only contain) the key and description entries.)
   (setq org-capture-templates
         '(("d" "Dissertating-related templates")
           ("dc" "citation needed" entry
-                (file+olp "~/org/dissertating.org"
-                          "Inbox"
-                          "Citation Requests")
+                (file+olp "~/org/dissertating.org" "Refile")
                 "* TODO Citation Needed: [[%l][%^{(Short) Cite Link Name|Here}]] :CITEME:\nCreated: %u\n%^{Comments|}\n"
                 :prepend t :immediate-finish nil :kill-buffer t)
           ("dn" "note" entry
-                (file+olp "~/org/dissertating.org" "Inbox" "Notes")
+                (file+olp "~/org/dissertating.org" "Refile")
                 "* TODO %u %^{Note Headline} %^g:NOTE:\n%^{Description (optional)}\n"
-                :prepend t :immediate-finish nil :kill-buffer t)
+                :prepend t :kill-buffer t)
           ("dq" "quickref" item
-                (file+olp "~/org/dissertating.org" "Inbox" "QuickRefs")
+                (file+olp "~/org/dissertating.org" "QuickRefs")
                 " - %^{Result Description} :: %^{Label or Citation}"
-                :prepend t :immediate-finish nil :kill-buffer t)
+                :kill-buffer t)
           ("dt" "task" entry
-                (file+olp "~/org/dissertating.org" "Inbox" "Tasks")
-                "* TODO [[%l][Link]] %u %^{Task Headline} %^g\n%^{Description (optional)}\n"
-                :prepend t :immediate-finish nil :kill-buffer t)
+                (file "~/org/dissertating.org" "Refile")
+                "* TODO [[%l][Link]] %^{Task Headline} %^g\n%^{Description (optional)}\n"
+                :prepend t :kill-buffer t)
           ("t" "General task and note templates")
           ("tm" "maybe" entry
-                (file+olp "~/org/inbox.org" "Tasks Inbox")
-                "* MAYBE [[%l][Link]] %u %^{Task Headline} %^g\n%^{Description (optional)}\n"
-                :prepend t :immediate-finish nil :kill-buffer t)
+                (file "~/org/refile.org")
+                "* MAYBE [[%l][Link]] %^{Task Headline} %^g\n%^{Description (optional)}\n"
+                :prepend t :kill-buffer t)
           ("tt" "todo" entry
-                (file+olp "~/org/inbox.org" "Tasks Inbox")
-                "* TODO [[%l][Link]] %u %^{Task Headline} %^g\n%^{Description (optional)}\n"
-                :prepend t :immediate-finish nil :kill-buffer t)
+                (file "~/org/refile.org")
+                "* TODO [[%l][Link]] %^{Task Headline} %^g\n%^{Description (optional)}\n"
+                :prepend t :kill-buffer t)
           ("n" "Learn something new? Jot it down here!")
           ("nn" "anything and everything" entry
-                (file+olp "~/org/inbox.org" "Notes Inbox")
+                (file "~/org/refile.org")
                 "* TODO %u %^{Note Headline} %^g:NOTE:\n%^{Description (optional)}\n"
                 :prepend t :immediate-finish nil :kill-buffer t)
           ("e" "event" entry
                (file+olp "~/org/calendar.org" "Default")
                "* %^{Brief description} %^g\nSCHEDULED: %t\n%i\n%a")
+          ("h" "habit" entry
+               (file+olp "~/org/habits.org" "Default")
+               "** TODO %^{Brief habit description} %^g\nSCHEDULED: %(format-time-string \"%<<%Y-%m-%d %a .+1d/3d>>\")\n:PROPERTIES:\n:STYLE: habit\n:END:")
          ))
 #+END_SRC
 ** Remove empty logbook entries when capturing                     :Logbook:
@@ -221,8 +239,12 @@ change this by configuring [[help:org-refile-targets][org-refile-targets]] appro
 #+SRC_NAME custom_org-refile-targets_setup
 #+BEGIN_SRC emacs-lisp
     (setq org-refile-targets
-          '((org-agenda-files . (:maxlevel . 1))
-            ("dissertating.org" . (:maxlevel . 2))))
+          '((org-agenda-files . (:maxlevel . 2))))
+#+END_SRC
+* Org Habit                                                          :Habits:
+#+SRC_NAME setup_org-habit
+#+BEGIN_SRC emacs-lisp
+  (require 'org-habit)
 #+END_SRC
 * M-Return Settings
 ** Add setting to separate headings other than tasks by newlines (not enabled by default)
