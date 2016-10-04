@@ -1547,10 +1547,81 @@ function to F5.
   (global-set-key [f5] (lambda () (interactive) (compile (format
              "make -f %s" (get-nearest-compilation-file)))))
 #+END_SRC
-* Packages
+** Indentation & Whitespace Settings
+This deserves its own section, since it is always the part of text
+editors I tweak the most.
+*** Default to indenting with spaces, four at a time
+#+BEGIN_SRC emacs-lisp
+  ;; make return key also do indent, globally
+  ; (electric-indent-mode 1)
+
+  ;; Set tab width to 4
+  (setq tab-stop-list (number-sequence 4 200 4))
+
+  ;; Force emacs to only indent with spaces and never tabs
+  (setq-default indent-tabs-mode nil)
+#+END_SRC
+*** [Tab] behavior
+**** Set =tab-always=indent=: Make [Tab] try to indent or (if already indented) complete the thing-at-point
+Change the =tab-always-indent= setting to "complete", which makes
+[Tab] first try to indent the current line and then, iff it was
+already indented, attempt to complete the thing at the current point.
+
+The other options for this variable are =nil=, which makes [Tab]
+indent the current line if at the left margin or in its indentation
+and otherwise literally insert a TAB character, and =t=, which makes
+[Tab] always indent.
+#+BEGIN_SRC emacs-lisp
+  (setq-default tab-always-indent 'complete)
+#+END_SRC emacs-lisp
+
+**** Bind M-q to =indent-relative=
+#+BEGIN_SRC emacs-lisp
+  ;;
+  ;  Makes M-q indent from cursor to the space prior to the next
+  ;  non-whitespace character on the previous line.
+  ;
+  ;  Example: If the current buffer looks as follows (with the cursor denoted by *)...
+  ;
+  ;          sample text is entertaining to write
+  ;          I completely agree* with you
+  ;
+  ;      Then the result of hitting M-q will be
+  ;
+  ;          sample text is entertaining to write
+  ;          I completely agree          with you
+  ;
+  ;      with the cursor right before the "w" in "with".
+  (global-set-key (kbd "M-q") 'indent-relative)
+#+END_SRC
+***** TODO Consider also setting [Tab] (or something) to (indent-relative-maybe).
+
+* Packages                                                         :Packages:
 The following list comprises all of the packages that (a) are loaded by default
 in most major modes and (b) don't fit elsewhere in this configuration (yet).
-** GnuTLS: (TLS and SSL support in Emacs)                   :gnutls:TLS:SSL:
+** fixmee                                :fixmee:TaskManagement:Navigation:
+A package for displaying and navigating TODOs, FIXMEs, etc. throughout a
+project. Works great with =projectile=, too! Use the =C-x f= keybinding to load
+a =projectile + fixmee= [[hydra]].
+
+Tags are case-insensitive except for XXX, and priority (used in
+priority-based navigation) is increased by adding more of the last
+letter to the end of a tag. (For example FIXMEEEE has higher priority
+than FIXME.)
+
+Note that
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package fixmee
+    :init
+      (require 'button-lock)
+    :config
+      (global-fixmee-mode 1))
+#+END_SRC
+*** TODO Come up with a good replacement for the fixmee-goto-next-by-position keybinding
+This is M-p by default, but that is currently being used by ace-window.
+** gnutls                                                    :gnutls:TLS:SSL:
+TLS and SSL support in Emacs.
+
 By default, GnuTLS accepts primes of bit length at least 256 in key
 exchanges. We beef this number up to add a bit more
 security/protection from man-in-the-middle attacks.
@@ -1575,7 +1646,54 @@ GnuTLS and Emacs.
 #+BEGIN_SRC emacs-lisp
   (setq gnutls-log-level 2)
 #+END_SRC
-** Re-Builder (Regex Builder/Helper)                       :rebuilder:RegEx:
+** hydra                                       :hydra:Keybindings:Libraries:
+Groups of keybindings/registers on steroids
+
+#+SRC_NAME: load-hydra-config
+#+BEGIN_SRC emacs-lisp :tangle yes
+  ;;; Load and configure `hydra'
+  (use-package hydra
+               :ensure
+               :config
+               (org-babel-load-file (expand-file-name "~/.emacs.d/lib/hydra.org")))
+#+END_SRC
+** flyspell-lazy                                :flyspelllazy:SpellChecking:
+Load the third-party flyspell-lazy.elc script, which improves flyspell's
+responsiveness by forcing it to only check spelling when Emacs has been idle for
+a little while (as opposed to damn near constantly).
+
+#+BEGIN_SRC emacs-lisp
+  (require 'flyspell-lazy)
+  (flyspell-lazy-mode 1)
+#+END_SRC
+
+*** NOTE: Flyspell must be loaded AFTER this code executes
+Right now this isn't a problem, since flyspell is loaded via major mode hooks
+(see the ./lib/latex.org config file for an example), but should we decide to
+use it globally this code might need to be moved.
+** paradox                                                  :paradox:PkgMgmt:
+An updated package manager with better support for GitHub metadata. See the
+documentation. Run it by calling M-x paradox-list-packages.  Note that the
+Github token provided to paradox for Github integration is set in an [[*Paradox%20Github%20Token][earlier
+section]].
+#+BEGIN_SRC emacs-lisp
+  (setq paradox-execute-asynchronously nil)
+#+END_SRC
+** pomodoro                           :pomodoro:Productivity:TaskManagement:
+The *pomodoro.el* script adds pomodoro technique indicators to the
+modeline. Enable the minor mode by invoking the `pomodoro'
+command. Refer to the function's documentation for more info.
+
+#+SRC_NAME pomodoro
+#+BEGIN_SRC emacs-lisp
+  (use-package pomodoro
+    :config
+      (setq pomodoro-raise-frame nil))
+#+END_SRC
+
+** re-builder                                               :rebuilder:RegEx:
+A regular expressions building helper for Emacs.
+
 The Re-Builder (REgular expression BUILDER) package aids in
 constructing regular expressions by highlighting all matches of the
 current expression in the document, including different colors for
@@ -1587,19 +1705,54 @@ natural to me (and involves the fewest number of excess backslashes).
 #+SRCNAME enable-re-builder
 #+BEGIN_SRC emacs-lisp
   (use-package re-builder
-    :init (setq reb-re-syntax 'string))
+      :init (setq reb-re-syntax 'string))
 #+END_SRC
-** Undo Tree: Represent Buffer Changes as a Tree     :undotree:Undo:Editing:
-Use undo-tree-visualize to browse the undo tree.
+** re-builder+                                         :rebuilderplus:RegEx:
+Upgrades to [[re-builder]] functionality, including =reb+-query-replace-regexp=,
+which takes what's currently in a =re-builder= buffer and runs a
+=query-replace-regexp= with it in the original buffer.
+
+#+BEGIN_SRC emacs-lisp
+  (require 're-builder+)
+#+END_SRC
+** TODO smart-mode-line (sml)        :sml:smartmodeline:modeline:appearance:
+Extend and customize the modeline. Use =sml/customize= (or go to the customize
+group) to tweak variables that affect the modeline's theming, what is displayed,
+and how it's displayed.
+
+Really a fantastic package. My only issue currently is that it's messing with
+the theme I'm using. I should read the docs more to see if I'm loading things in
+the wrong order or something.
+
+#+SRC_NAME smart-mode-line_setup
+#+BEGIN_SRC emacs-lisp :tangle no
+  (use-package smart-mode-line
+    :init
+      (setq sml/no-confirm-load-theme t)
+    :config
+      (sml/setup))
+#+END_SRC
+** strings                                           :strings:Lisp:Internals:
+Add various string manipulation functions to Emacs
+#+BEGIN_SRC emacs-lisp
+  (use-package strings
+    :config
+      (add-hook 'pre-command-hook 'erase-nonempty-inactive-minibuffer))
+#+END_SRC
+*** TODO Ensure the second command doesn't create any conflicts with other packages
+** undo-tree                                         :undotree:Undo:Editing:
+Use =undo-tree-visualize= to visually navigate your entire undo history (as a
+tree, naturally), change branches, etc.
 #+BEGIN_SRC emacs-lisp
   (use-package undo-tree
     :diminish undo-tree-mode
     :init     (global-undo-tree-mode))
 #+END_SRC
-** YASnippet                               :yasnippet:Completion:Templating:
-Yet Another Snippet is a templating package for Emacs, enabling rapid
-template creation and reuse. Store snippets in the
-~/.emacs.d/snippets/ directory.
+** yasnippet                               :yasnippet:Completion:Templating:
+Yet Another Snippet is a templating package for Emacs, enabling rapid template
+creation and reuse. Snippets for use in =foo-mode= should be store in the
+=~/.emacs.d/snippets/foo-mode= directory to ensure they're loaded
+automatically.
 #+BEGIN_SRC emacs-lisp
   (use-package yasnippet
     :config
@@ -1623,7 +1776,58 @@ template creation and reuse. Store snippets in the
       (yas-reload-all)
       (yas-global-mode 1))
 #+END_SRC
-** Company (Auto-Completion Support): COMPlete ANYthing :company:Completion:Templating:
+*** TODO Look into Emacs's built-in templating functionality (like abbrev, skeletons, etc.)
+=yasnippet= is fantastic for creating simple text replacement templates
+(possibly involving variables), but it lacks certain killer pieces of
+functionality that I'd love to see. For instance, in LaTeX modes,
+** TODO Color-identifiers-mode (Unique display colors for unique variables)
+** TODO Origami: A Multi-Language Folding Mode
+** TODO Popwin (Popup Windows at Bottom of Screen)
+** TODO Visible-Mark: Make the Current Mark Visible
+** DISABLED Packages
+Here is a list of packages that I used to load globally but whose
+functionality has been replaced by something else.
+*** (DISABLED) Auto-YASnippet: Create Temporary YASnippets
+Create a temporary snippet for reproducing similar code repeatedly in
+a file. To get an idea of how to use this, the following example is
+provided by the package.
+#+SRC_NAME: Auto-YASnippet_JavaExample
+#+BEGIN_EXAMPLE
+  In Java write:
+  class Light$On implements Runnable {
+    public Light$On() {}
+    public void run() {
+      System.out.println("Turning $on lights");
+      light = $true;
+    }
+  }
+  This differs from the code that you wanted to write only by 4 $ chars.
+  Since it's more than one line, select the region and call `create-auto-yasnippet'.
+  The $ chars disappear, yielding valid code.
+  `*current-auto-yasnippet-template* becomes:
+  "class Light$1 implements Runnable {
+    public Light$1() {}
+    public void run() {
+      System.out.println(\"Turning $2 lights\");
+      light = $3;
+    }
+  }"
+#+END_EXAMPLE
+#+BEGIN_SRC emacs-lisp :tangle no
+  (use-package auto-yasnippet
+    :bind
+      ("H-w" . aya-create)
+      ("H-y" . aya-expand))
+#+END_SRC
+**** *Update (2016-05-04):* Disable auto-yasnippet
+I've disabled this package since I have yet to actually use
+it. I don't see a good use case for it that in my work that isn't
+already covered by other packages (or could be covered in a more
+broadly-applicable manner, e.g., by the multiple-cursors package). The
+package does its job great, though, so I've left it here in case I
+wish to enable it in the future, possibly for specific modes instead
+of globally.
+*** Company (Auto-Completion Support): COMPlete ANYthing :company:Completion:Templating:
 #+BEGIN_SRC emacs-lisp :tangle no
   (use-package company
     :after yasnippet
@@ -1900,7 +2104,6 @@ Record the time when all config files have finished loading.
 #+END_SRC
 
 * Footnotes
-
 [fn:specialfcn] A /special/ function or form here will mean one that
 takes at least one or more distinguished arguments followed by a
 "body" (an arbitrary number of s-expressions in which the final
