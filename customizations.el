@@ -40,8 +40,6 @@
      (output-dvi "xdvi")
      (output-pdf "Okular")
      (output-html "xdg-open"))))
- '(ansi-color-names-vector
-   ["#000000" "#8b0000" "#00ff00" "#ffa500" "#7b68ee" "#dc8cc3" "#93e0e3" "#dcdccc"])
  '(bibtex-BibTeX-entry-alist
    (quote
     (("article" "Article in Journal"
@@ -195,12 +193,10 @@
        ("note"))))))
  '(bmkp-last-as-first-bookmark-file "~/.emacs.d/bookmarks")
  '(column-number-mode t)
- '(custom-enabled-themes (quote (cyberpunk)))
  '(custom-safe-themes
    (quote
     ("e64111716b1c8c82638796667c2c03466fde37e69cada5f6b640c16f1f4e97df" "427fed191e7a766152e59ef0e2904283f436dbbe259b9ccc04989f3acde50a55" "84d2f9eeb3f82d619ca4bfffe5f157282f4779732f48a5ac1484d94d5ff5b279" "c74e83f8aa4c78a121b52146eadb792c9facc5b1f02c917e3dbb454fca931223" "3c83b3676d796422704082049fc38b6966bcad960f896669dfc21a7a37a748fa" "f9574c9ede3f64d57b3aa9b9cef621d54e2e503f4d75d8613cbcc4ca1c962c21" "1bacdd5d24f187f273f488a23c977f26452dffbc82d4ac57250aa041f14159da" "71ecffba18621354a1be303687f33b84788e13f40141580fa81e7840752d31bf" "628278136f88aa1a151bb2d6c8a86bf2b7631fbea5f0f76cba2a0079cd910f7d" "bb08c73af94ee74453c90422485b29e5643b73b05e8de029a6909af6a3fb3f58" "82d2cac368ccdec2fcc7573f24c3f79654b78bf133096f9b40c20d97ec1d8016" "959a77d21e6f15c5c63d360da73281fdc40db3e9f94e310fc1e8213f665d0278" "06f0b439b62164c6f8f84fdda32b62fb50b6d00e8b01c2208e55543a6337433a" "1b8d67b43ff1723960eb5e0cba512a2c7a2ad544ddb2533a90101fd1852b426e" default)))
  '(delete-selection-mode t)
- '(fci-rule-color "#383838")
  '(fixmee-cache-refresh-interval 5)
  '(fixmee-notice-regexp
    "\\(@@@+\\|\\_<\\(?:[Tt][Oo][Dd][Oo]+\\|[Ff][Ii][Xx][Mm][Ee]+\\|[Cc][Ii][Tt][Ee][Mm][Ee]+\\|[Mm][Aa][Yy][Bb][Ee]+\\|XXX+\\|[Ss][Tt][Aa][Rr][Tt][Ee][Dd]+\\)\\)\\(?:[/:?!. 	
@@ -213,7 +209,7 @@
    "\\(\\(begin\\|end\\)[ 	]*{\\|\\(cite[a-z*]*\\|label\\|ref\\|eqref\\|usepackage\\|documentclass\\)[ 	]*\\(\\[[^]]*\\]\\)?{[^{}]*\\)")
  '(gnus-novice-user t)
  '(guide-key-mode t)
- '(guide-key/guide-key-sequence (quote ("C-x" "C-c")))
+ '(guide-key/guide-key-sequence (quote ("C-x" "C-c" "M-o")))
  '(icicle-mode nil)
  '(indicate-empty-lines t)
  '(ispell-following-word t)
@@ -224,16 +220,6 @@
  '(nyan-animate-nyancat nil)
  '(nyan-bar-length 16)
  '(nyan-mode t)
- '(org-enforce-todo-dependencies t)
- '(org-habit-graph-column 80)
- '(org-support-shift-select t)
- '(package-selected-packages
-   (quote
-    (helm key-chord guide-key guide-key-tip ox-tiddly achievements org-habit re-builder+ dash-functional deferred diminish flycheck-pos-tip flycheck-status-emoji flycheck flycheck-color-mode-line flycheck-pkg-config flycheck-tip smart-mode-line smart-mode-line-powerline-theme calfw calfw-gcal org-gcal f git-commit ivy org projectile s with-editor fci-mode wrap-region tomatinho suggest strings smooth-scrolling smex rainbow-mode pomodoro paredit outline-magic org-trello org-pomodoro org-plus-contrib org-commentary nyan-mode nlinum multiple-cursors minimap markdown-mode magit latex-preview-pane latex-extra ido-ubiquitous idle-highlight-mode ibuffer-projectile hyde flymd fixmee fill-column-indicator ecb dictionary cyberpunk-theme company-statistics company-shell company-math company-flx company-auctex color-theme cmake-project cmake-font-lock cheatsheet bug-hunter better-defaults auto-yasnippet all aggressive-indent adaptive-wrap ace-window abyss-theme)))
- '(paradox-automatically-star nil)
- '(projectile-use-git-grep t)
- '(safe-local-variable-values (quote ((read-only-mode . t))))
- '(scroll-error-top-bottom t)
  '(sml/col-number-format "%2c")
  '(sml/mode-width (quote right))
  '(sml/modified-char "M")
@@ -304,6 +290,17 @@
  '(sml/show-client t)
  '(sml/theme (quote automatic))
  '(sml/vc-mode-show-backend t)
+ '(custom-enabled-themes (quote (cyberpunk)))
+ '(org-enforce-todo-dependencies t)
+ '(org-habit-graph-column 80)
+ '(org-support-shift-select t)
+ '(package-selected-packages
+   (quote
+    (delight outline-minor-mode git-gutter-fringe keyfreq helm key-chord guide-key guide-key-tip ox-tiddly achievements org-habit re-builder+ dash-functional deferred diminish flycheck-pos-tip flycheck-status-emoji flycheck flycheck-color-mode-line flycheck-pkg-config flycheck-tip smart-mode-line smart-mode-line-powerline-theme calfw calfw-gcal org-gcal f git-commit ivy org projectile s with-editor fci-mode wrap-region tomatinho suggest strings smooth-scrolling smex rainbow-mode pomodoro paredit outline-magic org-trello org-pomodoro org-plus-contrib org-commentary nyan-mode nlinum multiple-cursors minimap markdown-mode magit latex-preview-pane latex-extra ido-ubiquitous idle-highlight-mode ibuffer-projectile hyde flymd fixmee fill-column-indicator ecb dictionary cyberpunk-theme company-statistics company-shell company-math company-flx company-auctex color-theme cmake-project cmake-font-lock cheatsheet bug-hunter better-defaults auto-yasnippet all aggressive-indent adaptive-wrap ace-window abyss-theme)))
+ '(paradox-automatically-star nil)
+ '(projectile-use-git-grep t)
+ '(safe-local-variable-values (quote ((read-only-mode . t))))
+ '(scroll-error-top-bottom t)
  '(ws-butler-global-mode t))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
