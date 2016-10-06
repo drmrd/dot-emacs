@@ -973,7 +973,7 @@ can come up with a way to also set the two windows to alternate
 between by selecting window numbers in ace-window's numeric window
 selection mode.
 
-* Utility Functions
+* Utility Functions                                               :Functions:
 ** drmrd/load-library
 #+SRC_NAME: def_drmrd/load-library
 #+BEGIN_SRC emacs-lisp
@@ -1233,22 +1233,111 @@ say about them.
            (shell-command "uuidgen" t))
 #+END_SRC
 *** TODO Throw an error if not on Linux
-* Global Settings
-** Personal Information
-*** Email Address
+* Appearance & UI                                             :Appearance:UI:
+** Miscellany
+*** Set Default Font(s)                                             :Fonts:
+Naturally, fonts are quite OS and machine-specific, so this portion of the
+configuration will probably grow a bit with time. For now, the following
+configuration is appropriate. On Mac OS X, the Vera Sans font family is used,
+while on Linux we employ DejaVu Sans Mono.
 #+BEGIN_SRC emacs-lisp
-  (setq user-mail-address "contact@drmrd.xyz")
+  (set-face-attribute 'default nil
+                      :font (case system-type
+                                  ('darwin "-apple-bitstream vera sans
+                                            mono-medium-r-normal--0-0-0-0-m-0-mac-roman")
+                                  ('gnu/linux "DejaVu Sans Mono-10")))
 #+END_SRC
-*** Paradox GitHub Token
+*** Disable Cursor Blinking                                   :CursorBlink:
+The enemy of civil society. I disable cursor blinking not only
+because I find it obnoxious and distracting, but because it's *the
+right thing to do*.
 #+BEGIN_SRC emacs-lisp
-  ;; Retrieve the Paradox Package Manager's GitHub Token
-  ;;
-  ;; Loads a file containing a single instruction, which sets the GitHub token for
-  ;; Paradox.  Do not store that file in a public repo.
-  (org-babel-load-file
-      (expand-file-name "~/.emacs.d/secure/paradox-github-token.org"))
+  (blink-cursor-mode (- (*) (*) (*)))
 #+END_SRC
-** Appearance Settings
+** Mode Line                                                       :ModeLine:
+*** Show column numbers                                       :ColumnNumbers:
+#+SRC_NAME enable_column-number-mode
+#+BEGIN_SRC emacs-lisp
+  (column-number-mode 1)
+#+END_SRC
+*** Show the current time                                            :Time:
+#+BEGIN_SRC emacs-lisp
+  (display-time)
+#+END_SRC
+*** nyan-mode                                                     :nyan_mode:
+Display current location in buffer as a magical rainbow behind a poptart cat
+#+SRC_NAME nyan-mode-setup
+#+BEGIN_SRC emacs-lisp
+  (use-package nyan-mode :ensure t)
+#+END_SRC
+*** TODO smart-mode-line (sml)                          :sml:smartmodeline:
+Extend and customize the modeline. Use =sml/customize= (or go to the customize
+group) to tweak variables that affect the modeline's theming, what is displayed,
+and how it's displayed.
+
+Really a fantastic package. My only issue currently is that it's messing with
+the theme I'm using. I should read the docs more to see if I'm loading things in
+the wrong order or something.
+
+Need to tweak this to avoid errors.
+#+SRC_NAME smart-mode-line_setup
+#+BEGIN_SRC emacs-lisp :tangle no
+  (use-package smart-mode-line
+    :init
+      (setq sml/no-confirm-load-theme t)
+    :config
+      (sml/setup))
+#+END_SRC
+*** Hide/tweak minor mode lighters :diminish:delight:MinorModeLighters:
+**** delight
+A package for removing/modifying major and minor mode lighters (text indicators)
+appearing in the mode-line.
+
+#+SRC_NAME load_delight
+#+BEGIN_SRC emacs-lisp
+  (use-package delight)
+#+END_SRC
+**** Create minor mode lighter specifications            :CustomVariables:
+#+SRC_NAME set_drmrd/adjusted-mode-lighter-specs
+#+BEGIN_SRC emacs-lisp
+  (defcustom drmrd/adjusted-mode-lighter-specs
+    '((ws-butler-mode nil "ws-butler")
+      (fixmee-mode nil "fixmee")
+      (button-lock-mode nil "button-lock")
+      (yas-minor-mode nil "yasnippet")
+      (projectile-mode nil "projectile")
+      (reftex-mode nil "reftex")
+      (guide-key-mode nil "guide-key")
+      (visual-line-mode)
+      (git-gutter-mode nil "git-gutter")
+      (outline-minor-mode nil "outline")
+      (undo-tree-mode nil "undo-tree"))
+    "A list of minor modes to hidden in the mode line whenever they're loaded."
+      :tag "Adjusted Minor Mode Lighters in the Mode Line"
+      :type '(repeat sexp)
+      :group 'emacs)
+#+END_SRC
+
+#+SRC_NAME configure_minor_modes_with_delight :tangle yes
+#+BEGIN_SRC emacs-lisp
+  (delight drmrd/adjusted-mode-lighter-specs)
+#+END_SRC
+**** Create function for loading other delighted modes         :Functions:
+The following function can be used to load another mode and delight it all at
+the same time.
+
+#+SRC_NAME defun_drmrd/load-diminished-minor-mode
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (defun drmrd/load-delighted-mode(mode value library)
+    "Load mode MODE and use `delight' to format its lighter with
+  specification (MODE VALUE LIBRARY).
+
+  This function is intended for use in hooks, but works equally
+  well when evaluated manually."
+    (funcall mode)
+    (diminish mode value library))
+#+END_SRC
+** Theming                                                          :Themes:
 *** (DISABLED) Load a Color Theme
 #+BEGIN_SRC emacs-lisp :tangle no
   (load-theme 'dracula t)
@@ -1292,46 +1381,13 @@ Emacs24's built-in custom themes.
   (defadvice load-theme (before theme-dont-propagate activate)
                         (mapc #'disable-theme custom-enabled-themes))
 #+END_SRC
-*** Set Default Font(s)
-Naturally, fonts are quite OS and machine-specific, so this portion of
-the configuration will probably grow a bit with time. For now, the
-following configuration is appropriate. On Mac OS X, the Vera Sans
-font family is used, while on Linux we employ DejaVu Sans Mono.
-#+BEGIN_SRC emacs-lisp
-  (set-face-attribute 'default nil
-                      :font (case system-type
-                                  ('darwin "-apple-bitstream vera sans
-                                            mono-medium-r-normal--0-0-0-0-m-0-mac-roman")
-                                  ('gnu/linux "DejaVu Sans Mono-10")))
-#+END_SRC
-*** Mode Line                                                    :ModeLine:
-**** Display the current column number in the mode line
-#+BEGIN_SRC emacs-lisp
-  (column-number-mode 1)
-#+END_SRC
-**** Display the current time in the baseline of each frame
-#+BEGIN_SRC emacs-lisp
-  (display-time)
-#+END_SRC
-**** (Disabled) Display the Current Directory              :uniquify:
-#+BEGIN_SRC emacs-lisp :tangle no
-  ;; Help ensure displayed buffer names are unique for files with the
-  ;; same names.
-  (use-package uniquify
-    :config (setq uniquify-buffer-name-style 'forward)) ; /foo/bar/baz
-#+END_SRC
-**** Nyan Mode: Display current location in buffer as a magical rainbow behind a poptart cat :nyan_mode:
-#+SRC_NAME nyan-mode-setup
-#+BEGIN_SRC emacs-lisp
-  (use-package nyan-mode :ensure t)
-#+END_SRC
-*** Display Line Numbers
-Ah yes, the somewhat notorious problem of displaying line numbers in
-Emacs in a way that doesn't break/get terribly affected by different
-modes and font locking schemes. Most recently I've been using nlinum
-mode for this purpose, but I can't seem to use it while loading
-multiple frames. This is only an issue on my laptop, not at the
-office, so I'm now testing to see if it's some kind of timing issue.
+** Display Line Numbers                                 :nlinum:LineNumbers:
+Ah yes, the somewhat notorious problem of displaying line numbers in Emacs in a
+way that doesn't break/get terribly affected by different modes and font locking
+schemes. Most recently I've been using nlinum mode for this purpose, but I can't
+seem to use it while loading multiple frames. This is only an issue on my
+laptop, not at the office, so I'm now testing to see if it's some kind of timing
+issue.
 #+BEGIN_SRC emacs-lisp
   (defun initialize-nlinum (&optional frame)
          (require 'nlinum)
@@ -1340,31 +1396,44 @@ office, so I'm now testing to see if it's some kind of timing issue.
   (add-hook 'window-setup-hook 'initialize-nlinum)
   (defadvice make-frame (around toggle-nlinum-mode compile activate)
              (nlinum-mode -1) ad-do-it (nlinum-mode 1))
-
-  ;(add-hook 'find-file-hook (lambda () (sit-for 1) (nlinum-mode 1)))
-
-
-  ;(setq linum-format "%4d \u2502 ")
-  ;(set-face-attribute 'fringe nil :background "#333333")
-  ;(set-face-attribute 'linum nil :background "#CCC")
 #+END_SRC
-*** Highlight the Current Line
+** Highlight the Current Line                      :hlline:LineHighlighting:
 Highlights the current line in every buffer by default
 #+BEGIN_SRC emacs-lisp :tangle yes
   (global-hl-line-mode 1); Highlight current line in buffer
-
 #+END_SRC
-*** Disable Cursor Blinking
-The enemy of civil society. I disable cursor blinking not only
-because I find it obnoxious and distracting, but because it's *the
-right thing to do*.
-#+BEGIN_SRC emacs-lisp
-  (blink-cursor-mode (- (*) (*) (*)))
-#+END_SRC
-*** Set Default Frame Size
+** Set Default Frame Size                                        :FrameSize:
 #+SRCNAME set_default_frame_size
 #+BEGIN_SRC emacs-lisp
   (add-to-list 'default-frame-alist '(width . 86))
+#+END_SRC
+** git-gutter-fringe                     :gitgutterfringe:Git:UI:Diff:Fringe:
+Displays a minimalist indicator in the fringe (side margin) of changes made to
+the current file since the last commit. After seeing this in Sublime Text and
+IntelliJ IDEA I'm hooked. It's amazingly useful without getting in the way.
+#+SRC_NAME enable_git-gutter-fringe
+#+BEGIN_SRC emacs-lisp
+  (use-package git-gutter-fringe
+      ;; Move fringe to the right margin
+      :init (setq git-gutter-fr:side 'right-fringe)
+      :config (global-git-gutter-mode t)
+      :ensure t
+      :diminish t)
+#+END_SRC
+* Global Settings
+** Personal Information
+*** Email Address
+#+BEGIN_SRC emacs-lisp
+  (setq user-mail-address "contact@drmrd.xyz")
+#+END_SRC
+*** Paradox GitHub Token
+#+BEGIN_SRC emacs-lisp
+  ;; Retrieve the Paradox Package Manager's GitHub Token
+  ;;
+  ;; Loads a file containing a single instruction, which sets the GitHub token for
+  ;; Paradox.  Do not store that file in a public repo.
+  (org-babel-load-file
+      (expand-file-name "~/.emacs.d/secure/paradox-github-token.org"))
 #+END_SRC
 ** General Editing Settings
 *** Fill Column Settings
@@ -1619,6 +1688,20 @@ Note that
 #+END_SRC
 *** TODO Come up with a good replacement for the fixmee-goto-next-by-position keybinding
 This is M-p by default, but that is currently being used by ace-window.
+** flyspell-lazy                                :flyspelllazy:SpellChecking:
+Load the third-party flyspell-lazy.elc script, which improves flyspell's
+responsiveness by forcing it to only check spelling when Emacs has been idle for
+a little while (as opposed to damn near constantly).
+
+#+BEGIN_SRC emacs-lisp
+  (require 'flyspell-lazy)
+  (flyspell-lazy-mode 1)
+#+END_SRC
+
+*** NOTE: Flyspell must be loaded AFTER this code executes
+Right now this isn't a problem, since flyspell is loaded via major mode hooks
+(see the ./lib/latex.org config file for an example), but should we decide to
+use it globally this code might need to be moved.
 ** gnutls                                                    :gnutls:TLS:SSL:
 TLS and SSL support in Emacs.
 
@@ -1638,13 +1721,13 @@ means show as little debugging information in the =*Messages*= buffer as
 possible, and the other values from 1 through 5 follow the GnuTLS logging
 conventions outlined in [[http://gnutls.org/documentation.html][its documentation]].
 
-I find a good default for this value is 2, which includes both the "important
-messages" you get by setting it to 1 along with more verbose "debugging data",
-with which you should be able to diagnose most problems encountered between
-GnuTLS and Emacs.
+I find a good default for this value is either 1 or 2, the latter of which
+includes both the "important messages" you get by setting it to 1 along with
+more verbose "debugging data", with which you should be able to diagnose most
+problems encountered between GnuTLS and Emacs.
 #+SRC_NAME set_gnutls-log-level
 #+BEGIN_SRC emacs-lisp
-  (setq gnutls-log-level 2)
+  (setq gnutls-log-level 1)
 #+END_SRC
 ** hydra                                       :hydra:Keybindings:Libraries:
 Groups of keybindings/registers on steroids
@@ -1657,20 +1740,16 @@ Groups of keybindings/registers on steroids
                :config
                (org-babel-load-file (expand-file-name "~/.emacs.d/lib/hydra.org")))
 #+END_SRC
-** flyspell-lazy                                :flyspelllazy:SpellChecking:
-Load the third-party flyspell-lazy.elc script, which improves flyspell's
-responsiveness by forcing it to only check spelling when Emacs has been idle for
-a little while (as opposed to damn near constantly).
+** keyfreq                                              :keyfreq:Keybindings:
+A package for logging usage of keybindings. Use =keyfreq-show= to display the
+current usage counts.
 
+#+SRC_NAME enable_keyfreq
 #+BEGIN_SRC emacs-lisp
-  (require 'flyspell-lazy)
-  (flyspell-lazy-mode 1)
+  (use-package keyfreq
+      :config (keyfreq-mode 1)
+              (keyfreq-autosave-mode 1))
 #+END_SRC
-
-*** NOTE: Flyspell must be loaded AFTER this code executes
-Right now this isn't a problem, since flyspell is loaded via major mode hooks
-(see the ./lib/latex.org config file for an example), but should we decide to
-use it globally this code might need to be moved.
 ** paradox                                                  :paradox:PkgMgmt:
 An updated package manager with better support for GitHub metadata. See the
 documentation. Run it by calling M-x paradox-list-packages.  Note that the
@@ -1714,23 +1793,6 @@ which takes what's currently in a =re-builder= buffer and runs a
 
 #+BEGIN_SRC emacs-lisp
   (require 're-builder+)
-#+END_SRC
-** TODO smart-mode-line (sml)        :sml:smartmodeline:modeline:appearance:
-Extend and customize the modeline. Use =sml/customize= (or go to the customize
-group) to tweak variables that affect the modeline's theming, what is displayed,
-and how it's displayed.
-
-Really a fantastic package. My only issue currently is that it's messing with
-the theme I'm using. I should read the docs more to see if I'm loading things in
-the wrong order or something.
-
-#+SRC_NAME smart-mode-line_setup
-#+BEGIN_SRC emacs-lisp :tangle no
-  (use-package smart-mode-line
-    :init
-      (setq sml/no-confirm-load-theme t)
-    :config
-      (sml/setup))
 #+END_SRC
 ** strings                                           :strings:Lisp:Internals:
 Add various string manipulation functions to Emacs
@@ -1883,6 +1945,13 @@ code is in one place.)
   )
 #+END_SRC
 
+*** (Disabled) Display the Current Directory                     :uniquify:
+#+BEGIN_SRC emacs-lisp :tangle no
+  ;; Help ensure displayed buffer names are unique for files with the
+  ;; same names.
+  (use-package uniquify
+    :config (setq uniquify-buffer-name-style 'forward)) ; /foo/bar/baz
+#+END_SRC
 * Performance Settings
 The following settings improve the performance of Emacs in various
 ways, typically by permitting it to assume our computer wasn't built
