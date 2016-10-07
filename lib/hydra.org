@@ -213,3 +213,118 @@ _h_   _l_   _o_k        _y_ank
      ("t" org-table-transpose-table-at-point)
      ("q" nil :color blue)))
 #+END_SRC
+* <F1> Help Menu
+#+BEGIN_SRC emacs-lisp
+  (defhydra hydra-help (:exit t)
+    ;; Better to exit after any command because otherwise helm gets in a
+    ;; mess, set hint to nil: written out manually.
+
+    "
+  Describe        ^^Keys                    ^^Search                    ^^Documentation
+  ---------------------------------------------------------------------------------------
+  _f_unction        _k_eybinding              _a_propros                  _i_nfo
+  _p_ackage         _w_here-is                _d_oc strings               _n_: man
+  _m_ode            _b_: show all bindings    _s_: info by symbol         _h_elm-dash
+  _v_ariable
+
+  "
+    ;; Boring help commands...
+    ("e" view-echo-area-messages "messages")
+    ("l" view-lossage "lossage")
+    ("C" describe-coding-system "coding-system")
+    ("I" describe-input-method "input-method")
+
+
+    ;; Documentation
+    ("i" info nil)
+    ("n" helm-man-woman nil)
+    ("h" helm-dash)
+
+    ;; Keybinds
+    ("b" describe-bindings nil)
+    ("c" describe-key-briefly nil)
+    ("k" describe-key nil)
+    ("w" where-is nil)
+
+    ;; Search
+    ("a" apropos-command nil)
+    ("d" apropos-documentation nil)
+    ("s" info-lookup-symbol nil)
+
+    ;; Describe
+    ("f" describe-function nil)
+    ("p" describe-package nil)
+    ("m" describe-mode nil)
+    ("v" describe-variable nil)
+    ("y" describe-syntax nil)
+
+    ;; quit
+    ("q" help-quit "quit"))
+
+  (global-set-key (kbd "<f1>") #'hydra-help/body)
+#+END_SRC
+* Window Configuration
+#+BEGIN_SRC emacs-lisp
+(defhydra hydra-window ()
+   "
+Movement^^        ^Split^         ^Switch^      ^Resize^
+----------------------------------------------------------------
+_h_ ←         _v_ertical      _b_uffer        _q_ X←
+_j_ ↓         _x_ horizontal  _f_ind files    _w_ X↓
+_k_ ↑         _z_ undo        _a_ce 1     _e_ X↑
+_l_ →         _Z_ reset       _s_wap      _r_ X→
+_F_ollow        _D_lt Other     _S_ave      max_i_mize
+_SPC_ cancel    _o_nly this     _d_elete
+"
+   ("h" windmove-left )
+   ("j" windmove-down )
+   ("k" windmove-up )
+   ("l" windmove-right )
+   ("q" hydra-move-splitter-left)
+   ("w" hydra-move-splitter-down)
+   ("e" hydra-move-splitter-up)
+   ("r" hydra-move-splitter-right)
+   ("b" helm-mini)
+   ("f" helm-find-files)
+   ("F" follow-mode)
+   ("a" (lambda ()
+          (interactive)
+          (ace-window 1)
+          (add-hook 'ace-window-end-once-hook
+                    'hydra-window/body))
+       )
+   ("v" (lambda ()
+          (interactive)
+          (split-window-right)
+          (windmove-right))
+       )
+   ("x" (lambda ()
+          (interactive)
+          (split-window-below)
+          (windmove-down))
+       )
+   ("s" (lambda ()
+          (interactive)
+          (ace-window 4)
+          (add-hook 'ace-window-end-once-hook
+                    'hydra-window/body)))
+   ("S" save-buffer)
+   ("d" delete-window)
+   ("D" (lambda ()
+          (interactive)
+          (ace-window 16)
+          (add-hook 'ace-window-end-once-hook
+                    'hydra-window/body))
+       )
+   ("o" delete-other-windows)
+   ("i" ace-maximize-window)
+   ("z" (progn
+          (winner-undo)
+          (setq this-command 'winner-undo))
+   )
+   ("Z" winner-redo)
+   ("SPC" nil)
+   )
+
+  (global-set-key (kbd "<f12>") 'hydra-window/body)
+#+END_SRC
