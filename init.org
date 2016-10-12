@@ -1774,6 +1774,11 @@ command. Refer to the function's documentation for more info.
       (setq pomodoro-raise-frame nil))
 #+END_SRC
 
+** Popwin (Popup Windows at Bottom of Screen)  :popwin:PopupWindows:UI:
+#+BEGIN_SRC emacs-lisp
+  (use-package popwin
+    :config (popwin-mode))
+#+END_SRC
 ** re-builder                                               :rebuilder:RegEx:
 A regular expressions building helper for Emacs.
 
@@ -1848,7 +1853,6 @@ automatically.
 functionality that I'd love to see. For instance, in LaTeX modes,
 ** TODO Color-identifiers-mode (Unique display colors for unique variables)
 ** TODO Origami: A Multi-Language Folding Mode
-** TODO Popwin (Popup Windows at Bottom of Screen)
 ** TODO Visible-Mark: Make the Current Mark Visible
 ** DISABLED Packages
 Here is a list of packages that I used to load globally but whose
