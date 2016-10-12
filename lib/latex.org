@@ -202,7 +202,7 @@ could be somewhat buggy.
 ** LaTeX Math Mode
 Load [[help:LaTeX-math-mode][LaTeX Math Mode]] by default. This is usually bound to 'C-c ~' (and
 can still be toggled using that keybinding, but it's useful enough to
-enable it outright.
+enable it outright).
 
 #+BEGIN_SRC emacs-lisp
   (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
