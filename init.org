@@ -599,12 +599,12 @@ Now start tracking how long loading config files takes.
   (message (concat "Loading Emacs configuration started at "
                    (format-time-string drmrd/debug/timeformat)))
 #+END_SRC
-** Benchmark Initialization
+** Benchmark Initialization                                       :DISABLED:
 The following code, based on [[https://www.reddit.com/r/emacs/comments/2094tl/how_can_i_improve_emacs_performance/cg0ydzc][this reddit comment from wadcann]] makes it
 so that messages are posted to the *Messages* buffer with timestamps
 as Emacs loads, providing a way to analyze which packages, functions,
 etc. are eating up the most startup time.
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   ;;; Timestamps in *Messages* at startup
   (defun drmrd/debug/message-time-prefix ()
     "Returns the string \"[TIME] \" where `TIME' is the current
@@ -995,7 +995,6 @@ file. See [[*Helm][below]] for the main description.
     (org-babel-load-file (expand-file-name name (or directory
                                                     drmrd/lib-directory))))
 #+END_SRC
-**
 ** insert-to-last-eol
 #+BEGIN_SRC emacs-lisp
   (defun get-beginning-of-line-position (&optional arg)
