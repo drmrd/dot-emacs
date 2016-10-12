@@ -9,9 +9,13 @@ eshell
 /**/*.el~
 /lib/**/*.el
 /places
-secure
-session.*
+/secure
+/session.*
 url
 var
 request
 .trello
+/experimental
+/projectile-bookmarks.eld
+/bookmarks
+/.achievements
