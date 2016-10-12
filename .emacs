@@ -11,9 +11,13 @@
         '(("melpa"        . "http://melpa.org/packages/")
           ("org"          . "http://orgmode.org/elpa/")
           ("gnu"          . "http://elpa.gnu.org/packages/")
-;         ("melpa-stable" . "https://stable.melpa.org/packages/")
-;         ("marmalade"    . "http://marmalade-repo.org/packages/")
-          ))
+          ("melpa-stable" . "https://stable.melpa.org/packages/"))
+      package-archive-priorities
+        '(("org"          . 30)
+          ("melpa-stable" . 25)
+          ("gnu"          . 20)
+          ("melpa"        . 15))
+      package-menu-hide-low-priority t)
 (package-initialize)
 
 ;;; Load `epa-file' for full-file encryption using EasyPG
