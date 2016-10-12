@@ -4,6 +4,52 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(LaTeX-indent-comment-start-regexp "%" nil nil "This could provide a hacky solution to some indentation issues.")
+ '(TeX-command-list
+   (quote
+    (("latexmk" "latexmk" TeX-run-TeX nil t :help "Run latexmk on file")
+     ("LaTeX+" "latexmk -auxdir=./tmp %t -pdf %s" TeX-run-TeX nil t :help "Run latexmk, storing temporary files in ./tmp")
+     ("TeX" "%(PDF)%(tex) %(file-line-error) %(extraopts) %`%S%(PDFout)%(mode)%' %t" TeX-run-TeX nil
+      (plain-tex-mode texinfo-mode ams-tex-mode)
+      :help "Run plain TeX")
+     ("LaTeX" "%`%l%(mode)%' %t" TeX-run-TeX nil
+      (latex-mode doctex-mode)
+      :help "Run LaTeX")
+     ("Makeinfo" "makeinfo %(extraopts) %t" TeX-run-compile nil
+      (texinfo-mode)
+      :help "Run Makeinfo with Info output")
+     ("Makeinfo HTML" "makeinfo %(extraopts) --html %t" TeX-run-compile nil
+      (texinfo-mode)
+      :help "Run Makeinfo with HTML output")
+     ("AmSTeX" "amstex %(PDFout) %(extraopts) %`%S%(mode)%' %t" TeX-run-TeX nil
+      (ams-tex-mode)
+      :help "Run AMSTeX")
+     ("ConTeXt" "%(cntxcom) --once --texutil %(extraopts) %(execopts)%t" TeX-run-TeX nil
+      (context-mode)
+      :help "Run ConTeXt once")
+     ("ConTeXt Full" "%(cntxcom) %(extraopts) %(execopts)%t" TeX-run-TeX nil
+      (context-mode)
+      :help "Run ConTeXt until completion")
+     ("BibTeX" "bibtex %s" TeX-run-BibTeX nil t :help "Run BibTeX")
+     ("Biber" "biber %s" TeX-run-Biber nil t :help "Run Biber")
+     ("View" "%V" TeX-run-discard-or-function t t :help "Run Viewer")
+     ("Print" "%p" TeX-run-command t t :help "Print the file")
+     ("Queue" "%q" TeX-run-background nil t :help "View the printer queue" :visible TeX-queue-command)
+     ("File" "%(o?)dvips %d -o %f " TeX-run-dvips t t :help "Generate PostScript file")
+     ("Dvips" "%(o?)dvips %d -o %f " TeX-run-dvips nil t :help "Convert DVI file to PostScript")
+     ("Dvipdfmx" "dvipdfmx %d" TeX-run-dvipdfmx nil t :help "Convert DVI file to PDF with dvipdfmx")
+     ("Ps2pdf" "ps2pdf %f" TeX-run-ps2pdf nil t :help "Convert PostScript file to PDF")
+     ("Index" "makeindex %s" TeX-run-index nil t :help "Run makeindex to create index file")
+     ("Xindy" "texindy %s" TeX-run-command nil t :help "Run xindy to create index file")
+     ("Check" "lacheck %s" TeX-run-compile nil
+      (latex-mode)
+      :help "Check LaTeX file for correctness")
+     ("ChkTeX" "chktex -v6 %s" TeX-run-compile nil
+      (latex-mode)
+      :help "Check LaTeX file for common mistakes")
+     ("Spell" "(TeX-ispell-document \"\")" TeX-run-function nil t :help "Spell-check the document")
+     ("Clean" "TeX-clean" TeX-run-function nil t :help "Delete generated intermediate files")
+     ("Clean All" "(TeX-clean t)" TeX-run-function nil t :help "Delete generated intermediate and output files")
+     ("Other" "" TeX-run-command t t :help "Run an arbitrary command"))))
  '(TeX-fold-macro-spec-list
    (quote
     (("[f]"
@@ -200,7 +246,9 @@
  '(custom-enabled-themes (quote (cyberpunk)))
  '(custom-safe-themes
    (quote
-    ("e64111716b1c8c82638796667c2c03466fde37e69cada5f6b640c16f1f4e97df" "427fed191e7a766152e59ef0e2904283f436dbbe259b9ccc04989f3acde50a55" "84d2f9eeb3f82d619ca4bfffe5f157282f4779732f48a5ac1484d94d5ff5b279" "c74e83f8aa4c78a121b52146eadb792c9facc5b1f02c917e3dbb454fca931223" "3c83b3676d796422704082049fc38b6966bcad960f896669dfc21a7a37a748fa" "f9574c9ede3f64d57b3aa9b9cef621d54e2e503f4d75d8613cbcc4ca1c962c21" "1bacdd5d24f187f273f488a23c977f26452dffbc82d4ac57250aa041f14159da" "71ecffba18621354a1be303687f33b84788e13f40141580fa81e7840752d31bf" "628278136f88aa1a151bb2d6c8a86bf2b7631fbea5f0f76cba2a0079cd910f7d" "bb08c73af94ee74453c90422485b29e5643b73b05e8de029a6909af6a3fb3f58" "82d2cac368ccdec2fcc7573f24c3f79654b78bf133096f9b40c20d97ec1d8016" "959a77d21e6f15c5c63d360da73281fdc40db3e9f94e310fc1e8213f665d0278" "06f0b439b62164c6f8f84fdda32b62fb50b6d00e8b01c2208e55543a6337433a" "1b8d67b43ff1723960eb5e0cba512a2c7a2ad544ddb2533a90101fd1852b426e" default)))
+    ("0e219d63550634bc5b0c214aced55eb9528640377daf486e13fb18a32bf39856" "98cc377af705c0f2133bb6d340bf0becd08944a588804ee655809da5d8140de6" "5dc0ae2d193460de979a463b907b4b2c6d2c9c4657b2e9e66b8898d2592e3de5" "e64111716b1c8c82638796667c2c03466fde37e69cada5f6b640c16f1f4e97df" "427fed191e7a766152e59ef0e2904283f436dbbe259b9ccc04989f3acde50a55" "84d2f9eeb3f82d619ca4bfffe5f157282f4779732f48a5ac1484d94d5ff5b279" "c74e83f8aa4c78a121b52146eadb792c9facc5b1f02c917e3dbb454fca931223" "3c83b3676d796422704082049fc38b6966bcad960f896669dfc21a7a37a748fa" "f9574c9ede3f64d57b3aa9b9cef621d54e2e503f4d75d8613cbcc4ca1c962c21" "1bacdd5d24f187f273f488a23c977f26452dffbc82d4ac57250aa041f14159da" "71ecffba18621354a1be303687f33b84788e13f40141580fa81e7840752d31bf" "628278136f88aa1a151bb2d6c8a86bf2b7631fbea5f0f76cba2a0079cd910f7d" "bb08c73af94ee74453c90422485b29e5643b73b05e8de029a6909af6a3fb3f58" "82d2cac368ccdec2fcc7573f24c3f79654b78bf133096f9b40c20d97ec1d8016" "959a77d21e6f15c5c63d360da73281fdc40db3e9f94e310fc1e8213f665d0278" "06f0b439b62164c6f8f84fdda32b62fb50b6d00e8b01c2208e55543a6337433a" "1b8d67b43ff1723960eb5e0cba512a2c7a2ad544ddb2533a90101fd1852b426e" default)))
+ '(debug-on-error nil)
+ '(default-input-method "TeX")
  '(delete-selection-mode t)
  '(fci-rule-color "#383838")
  '(fixmee-cache-refresh-interval 5)
@@ -215,7 +263,11 @@
    "\\(\\(begin\\|end\\)[ 	]*{\\|\\(cite[a-z*]*\\|label\\|ref\\|eqref\\|usepackage\\|documentclass\\)[ 	]*\\(\\[[^]]*\\]\\)?{[^{}]*\\)")
  '(gnus-novice-user t)
  '(guide-key-mode t)
- '(guide-key/guide-key-sequence (quote ("C-x" "C-c" "M-o")))
+ '(guide-key/guide-key-sequence (quote ("C-x" "C-c" "M-o" "C-c h")))
+ '(helm-adaptive-mode t nil (helm-adaptive))
+ '(helm-exit-idle-delay 0)
+ '(helm-split-window-in-side-p t)
+ '(hl-sexp-background-color "#1c1f26")
  '(icicle-mode nil)
  '(indicate-empty-lines t)
  '(ispell-following-word t)
@@ -231,7 +283,7 @@
  '(org-support-shift-select t)
  '(package-selected-packages
    (quote
-    (headlong helm-firefox helm-flx helm-flycheck helm-flyspell helm-fuzzier helm-gitignore helm-google helm-gtags helm-ispell helm-ls-git helm-make helm-mode-manager helm-mu helm-open-github helm-org-rifle helm-package helm-pages helm-proc helm-project-persist helm-projectile helm-pydoc helm-sage helm-spotify helm-themes delight outline-minor-mode git-gutter-fringe keyfreq helm key-chord guide-key guide-key-tip ox-tiddly achievements org-habit re-builder+ dash-functional deferred diminish flycheck-pos-tip flycheck-status-emoji flycheck flycheck-color-mode-line flycheck-pkg-config flycheck-tip smart-mode-line smart-mode-line-powerline-theme calfw calfw-gcal org-gcal f git-commit ivy org projectile s with-editor fci-mode wrap-region tomatinho suggest strings smooth-scrolling smex rainbow-mode pomodoro paredit outline-magic org-trello org-pomodoro org-plus-contrib org-commentary nyan-mode nlinum multiple-cursors minimap markdown-mode magit latex-preview-pane latex-extra ido-ubiquitous idle-highlight-mode ibuffer-projectile hyde flymd fixmee fill-column-indicator ecb dictionary cyberpunk-theme company-statistics company-shell company-math company-flx company-auctex color-theme cmake-project cmake-font-lock cheatsheet bug-hunter better-defaults auto-yasnippet all aggressive-indent adaptive-wrap ace-window abyss-theme)))
+    (visual-fill-column paradox powerline gscholar-bibtex helm-bibtex frame-cmds helm-swoop helm-c-yasnippet headlong helm-firefox helm-flx helm-flycheck helm-flyspell helm-fuzzier helm-gitignore helm-google helm-gtags helm-ispell helm-ls-git helm-make helm-mode-manager helm-mu helm-open-github helm-org-rifle helm-package helm-pages helm-proc helm-project-persist helm-projectile helm-pydoc helm-sage helm-spotify helm-themes delight outline-minor-mode git-gutter-fringe keyfreq helm key-chord guide-key guide-key-tip ox-tiddly achievements org-habit re-builder+ dash-functional deferred diminish flycheck-pos-tip flycheck-status-emoji flycheck flycheck-color-mode-line flycheck-pkg-config flycheck-tip smart-mode-line smart-mode-line-powerline-theme calfw calfw-gcal org-gcal f git-commit ivy org projectile s with-editor fci-mode wrap-region tomatinho suggest strings smooth-scrolling smex rainbow-mode pomodoro paredit outline-magic org-trello org-pomodoro org-plus-contrib org-commentary nyan-mode nlinum multiple-cursors minimap markdown-mode magit latex-preview-pane latex-extra ido-ubiquitous idle-highlight-mode ibuffer-projectile hyde flymd fixmee fill-column-indicator ecb dictionary cyberpunk-theme company-statistics company-shell company-math company-flx company-auctex color-theme cmake-project cmake-font-lock cheatsheet bug-hunter better-defaults auto-yasnippet all aggressive-indent adaptive-wrap ace-window abyss-theme)))
  '(paradox-automatically-star nil)
  '(projectile-use-git-grep t)
  '(safe-local-variable-values (quote ((read-only-mode . t))))
