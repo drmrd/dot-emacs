@@ -2162,6 +2162,15 @@ tracked by Git), Magit provides three different "Wip" modes to track
 these automatically, without unnecessary commit to the repository.
 ***** TODO Configure Wip mode
 Refer to [[http://magit.vc/manual/magit/Wip-modes.html#Wip-modes][the documentation]].
+** mu4e
+An actively developed and feature-full email client in Emacs. See the wonderful
+[[http://www.djcbsoftware.nl/code/mu/mu4e/index.html#SEC_Contents][manual]] for all your basic installation and configuration needs.
+
+#+SRC_NAME load_mu4e_config
+#+BEGIN_SRC emacs-lisp
+  (org-babel-load-file (expand-file-name "~/.emacs.d/lib/mu4e.org"))
+#+END_SRC
+*** TODO Fail gracefully on systems without mu(4e) installed
 * Emacs Server Setup
 This is currently handled in our [[file:~/.bashrc][.bashrc]] config.
 * Clean Up
