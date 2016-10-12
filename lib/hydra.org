@@ -263,23 +263,44 @@ _h_   _l_   _o_k        _y_ank
 
   (global-set-key (kbd "<f1>") #'hydra-help/body)
 #+END_SRC
-* Window Configuration
+* Frame/Window Configuration
 #+BEGIN_SRC emacs-lisp
-  (defhydra hydra-window ()
+  (defhydra hydra-window (:color red :hint nil :idle 0.4)
      "
+  Window Commands:
   Movement^^        ^Split^         ^Switch^      ^Resize^
   ----------------------------------------------------------------
-  _h_ ←         _v_ertical      _b_uffer        _q_ X←
-  _j_ ↓         _x_ horizontal  _f_ind files    _w_ X↓
-  _k_ ↑         _z_ undo        _a_ce 1     _e_ X↑
-  _l_ →         _Z_ reset       _s_wap      _r_ X→
+  _h_ ←             _v_ertical      _b_uffer      _q_ X←
+  _j_ ↓             _x_ horizontal  _f_ind files  _w_ X↓
+  _k_ ↑             _z_ undo        _a_ce 1       _e_ X↑
+  _l_ →             _Z_ reset       _s_wap        _r_ X→
+
   _F_ollow        _D_lt Other     _S_ave      max_i_mize
   _SPC_ cancel    _o_nly this     _d_elete
+
+  Frame Commands:
+  Movement^^        ^Resize^
+  ----------------------------------------------------------------
+  _M-h_ ←           _C-M-h_ Shrink  ←→
+  _M-j_ ↓           _C-M-j_ Stretch ↓↑
+  _M-k_ ↑           _C-M-k_ Shrink  ↓↑
+  _M-l_ →           _C-M-l_ Stretch ←→
   "
-      ("h" windmove-left )
-      ("j" windmove-down )
-      ("k" windmove-up )
-      ("l" windmove-right )
+      ("h" windmove-left)
+      ("j" windmove-down)
+      ("k" windmove-up)
+      ("l" windmove-right)
+
+      ("M-h" move-frame-left)
+      ("M-j" move-frame-down)
+      ("M-k" move-frame-up)
+      ("M-l" move-frame-right)
+
+      ("C-M-h" shrink-frame-horizontally)
+      ("C-M-j" enlarge-frame)
+      ("C-M-k" shrink-frame)
+      ("C-M-l" enlarge-frame-horizontally)
+
       ("q" hydra-move-splitter-left)
       ("w" hydra-move-splitter-down)
       ("e" hydra-move-splitter-up)
