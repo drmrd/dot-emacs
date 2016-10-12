@@ -182,10 +182,8 @@ function-quoting #' used on the function symbol to allow for byte
 compilation).
 #+SRC_NAME enable_visual-line-mode_in_TeX-mode_and_LaTeX-mode
 #+BEGIN_SRC emacs-lisp
-  (add-hook 'TeX-mode-hook
-            #'drmrd/load-diminished-minor-mode(visual-line-mode))
-  (add-hook 'LaTeX-mode-hook
-            #'drmrd/load-diminished-minor-mode(visual-line-mode))
+  (dolist (hook '(TeX-mode-hook LaTeX-mode-hook))
+    (add-hook hook #'visual-line-mode))
 #+END_SRC
 *** TODO Consider using visual-fill-column to wrap at a fixed column
 See [[http://melpa.org/#/visual-fill-column][here]] for its MELPA documentation page. It's a small minor mode
