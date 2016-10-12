@@ -924,7 +924,7 @@ way Ido Mode does for buffers and files.
 #+BEGIN_SRC emacs-lisp
   (use-package recentf
     :init
-      (setq recentf-max-menu-items 25)
+      (setq recentf-max-menu-items 50)
     :config
       (recentf-mode 1)
       (add-to-list 'recentf-exclude "ido.last")
@@ -973,6 +973,9 @@ can come up with a way to also set the two windows to alternate
 between by selecting window numbers in ace-window's numeric window
 selection mode.
 
+** helm                                                                :helm:
+This package is impossible to categorize completely and deserves its own library
+file. See [[*Helm][below]] for the main description.
 * Utility Functions                                               :Functions:
 ** drmrd/load-library
 #+SRC_NAME: def_drmrd/load-library
@@ -2045,6 +2048,17 @@ See the following if similar issues arise in other modes:
   (add-hook 'emacs-lisp-mode-hook #'electric-indent-mode-remove-newline-from-indent-chars)
 #+END_SRC
 
+** Helm                                          :helm:Completion:Navigation:
+An /extremely/ versatile framework for manipulating, searching, etc. within data
+sources of all kinds. Helm and its extensions allow everything from completely
+replacing =ido= and =smex= for finding files and commands to controlling Spotify
+from within Emacs. This is my second attempt to switch to =helm= from =ido=, and
+I think I'll stick with it this time around.
+
+#+SRC_NAME load_helm_library
+#+BEGIN_SRC emacs-lisp
+  (org-babel-load-file (expand-file-name "~/.emacs.d/lib/helm.org"))
+#+END_SRC
 ** (La)TeX Mode
 Next we load the file ~/.emacs.d/lib/latex.org, which contains and/or
 dynamically loads all of our custom LaTeX settings.

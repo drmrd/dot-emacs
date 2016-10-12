@@ -1,0 +1,96 @@
+#+TITLE: drmrd's Helm Configuration
+#+AUTHOR: drmrd
+#+OPTIONS: toc:nil num:nil ^:nil
+#+PROPERTY: header-args    :comments link
+#+STARTUP: indent
+
+#+BEGIN_SRC emacs-lisp
+  (use-package helm
+    :diminish helm-mode
+    :init
+      (require 'helm-config)
+
+      ;;; Global Keybindings
+
+      ;; These must be set globally at startup since `helm-command-prefix-key'
+      ;; can't be changed after `helm-config' is loaded.
+      (global-set-key   (kbd "C-c h") 'helm-command-prefix)
+      (global-set-key   (kbd "C-x h") 'helm-command-prefix)
+      (global-unset-key (kbd "C-x c"))
+
+      ;;; Helm Keymap Tweaks
+      (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebind tab to run persistent action
+      (define-key helm-map (kbd "C-i")   'helm-execute-persistent-action) ; make TAB work in terminal
+      (define-key helm-map (kbd "C-z")   'helm-select-action)             ; list actions using C-z
+
+      ;;; Helm Google Suggest Settings
+      ;; Make helm-google-suggest prefer using curl
+      (when (executable-find "curl")
+        (setq helm-google-suggest-use-curl-p t))
+
+      ;;; Replace grep with ack-grep
+      (when (executable-find "ack-grep")
+        (setq helm-grep-default-command "ack-grep -Hn --no-group --no-color %e %p %f"
+              helm-grep-default-recurse-command "ack-grep -H --no-group --no-color %e %p %f"))
+
+      ;;; Other Settings
+      (setq ; open helm buffer inside cur window, don't jump to whole other window
+            helm-split-window-in-side-p           t
+            ; move to beg/end of source when end/beg is reached
+            helm-move-to-line-cycle-in-source     t
+            ; scroll 8 lines other window using M-<next>/M-<prior>
+            helm-scroll-amount                    8
+            helm-ff-file-name-history-use-recentf t
+            helm-ff-skip-boring-files             t
+            helm-ff-search-library-in-sexp        t
+            helm-echo-input-in-header-line        t
+  ;          helm-exit-idle-delay                  0
+            helm-M-x-fuzzy-match                  t
+            helm-buffers-fuzzy-matching           t
+            helm-recentf-fuzzy-match              t)
+
+      ;; C-c h i settings
+      (setq helm-semantic-fuzzy-match t
+            helm-imenu-fuzzy-match    t)
+
+      (defun spacemacs//helm-hide-minibuffer-maybe ()
+        "Hide minibuffer in Helm session if we use the header line as input field."
+        (when (with-helm-buffer helm-echo-input-in-header-line)
+          (let ((ov (make-overlay (point-min) (point-max) nil nil t)))
+            (overlay-put ov 'window (selected-window))
+            (overlay-put ov 'face
+                         (let ((bg-color (face-background 'default nil)))
+                           `(:background ,bg-color :foreground ,bg-color)))
+            (setq-local cursor-type nil))))
+
+      (add-hook 'helm-minibuffer-set-up-hook
+                'spacemacs//helm-hide-minibuffer-maybe)
+
+      (add-to-list 'helm-sources-using-default-as-input 'helm-source-man-pages)
+
+      (setq helm-locate-fuzzy-match t)
+      (setq helm-apropos-fuzzy-match t)
+      (setq helm-lisp-fuzzy-completion t)
+
+      (define-key minibuffer-local-map (kbd "C-c C-l") 'helm-minibuffer-history)
+
+      (helm-adaptive-mode)
+      (helm-mode)
+      (ido-mode -1)
+    :bind (("C-x b"     . helm-mini)
+           ("C-x C-b"   . helm-mini)
+           ("C-h a"     . helm-apropos)
+           ("M-y"       . helm-show-kill-ring) ; Tweak/remove if annoying
+           ("M-x"       . helm-M-x)
+           ("C-x C-f"   . helm-find-files)
+           ("C-x C-r"   . helm-recentf)
+           ("C-c h o"   . helm-occur)
+           ("C-c h s"   . helm-swoop)
+           ("C-c h y"   . helm-yas-complete)
+           ("C-c h Y"   . helm-yas-create-snippet-on-region)
+           ("C-c h SPC" . helm-all-mark-rings)
+           ("C-c h x"   . helm-register)
+  ; I think I need to install something to use this:
+  ;         ("C-c h M-:" . helm-eval-expression-with-eldoc)
+           ))
+#+END_SRC
