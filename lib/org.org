@@ -140,6 +140,64 @@ input to insert onto an additional line in the format specified by the
                            "~/org/tasks.org"
                            ;"~/org/dissertating.org"
                            ))
+
+  (setq org-agenda-include-diary t)
+#+END_SRC
+** Connect to =appt=                          :appt:Reminders:Notifications:
+Improve org-agenda-to-appt so that it reliably sends appointments to =appt=,
+Emacs's built-in appointment reminder system and creates desktop notifications
+with audio(!!!). This depends on a separate appt-notification.sh, which I've
+added to this directory. To get the speech capabilities (hence, for
+appt-notification.sh to run in its current state), you also need the packages
+=espeak=, =mbrola=, and =mbrola-en1= installed, each of which is available
+via =apt-get=.
+
+This code is a modified form of that posted by user @scaramouche in [[http://emacs.stackexchange.com/a/5821/8643][this answer]]
+to a question on Emacs.SE and @holocronweaver's comment in response.
+#+BEGIN_SRC emacs-lisp
+  (require 'appt)
+  (appt-activate t)
+
+  (setq appt-message-warning-time 30) ; Show notification 5 minutes before event
+  (setq appt-display-interval appt-message-warning-time) ; Disable multiple reminders
+  (setq appt-display-mode-line nil)
+
+  ; Use appointment data from org-mode
+  (defun my-org-agenda-to-appt ()
+    (interactive)
+    (setq appt-time-msg-list nil)
+    (org-agenda-to-appt))
+
+  ; Update alarms when...
+  ; (1) ... Starting Emacs
+  (my-org-agenda-to-appt)
+
+  ; (2) ... Everyday at 12:05am (useful in case you keep Emacs always on)
+  (run-at-time "12:05am" (* 24 3600) 'my-org-agenda-to-appt)
+
+  ; (3) ... When tasks.org is saved
+  (add-hook 'after-save-hook
+            '(lambda ()
+               (catch 'found-buffer-name
+                 (dolist (agenda-file-name org-agenda-files)
+                   (if (string= (buffer-file-name) (expand-file-name agenda-file-name))
+                       (progn (my-org-agenda-to-appt)
+                              (throw 'found-buffer-name t)))))))
+
+  ; (4) ... Quitting org-agenda
+  (advice-add 'org-agenda-quit :after #'my-org-agenda-to-appt)
+
+  ; Display appointments as a window manager notification
+  (setq appt-disp-window-function 'my-appt-display)
+  (setq appt-delete-window-function (lambda () t))
+
+  (setq my-appt-notification-app (expand-file-name "~/.emacs.d/lib/appt-notification.sh"))
+
+  (defun my-appt-display (min-to-app new-time msg)
+    (if (atom min-to-app)
+      (call-process my-appt-notification-app nil nil nil min-to-app msg)
+    (dolist (i (number-sequence 0 (1- (length min-to-app))))
+      (call-process my-appt-notification-app nil nil nil (nth i min-to-app) (nth i msg)))))
 #+END_SRC
 * Org Capture
 Now we bind [[help:org-capture][org-capture]] mode globally to =C-c c=. This and the capture templates
