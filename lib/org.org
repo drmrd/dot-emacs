@@ -304,6 +304,10 @@ change this by configuring [[help:org-refile-targets][org-refile-targets]] appro
 #+BEGIN_SRC emacs-lisp
   (require 'org-habit)
 #+END_SRC
+* Org Pomodoro                       :org_pomodoro:GTD:TaskMgmt:Productivity:
+#+BEGIN_SRC emacs-lisp
+  (use-package org-pomodoro)
+#+END_SRC
 * M-Return Settings
 ** Add setting to separate headings other than tasks by newlines (not enabled by default)
 The following serves as a simple example of how to tweak M-Return's
