@@ -1714,7 +1714,8 @@ security/protection from man-in-the-middle attacks.
 #+SRC_NAME set_gnutls-min-prime-bits
 #+BEGIN_SRC emacs-lisp
   ;(setq gnutls-min-prime-bits 4096)
-  (setq gnutls-min-prime-bits 2048)
+  ;(setq gnutls-min-prime-bits 2048)
+  (setq gnutls-min-prime-bits 1024)
 #+END_SRC
 
 To aid with debugging errors, I also modify the gnutls-log-level variable
