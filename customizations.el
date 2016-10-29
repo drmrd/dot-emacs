@@ -6,7 +6,8 @@
  '(LaTeX-indent-comment-start-regexp "%" nil nil "This could provide a hacky solution to some indentation issues.")
  '(TeX-command-list
    (quote
-    (("latexmk" "latexmk" TeX-run-TeX nil t :help "Run latexmk on file")
+    (("Latexmk" "latexmk -pdf %s" TeX-run-TeX nil t :help "Run latexmk on file")
+     ("Clatexmk" "latexmk -gg -pdf %s" TeX-run-command nil t :help "Run latexmk after cleaning up *all* regeneratable files")
      ("LaTeX+" "latexmk -auxdir=./tmp %t -pdf %s" TeX-run-TeX nil t :help "Run latexmk, storing temporary files in ./tmp")
      ("TeX" "%(PDF)%(tex) %(file-line-error) %(extraopts) %`%S%(PDFout)%(mode)%' %t" TeX-run-TeX nil
       (plain-tex-mode texinfo-mode ams-tex-mode)
