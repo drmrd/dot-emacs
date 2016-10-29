@@ -2190,6 +2190,16 @@ An actively developed and feature-full email client in Emacs. See the wonderful
   (org-babel-load-file (expand-file-name "~/.emacs.d/lib/mu4e.org"))
 #+END_SRC
 *** TODO Fail gracefully on systems without mu(4e) installed
+** Volatile Highlight Mode               :Changes:Appearance:UI:Highlighting:
+Highlight all changes made to the current buffer since a recent command. Great
+for keeping track of what you're saving in an unobtrusive way. Depending on your
+theme it can be a super subtle but great quality of life improvement.
+#+SRC_NAME load_volatile-highlights-mode
+#+BEGIN_SRC emacs-lisp
+  (use-package volatile-highlights
+    :config (volatile-highlights-mode)
+    :diminish volatile-highlights-mode)
+#+END_SRC
 * Emacs Server Setup
 This is currently handled in our [[file:~/.bashrc][.bashrc]] config.
 * Clean Up
