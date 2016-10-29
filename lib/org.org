@@ -292,10 +292,14 @@ which require (and can only contain) the key and description entries.)
           ("e" "event" entry
                (file+olp "~/org/calendar.org" "Default")
                "* %^{Brief description} %^g\nSCHEDULED: %t\n%i\n%a")
-          ("h" "habit" entry
+          ("H" "habit" entry
                (file+olp "~/org/habits.org" "Default")
                "** TODO %^{Brief habit description} %^g\nSCHEDULED: %(format-time-string \"%<<%Y-%m-%d %a .+1d/3d>>\")\n:PROPERTIES:\n:STYLE: habit\n:END:")
-         ))
+          ("h" "heart" table-line
+               (file+olp "~/org/health.org" "Blood Pressure & Heart Rate")
+               "| %T | %^{Systolic (Upper #)} | %^{Diastolic (Lower #)} | %^{Pulse (beats / min)} | %^{Comments} |"
+               :immediate-finish t :kill-buffer t)
+          ))
 #+END_SRC
 ** Remove empty logbook entries when capturing                     :Logbook:
 Now we add code to remove logbook entries that are created but empty,
