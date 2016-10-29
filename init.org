@@ -2190,6 +2190,13 @@ An actively developed and feature-full email client in Emacs. See the wonderful
   (org-babel-load-file (expand-file-name "~/.emacs.d/lib/mu4e.org"))
 #+END_SRC
 *** TODO Fail gracefully on systems without mu(4e) installed
+** Visible Mark Mode                       :Mark:Regions:Navigation:Appearance:UI:
+Make the current mark visible in each buffer.
+#+SRC_NAME load_visible-mark-mode
+#+BEGIN_SRC emacs-lisp
+  (use-package visible-mark :ensure t
+    :config (visible-mark-mode))
+#+END_SRC
 ** Volatile Highlight Mode               :Changes:Appearance:UI:Highlighting:
 Highlight all changes made to the current buffer since a recent command. Great
 for keeping track of what you're saving in an unobtrusive way. Depending on your
