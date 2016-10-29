@@ -680,61 +680,192 @@ automatically installed on the current system.
   ;; present on the system.
   (setq use-package-always-ensure t)
 #+END_SRC
-* IDE Features                                      :IDE:Convenience:Editing:
-** flycheck & friends: On-the-fly error checking & linting :Lint:ErrorChecking:flycheck:
-#+SRC_NAME enable_global-flycheck-mode
+* Appearance & UI                                             :Appearance:UI:
+** Miscellany
+*** Set Default Font(s)                                             :Fonts:
+Naturally, fonts are quite OS and machine-specific, so this portion of the
+configuration will probably grow a bit with time. For now, the following
+configuration is appropriate. On Mac OS X, the Vera Sans font family is used,
+while on Linux we employ DejaVu Sans Mono.
 #+BEGIN_SRC emacs-lisp
-  ;;; Flycheck Mode (and friends)
-  ;;;
-  ;;;     Enable and configure `flycheck' for a powerful, customizable,
-  ;;;     extensible, drop-in replacement for `flymake'.
-
-  ;; Load flycheck
-  (use-package flycheck
-      :ensure t
-      :init (global-flycheck-mode))
+  (set-face-attribute 'default nil
+                      :font (case system-type
+                                  ('darwin "-apple-bitstream vera sans
+                                            mono-medium-r-normal--0-0-0-0-m-0-mac-roman")
+                                  ('gnu/linux "DejaVu Sans Mono-10")))
 #+END_SRC
-
-#+SRC_NAME enable_flycheck_extensions
+*** Disable Cursor Blinking                                   :CursorBlink:
+The enemy of civil society. I disable cursor blinking not only
+because I find it obnoxious and distracting, but because it's *the
+right thing to do*.
 #+BEGIN_SRC emacs-lisp
-  ;; Change the color of the modeline based on flycheck's current status
-  (use-package flycheck-color-mode-line
-      :ensure t
-      :config (add-hook 'flycheck-mode-hook 'flycheck-color-mode-line-mode))
-
-  ;; Display a tooltip at the cursor position when on a flycheck error
-  (use-package flycheck-pos-tip
-      :ensure t
-      :if window-system
-      :config (add-hook 'flycheck-mode-hook 'flycheck-pos-tip-mode))
-
-  ;; Replace `flycheck''s built-in modeline status indicators with cute, compact,
-  ;; meaningful emoji and warning/error counts
-  (use-package flycheck-status-emoji
-      :ensure t
-      :init (set-fontset-font t nil "Symbola")
-      :config (add-hook 'flycheck-mode-hook 'flycheck-status-emoji-mode))
-
-  ;; Support adding C/C++ libraries to `flycheck-clang-include-path' using
-  ;; `pkg-config' and completion. This simplifies getting `flycheck' to recognize
-  ;; appropriate libraries in a system-independent way.
-  ;;
-  ;; Note: This is not a minor mode. Call `flycheck-pkg-config' interactively to
-  ;; lookup (with completion) the correct path to add to
-  ;; `flycheck-clang-include-path' by library name.
-  (use-package flycheck-pkg-config :ensure t)
+  (blink-cursor-mode (- (*) (*) (*)))
 #+END_SRC
-** STARTED Projectile: PROJECT Interaction Library for Emacs :ProjectManagement:projectile:
-** STARTED org-projectile: Manage TODOs associated with a projectile project :ProjectManagement:OrgProjectile:TaskManagement:
-#+SRC_NAME: org-projectile-setup
+** Mode Line                                                       :ModeLine:
+*** Show column numbers                                       :ColumnNumbers:
+#+SRC_NAME enable_column-number-mode
 #+BEGIN_SRC emacs-lisp
-  (use-package org-projectile
-    :bind (("C-c n p" . org-projectile:project-todo-completing-read))
+  (column-number-mode 1)
+#+END_SRC
+*** Show the current time                                            :Time:
+#+BEGIN_SRC emacs-lisp
+  (display-time)
+#+END_SRC
+*** nyan-mode                                                     :nyan_mode:
+Display current location in buffer as a magical rainbow behind a poptart cat
+#+SRC_NAME nyan-mode-setup
+#+BEGIN_SRC emacs-lisp
+  (use-package nyan-mode :ensure t)
+#+END_SRC
+*** TODO smart-mode-line (sml)                          :sml:smartmodeline:
+Extend and customize the modeline. Use =sml/customize= (or go to the customize
+group) to tweak variables that affect the modeline's theming, what is displayed,
+and how it's displayed.
+
+Really a fantastic package. My only issue currently is that it's messing with
+the theme I'm using. I should read the docs more to see if I'm loading things in
+the wrong order or something.
+
+Need to tweak this to avoid errors.
+#+SRC_NAME smart-mode-line_setup
+#+BEGIN_SRC emacs-lisp :tangle no
+  (use-package smart-mode-line
+    :init
+      (setq sml/no-confirm-load-theme t)
     :config
-      (progn (setq org-projectile:projects-file "/home/dan/org/projects.org")
-             (setq org-agenda-files (append org-agenda-files (org-projectile:todo-files)))
-             (add-to-list 'org-capture-templates (org-projectile:project-todo-entry "p")))
-    :ensure t)
+      (sml/setup))
+#+END_SRC
+*** Hide/tweak minor mode lighters :diminish:delight:MinorModeLighters:
+**** delight
+A package for removing/modifying major and minor mode lighters (text indicators)
+appearing in the mode-line.
+
+#+SRC_NAME load_delight
+#+BEGIN_SRC emacs-lisp
+  (use-package delight)
+#+END_SRC
+**** Create minor mode lighter specifications            :CustomVariables:
+#+SRC_NAME set_drmrd/adjusted-mode-lighter-specs
+#+BEGIN_SRC emacs-lisp
+  (defcustom drmrd/adjusted-mode-lighter-specs
+    '((ws-butler-mode nil "ws-butler")
+      (fixmee-mode nil "fixmee")
+      (button-lock-mode nil "button-lock")
+      (yas-minor-mode nil "yasnippet")
+      (projectile-mode nil "projectile")
+      (reftex-mode nil "reftex")
+      (guide-key-mode nil "guide-key")
+      (visual-line-mode)
+      (git-gutter-mode nil "git-gutter")
+      (outline-minor-mode nil "outline")
+      (undo-tree-mode nil "undo-tree"))
+    "A list of minor modes to hidden in the mode line whenever they're loaded."
+      :tag "Adjusted Minor Mode Lighters in the Mode Line"
+      :type '(repeat sexp)
+      :group 'emacs)
+#+END_SRC
+
+#+SRC_NAME configure_minor_modes_with_delight :tangle yes
+#+BEGIN_SRC emacs-lisp
+  (delight drmrd/adjusted-mode-lighter-specs)
+#+END_SRC
+**** Create function for loading other delighted modes         :Functions:
+The following function can be used to load another mode and delight it all at
+the same time.
+
+#+SRC_NAME defun_drmrd/load-diminished-minor-mode
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (defun drmrd/load-diminished-mode(mode value library)
+    "Load mode MODE and use `delight' to format its lighter with
+  specification (MODE VALUE LIBRARY).
+
+  This function is intended for use in hooks, but works equally
+  well when evaluated manually."
+    (funcall mode)
+    (diminish mode value library))
+#+END_SRC
+** Theming                                                          :Themes:
+*** (DISABLED) Load a Color Theme
+#+BEGIN_SRC emacs-lisp :tangle no
+  (load-theme 'dracula t)
+#+END_SRC
+**** (Obsolete) Using color-theme to load a theme
+(I've kept these notes here for reference, in case I'm stranded on a
+desert island with no internet and an old copy of Emacs. They are
+irrelevant in versions beyond v24.)
+
+Color-Theme Mode is Emacs's standard theming engine for customizing
+faces throughout the UI and editor. We first load the package and
+initialize it.
+
+#+BEGIN_SRC emacs-lisp :tangle no
+  (require 'color-theme)
+  (color-theme-initialize)
+#+END_SRC
+
+Now we choose a color theme to load. I've commented out several other
+nice candidates, and other themes showing potential should also be
+added here.
+
+#+BEGIN_SRC emacs-lisp :tangle no
+  ;(color-theme-bharadwaj-slate)
+  (color-theme-charcoal-black)
+  ;(color-theme-classic)
+  ;(color-theme-deep-blue )
+  ;(color-theme-ld-dark)
+  ;(color-theme-midnight)
+  ;(color-theme-pok-wog)
+  ;(color-theme-resolve)
+  ;(color-theme-shaman)
+  ;(color-theme-subtle-hacker)
+#+END_SRC
+*** Have load-theme unload other color themes before loading new ones
+I have no idea why this isn't the default behavior. See
+[[http://emacs.stackexchange.com/a/3114/8643][this post]] for a good overview of color-themes, disabling theme when
+loading new ones, and the pros and cons of using color-theme vs
+Emacs24's built-in custom themes.
+#+BEGIN_SRC emacs-lisp
+  (defadvice load-theme (before theme-dont-propagate activate)
+                        (mapc #'disable-theme custom-enabled-themes))
+#+END_SRC
+** Display Line Numbers                                 :nlinum:LineNumbers:
+Ah yes, the somewhat notorious problem of displaying line numbers in Emacs in a
+way that doesn't break/get terribly affected by different modes and font locking
+schemes. Most recently I've been using nlinum mode for this purpose, but I can't
+seem to use it while loading multiple frames. This is only an issue on my
+laptop, not at the office, so I'm now testing to see if it's some kind of timing
+issue.
+#+BEGIN_SRC emacs-lisp
+  (defun initialize-nlinum (&optional frame)
+         (require 'nlinum)
+         (add-hook 'prog-mode-hook 'nlinum-mode))
+
+  (add-hook 'window-setup-hook 'initialize-nlinum)
+  (defadvice make-frame (around toggle-nlinum-mode compile activate)
+             (nlinum-mode -1) ad-do-it (nlinum-mode 1))
+#+END_SRC
+** Highlight the Current Line                      :hlline:LineHighlighting:
+Highlights the current line in every buffer by default
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (global-hl-line-mode 1); Highlight current line in buffer
+#+END_SRC
+** Set Default Frame Size                                        :FrameSize:
+#+SRCNAME set_default_frame_size
+#+BEGIN_SRC emacs-lisp
+  (add-to-list 'default-frame-alist '(width . 86))
+#+END_SRC
+** git-gutter-fringe                     :gitgutterfringe:Git:UI:Diff:Fringe:
+Displays a minimalist indicator in the fringe (side margin) of changes made to
+the current file since the last commit. After seeing this in Sublime Text and
+IntelliJ IDEA I'm hooked. It's amazingly useful without getting in the way.
+#+SRC_NAME enable_git-gutter-fringe
+#+BEGIN_SRC emacs-lisp
+  (use-package git-gutter-fringe
+      ;; Move fringe to the right margin
+      :init (setq git-gutter-fr:side 'right-fringe)
+      :config (global-git-gutter-mode t)
+      :ensure t
+      :diminish t)
 #+END_SRC
 
 * Navigation                                                     :Navigation:
@@ -976,6 +1107,319 @@ selection mode.
 ** helm                                                                :helm:
 This package is impossible to categorize completely and deserves its own library
 file. See [[*Helm][below]] for the main description.
+
+* Global Settings
+** Personal Information
+*** Email Address
+#+BEGIN_SRC emacs-lisp
+  (setq user-mail-address "contact@drmrd.xyz")
+#+END_SRC
+*** Paradox GitHub Token
+#+BEGIN_SRC emacs-lisp
+  ;; Retrieve the Paradox Package Manager's GitHub Token
+  ;;
+  ;; Loads a file containing a single instruction, which sets the GitHub token for
+  ;; Paradox.  Do not store that file in a public repo.
+  (org-babel-load-file
+      (expand-file-name "~/.emacs.d/secure/paradox-github-token.org"))
+#+END_SRC
+** Default Keybinding Replacements                              :Keybindings:
+#+BEGIN_SRC emacs-lisp
+  (global-set-key (kbd "M-/") 'hippie-expand)
+  (global-set-key (kbd "M-z") 'zap-up-to-char)
+
+  (setq select-enable-clipboard             t
+        select-enable-primary               t
+        save-interprogram-paste-before-kill t
+        mouse-yank-at-point                 t)
+#+END_SRC
+** General Editing Settings
+*** Fill Column Settings
+#+SRC_NAME set-fill-column
+#+BEGIN_SRC emacs-lisp :tangle yes
+  ;;; Make fill-column default to 80 (instead of the usual 70)
+  (setq-default fill-column 80)
+#+END_SRC
+
+#+SRC_NAME enable_fill_column_indicators
+#+BEGIN_SRC emacs-lisp :tangle yes
+  ;;; Display a vertical rule at the fill-column
+  (use-package fill-column-indicator
+      :config (turn-on-fci-mode))
+#+END_SRC
+** What to Display at Startup
+Disable the welcome screen and instead display a welcome message as a
+comment in the scratch buffer.
+#+BEGIN_SRC emacs-lisp
+    (setq inhibit-startup-screen t)   ; Disable Emacs's welcome screen
+    (setq initial-scratch-message ";; Welcome to Emacs!\n")
+#+END_SRC
+** Change Where Customizations are Stored
+By default, Emacs adds settings set via the customizations menu to the
+end of the .emacs file.
+#+SRCNAME set_customizations_file
+#+BEGIN_SRC emacs-lisp
+  (setq custom-file "~/.emacs.d/customizations.el")
+  (load custom-file)
+#+END_SRC
+** Load Other Config Files
+We now add several directories to the load-path. The directory
+~/workspace/elisp is a git repository containing some older
+configuration file, which I should probably just incorporate into this
+file and/or other org files in .emacs.d. The second directory is
+~/.emacs.d itself, which I thought was loaded by default but
+apparently not in all Emacs versions (or at least not in Aquamacs it
+seems).
+
+#+srcname: custom-load-paths
+#+begin_src emacs-lisp :tangle no
+  (add-to-list 'load-path "~/.emacs.d/lib")
+#+end_src
+
+*** Update: Disabled in favor of org-babel-load-file calls
+To avoid accidentally loading old tangled files (or other unwanted
+behavior), we are no longer including ~/.emacs.d/lib in our load
+path. Instead, libraries that we wish to load from here will be
+explicitly tangled and loaded via =org-babel-load-file= in this config
+file (and the files it loads).
+** Load Third-Party Elisp not Managed by *Package*
+#+BEGIN_SRC emacs-lisp
+  (add-to-list 'load-path "~/elisp")
+#+END_SRC
+** Bind Settings Files to Registers
+Bind init.org, .emacs.d/lib/latex.org, and Preferences.el to the
+registers "e", "l", and "p" (resp.) so that they can be opened easily with
+"C-x r j <register>".
+
+#+SRCNAME set-config-registers
+#+BEGIN_SRC emacs-lisp
+  (set-register ?e '(file . "~/.emacs.d/init.org"))
+  (set-register ?i '(file . "~/.emacs.d/.emacs"))
+  (set-register ?l '(file . "~/.emacs.d/lib/latex.org"))
+  (set-register ?o '(file . "~/.emacs.d/lib/org.org"))
+  (set-register ?L '(file . "~/.emacs.d/lib/"))
+  (set-register ?W '(file . "~/workspace/"))
+
+  ;; Also set a register for Preferences.el if on a Mac
+  (if (eq system-type 'darwin)
+    (set-register ?p (cons 'file "~/Library/Preferences/Aquamacs Emacs/Preferences.el")))
+#+END_SRC
+
+*** DONE Determine how to evaluate this file without reloading Aquamacs
+Invoke org-babel-load-file on init.org to retangle and reload this
+file.
+
+To modify and re-evaluate a single code block, use C-c C-c inside the block.
+*** DONE Add registers for .emacs.d/lib/latex.org and Preferences.el
+It might be worth also adding a register for Preferences.el for when I
+want to evaluate this buffer without reloading emacs (although Babel
+probably has an easier way to do that natively).
+** Set the Default Directory
+Make the default directory ~/workspace/ for easy access to LaTeX
+projects.
+
+#+BEGIN_SRC emacs-lisp
+  (setq default-directory "~/workspace/")
+#+END_SRC
+
+** Set the Default Major Mode to Text Mode
+Make Text Mode the default major mode, but disable the Auto-Fill Mode
+hook.
+
+#+BEGIN_SRC emacs-lisp
+  (setq default-major-mode 'text-mode)
+  (remove-hook 'text-mode-hook 'auto-fill-mode)
+  (add-hook 'text-mode-hook 'kill-auto-fill-mode)
+#+END_SRC
+
+** Make Emacs insert a newline at the end of each file
+I can't find a link at the moment, but requiring newlines at the end
+of files prevents some kind of buggy behavior at times. I think I read
+about this on StackExchange at some point.
+
+#+BEGIN_SRC emacs-lisp
+  (setq require-final-newline t)
+#+END_SRC
+** Backup Settings                                                 :Backups:
+#+BEGIN_SRC emacs-lisp
+  ; Store all backup files created by Emacs in the same directory
+  (setq backup-directory-alist '(("." . "~/.backups_emacs")))
+
+  ; Make Emacs create backups by copying files. If this leads to a
+  ; performance hit, see the other available backup methods (or just
+  ; comment out this line), as described in the documentation of the
+  ; make-backup-files variable.
+  (setq backup-by-copying t)
+
+
+  (setq delete-old-versions t
+        kept-new-versions   6
+        kept-old-versions   2
+        version-control     t) ; Use version numbers in backup file
+                               ; names
+#+END_SRC
+** (DISABLED) Force Files to Open in Read Only Mode
+This is a bit of an experiment to see if I like defaulting to this
+behavior, but I'd rather have to actively switch to editing
+dissertation files than accidentally make changes when I'm just
+browsing. Uhoh...this might be a slippery slope towards using evil
+mode, I think. As usual, if selecting from dired I can just use =v=
+(bound by default to [[help:dired-view-file][dired-view-file]]. When loading from the
+minibuffer, the easiest solution is just adding a function that sets
+the buffer to read only to the [[help:find-file-hook][find-file-hook]].
+
+#+SRC_NAME: force-read-only-buffers
+#+BEGIN_SRC emacs-lisp :tangle no
+  (add-hook 'find-file-hook (lambda () (setq buffer-read-only t)))
+#+END_SRC
+
+A better solution is to probably set buffer-read-only to true as a
+file variable when needed.
+
+*Edit:* This has been disabled, since, as I suspected, it breaks
+ everything.
+** Other Default Settings
+#+BEGIN_SRC emacs-lisp
+  (setq apropos-do-all t)   ; Make all apropos commands perform more
+                            ; extensive searches
+
+  ;; Make y and n suffice for answers to yes or no questions
+  (fset 'yes-or-no-p 'y-or-n-p)
+#+END_SRC
+** Compilation Behavior                              :Keybindings:Compiling:
+The following is brough to us by bpalmer and zigler on the
+[[https://www.emacswiki.org/emacs/UsingMakefileFromParentDirectory][EmacsWiki]]. It adds a =get-nearest-compilation-file= function that
+searches parent directories for a Makefile (or any file with name in
+=compilation-filenames=) to use during compilation and binds the new
+function to F5.
+#+BEGIN_SRC emacs-lisp
+  (setq compilation-filenames '("Makefile"))
+
+  (defun get-nearest-compilation-file ()
+    "Search for the compilation file traversing up the directory tree."
+    (let ((dir default-directory)
+          (parent-dir (file-name-directory (directory-file-name default-directory)))
+          (nearest-compilation-file 'nil))
+      (while (and (not (string= dir parent-dir))
+                  (not nearest-compilation-file))
+        (dolist (filename compilation-filenames)
+          (setq file-path (concat dir filename))
+          (when (file-readable-p file-path)
+            (setq nearest-compilation-file file-path)))
+        (setq dir parent-dir
+              parent-dir (file-name-directory (directory-file-name parent-dir))))
+      nearest-compilation-file))
+
+  ;; bind compiling with get-nearest-compilation-file to f5
+  (global-set-key [f5] (lambda () (interactive) (compile (format
+             "make -f %s" (get-nearest-compilation-file)))))
+#+END_SRC
+** Indentation & Whitespace Settings
+This deserves its own section, since it is always the part of text
+editors I tweak the most.
+*** Default to indenting with spaces, four at a time
+#+BEGIN_SRC emacs-lisp
+  ;; make return key also do indent, globally
+  ; (electric-indent-mode 1)
+
+  ;; Set tab width to 4
+  (setq tab-stop-list (number-sequence 4 200 4))
+
+  ;; Force emacs to only indent with spaces and never tabs
+  (setq-default indent-tabs-mode nil)
+#+END_SRC
+*** [Tab] behavior
+**** Set =tab-always=indent=: Make [Tab] try to indent or (if already indented) complete the thing-at-point
+Change the =tab-always-indent= setting to "complete", which makes
+[Tab] first try to indent the current line and then, iff it was
+already indented, attempt to complete the thing at the current point.
+
+The other options for this variable are =nil=, which makes [Tab]
+indent the current line if at the left margin or in its indentation
+and otherwise literally insert a TAB character, and =t=, which makes
+[Tab] always indent.
+#+BEGIN_SRC emacs-lisp
+  (setq-default tab-always-indent 'complete)
+#+END_SRC emacs-lisp
+
+**** Bind M-q to =indent-relative=
+#+BEGIN_SRC emacs-lisp
+  ;;
+  ;  Makes M-q indent from cursor to the space prior to the next
+  ;  non-whitespace character on the previous line.
+  ;
+  ;  Example: If the current buffer looks as follows (with the cursor denoted by *)...
+  ;
+  ;          sample text is entertaining to write
+  ;          I completely agree* with you
+  ;
+  ;      Then the result of hitting M-q will be
+  ;
+  ;          sample text is entertaining to write
+  ;          I completely agree          with you
+  ;
+  ;      with the cursor right before the "w" in "with".
+  (global-set-key (kbd "M-q") 'indent-relative)
+#+END_SRC
+***** TODO Consider also setting [Tab] (or something) to (indent-relative-maybe).
+
+* IDE Features                                      :IDE:Convenience:Editing:
+** flycheck & friends: On-the-fly error checking & linting :Lint:ErrorChecking:flycheck:
+#+SRC_NAME enable_global-flycheck-mode
+#+BEGIN_SRC emacs-lisp
+  ;;; Flycheck Mode (and friends)
+  ;;;
+  ;;;     Enable and configure `flycheck' for a powerful, customizable,
+  ;;;     extensible, drop-in replacement for `flymake'.
+
+  ;; Load flycheck
+  (use-package flycheck
+      :ensure t
+      :init (global-flycheck-mode))
+#+END_SRC
+
+#+SRC_NAME enable_flycheck_extensions
+#+BEGIN_SRC emacs-lisp
+  ;; Change the color of the modeline based on flycheck's current status
+  (use-package flycheck-color-mode-line
+      :ensure t
+      :config (add-hook 'flycheck-mode-hook 'flycheck-color-mode-line-mode))
+
+  ;; Display a tooltip at the cursor position when on a flycheck error
+  (use-package flycheck-pos-tip
+      :ensure t
+      :if window-system
+      :config (add-hook 'flycheck-mode-hook 'flycheck-pos-tip-mode))
+
+  ;; Replace `flycheck''s built-in modeline status indicators with cute, compact,
+  ;; meaningful emoji and warning/error counts
+  (use-package flycheck-status-emoji
+      :ensure t
+      :init (set-fontset-font t nil "Symbola")
+      :config (add-hook 'flycheck-mode-hook 'flycheck-status-emoji-mode))
+
+  ;; Support adding C/C++ libraries to `flycheck-clang-include-path' using
+  ;; `pkg-config' and completion. This simplifies getting `flycheck' to recognize
+  ;; appropriate libraries in a system-independent way.
+  ;;
+  ;; Note: This is not a minor mode. Call `flycheck-pkg-config' interactively to
+  ;; lookup (with completion) the correct path to add to
+  ;; `flycheck-clang-include-path' by library name.
+  (use-package flycheck-pkg-config :ensure t)
+#+END_SRC
+** STARTED Projectile: PROJECT Interaction Library for Emacs :ProjectManagement:projectile:
+** STARTED org-projectile: Manage TODOs associated with a projectile project :ProjectManagement:OrgProjectile:TaskManagement:
+#+SRC_NAME: org-projectile-setup
+#+BEGIN_SRC emacs-lisp
+  (use-package org-projectile
+    :bind (("C-c n p" . org-projectile:project-todo-completing-read))
+    :config
+      (progn (setq org-projectile:projects-file "/home/dan/org/projects.org")
+             (setq org-agenda-files (append org-agenda-files (org-projectile:todo-files)))
+             (add-to-list 'org-capture-templates (org-projectile:project-todo-entry "p")))
+    :ensure t)
+#+END_SRC
+
 * Utility Functions                                               :Functions:
 ** drmrd/load-library
 #+SRC_NAME: def_drmrd/load-library
@@ -1235,438 +1679,6 @@ say about them.
            (shell-command "uuidgen" t))
 #+END_SRC
 *** TODO Throw an error if not on Linux
-* Appearance & UI                                             :Appearance:UI:
-** Miscellany
-*** Set Default Font(s)                                             :Fonts:
-Naturally, fonts are quite OS and machine-specific, so this portion of the
-configuration will probably grow a bit with time. For now, the following
-configuration is appropriate. On Mac OS X, the Vera Sans font family is used,
-while on Linux we employ DejaVu Sans Mono.
-#+BEGIN_SRC emacs-lisp
-  (set-face-attribute 'default nil
-                      :font (case system-type
-                                  ('darwin "-apple-bitstream vera sans
-                                            mono-medium-r-normal--0-0-0-0-m-0-mac-roman")
-                                  ('gnu/linux "DejaVu Sans Mono-10")))
-#+END_SRC
-*** Disable Cursor Blinking                                   :CursorBlink:
-The enemy of civil society. I disable cursor blinking not only
-because I find it obnoxious and distracting, but because it's *the
-right thing to do*.
-#+BEGIN_SRC emacs-lisp
-  (blink-cursor-mode (- (*) (*) (*)))
-#+END_SRC
-** Mode Line                                                       :ModeLine:
-*** Show column numbers                                       :ColumnNumbers:
-#+SRC_NAME enable_column-number-mode
-#+BEGIN_SRC emacs-lisp
-  (column-number-mode 1)
-#+END_SRC
-*** Show the current time                                            :Time:
-#+BEGIN_SRC emacs-lisp
-  (display-time)
-#+END_SRC
-*** nyan-mode                                                     :nyan_mode:
-Display current location in buffer as a magical rainbow behind a poptart cat
-#+SRC_NAME nyan-mode-setup
-#+BEGIN_SRC emacs-lisp
-  (use-package nyan-mode :ensure t)
-#+END_SRC
-*** TODO smart-mode-line (sml)                          :sml:smartmodeline:
-Extend and customize the modeline. Use =sml/customize= (or go to the customize
-group) to tweak variables that affect the modeline's theming, what is displayed,
-and how it's displayed.
-
-Really a fantastic package. My only issue currently is that it's messing with
-the theme I'm using. I should read the docs more to see if I'm loading things in
-the wrong order or something.
-
-Need to tweak this to avoid errors.
-#+SRC_NAME smart-mode-line_setup
-#+BEGIN_SRC emacs-lisp :tangle no
-  (use-package smart-mode-line
-    :init
-      (setq sml/no-confirm-load-theme t)
-    :config
-      (sml/setup))
-#+END_SRC
-*** Hide/tweak minor mode lighters :diminish:delight:MinorModeLighters:
-**** delight
-A package for removing/modifying major and minor mode lighters (text indicators)
-appearing in the mode-line.
-
-#+SRC_NAME load_delight
-#+BEGIN_SRC emacs-lisp
-  (use-package delight)
-#+END_SRC
-**** Create minor mode lighter specifications            :CustomVariables:
-#+SRC_NAME set_drmrd/adjusted-mode-lighter-specs
-#+BEGIN_SRC emacs-lisp
-  (defcustom drmrd/adjusted-mode-lighter-specs
-    '((ws-butler-mode nil "ws-butler")
-      (fixmee-mode nil "fixmee")
-      (button-lock-mode nil "button-lock")
-      (yas-minor-mode nil "yasnippet")
-      (projectile-mode nil "projectile")
-      (reftex-mode nil "reftex")
-      (guide-key-mode nil "guide-key")
-      (visual-line-mode)
-      (git-gutter-mode nil "git-gutter")
-      (outline-minor-mode nil "outline")
-      (undo-tree-mode nil "undo-tree"))
-    "A list of minor modes to hidden in the mode line whenever they're loaded."
-      :tag "Adjusted Minor Mode Lighters in the Mode Line"
-      :type '(repeat sexp)
-      :group 'emacs)
-#+END_SRC
-
-#+SRC_NAME configure_minor_modes_with_delight :tangle yes
-#+BEGIN_SRC emacs-lisp
-  (delight drmrd/adjusted-mode-lighter-specs)
-#+END_SRC
-**** Create function for loading other delighted modes         :Functions:
-The following function can be used to load another mode and delight it all at
-the same time.
-
-#+SRC_NAME defun_drmrd/load-diminished-minor-mode
-#+BEGIN_SRC emacs-lisp :tangle yes
-  (defun drmrd/load-delighted-mode(mode value library)
-    "Load mode MODE and use `delight' to format its lighter with
-  specification (MODE VALUE LIBRARY).
-
-  This function is intended for use in hooks, but works equally
-  well when evaluated manually."
-    (funcall mode)
-    (diminish mode value library))
-#+END_SRC
-** Theming                                                          :Themes:
-*** (DISABLED) Load a Color Theme
-#+BEGIN_SRC emacs-lisp :tangle no
-  (load-theme 'dracula t)
-#+END_SRC
-**** (Obsolete) Using color-theme to load a theme
-(I've kept these notes here for reference, in case I'm stranded on a
-desert island with no internet and an old copy of Emacs. They are
-irrelevant in versions beyond v24.)
-
-Color-Theme Mode is Emacs's standard theming engine for customizing
-faces throughout the UI and editor. We first load the package and
-initialize it.
-
-#+BEGIN_SRC emacs-lisp :tangle no
-  (require 'color-theme)
-  (color-theme-initialize)
-#+END_SRC
-
-Now we choose a color theme to load. I've commented out several other
-nice candidates, and other themes showing potential should also be
-added here.
-
-#+BEGIN_SRC emacs-lisp :tangle no
-  ;(color-theme-bharadwaj-slate)
-  (color-theme-charcoal-black)
-  ;(color-theme-classic)
-  ;(color-theme-deep-blue )
-  ;(color-theme-ld-dark)
-  ;(color-theme-midnight)
-  ;(color-theme-pok-wog)
-  ;(color-theme-resolve)
-  ;(color-theme-shaman)
-  ;(color-theme-subtle-hacker)
-#+END_SRC
-*** Have load-theme unload other color themes before loading new ones
-I have no idea why this isn't the default behavior. See
-[[http://emacs.stackexchange.com/a/3114/8643][this post]] for a good overview of color-themes, disabling theme when
-loading new ones, and the pros and cons of using color-theme vs
-Emacs24's built-in custom themes.
-#+BEGIN_SRC emacs-lisp
-  (defadvice load-theme (before theme-dont-propagate activate)
-                        (mapc #'disable-theme custom-enabled-themes))
-#+END_SRC
-** Display Line Numbers                                 :nlinum:LineNumbers:
-Ah yes, the somewhat notorious problem of displaying line numbers in Emacs in a
-way that doesn't break/get terribly affected by different modes and font locking
-schemes. Most recently I've been using nlinum mode for this purpose, but I can't
-seem to use it while loading multiple frames. This is only an issue on my
-laptop, not at the office, so I'm now testing to see if it's some kind of timing
-issue.
-#+BEGIN_SRC emacs-lisp
-  (defun initialize-nlinum (&optional frame)
-         (require 'nlinum)
-         (add-hook 'prog-mode-hook 'nlinum-mode))
-
-  (add-hook 'window-setup-hook 'initialize-nlinum)
-  (defadvice make-frame (around toggle-nlinum-mode compile activate)
-             (nlinum-mode -1) ad-do-it (nlinum-mode 1))
-#+END_SRC
-** Highlight the Current Line                      :hlline:LineHighlighting:
-Highlights the current line in every buffer by default
-#+BEGIN_SRC emacs-lisp :tangle yes
-  (global-hl-line-mode 1); Highlight current line in buffer
-#+END_SRC
-** Set Default Frame Size                                        :FrameSize:
-#+SRCNAME set_default_frame_size
-#+BEGIN_SRC emacs-lisp
-  (add-to-list 'default-frame-alist '(width . 86))
-#+END_SRC
-** git-gutter-fringe                     :gitgutterfringe:Git:UI:Diff:Fringe:
-Displays a minimalist indicator in the fringe (side margin) of changes made to
-the current file since the last commit. After seeing this in Sublime Text and
-IntelliJ IDEA I'm hooked. It's amazingly useful without getting in the way.
-#+SRC_NAME enable_git-gutter-fringe
-#+BEGIN_SRC emacs-lisp
-  (use-package git-gutter-fringe
-      ;; Move fringe to the right margin
-      :init (setq git-gutter-fr:side 'right-fringe)
-      :config (global-git-gutter-mode t)
-      :ensure t
-      :diminish t)
-#+END_SRC
-* Global Settings
-** Personal Information
-*** Email Address
-#+BEGIN_SRC emacs-lisp
-  (setq user-mail-address "contact@drmrd.xyz")
-#+END_SRC
-*** Paradox GitHub Token
-#+BEGIN_SRC emacs-lisp
-  ;; Retrieve the Paradox Package Manager's GitHub Token
-  ;;
-  ;; Loads a file containing a single instruction, which sets the GitHub token for
-  ;; Paradox.  Do not store that file in a public repo.
-  (org-babel-load-file
-      (expand-file-name "~/.emacs.d/secure/paradox-github-token.org"))
-#+END_SRC
-** General Editing Settings
-*** Fill Column Settings
-#+SRC_NAME set-fill-column
-#+BEGIN_SRC emacs-lisp :tangle yes
-  ;;; Make fill-column default to 80 (instead of the usual 70)
-  (setq-default fill-column 80)
-#+END_SRC
-
-#+SRC_NAME enable_fill_column_indicators
-#+BEGIN_SRC emacs-lisp :tangle yes
-  ;;; Display a vertical rule at the fill-column
-  (use-package fill-column-indicator
-      :config (turn-on-fci-mode))
-#+END_SRC
-** What to Display at Startup
-Disable the welcome screen and instead display a welcome message as a
-comment in the scratch buffer.
-#+BEGIN_SRC emacs-lisp
-    (setq inhibit-startup-screen t)   ; Disable Emacs's welcome screen
-    (setq initial-scratch-message ";; Welcome to Emacs!\n")
-#+END_SRC
-** Change Where Customizations are Stored
-By default, Emacs adds settings set via the customizations menu to the
-end of the .emacs file.
-#+SRCNAME set_customizations_file
-#+BEGIN_SRC emacs-lisp
-  (setq custom-file "~/.emacs.d/customizations.el")
-  (load custom-file)
-#+END_SRC
-** Load Other Config Files
-We now add several directories to the load-path. The directory
-~/workspace/elisp is a git repository containing some older
-configuration file, which I should probably just incorporate into this
-file and/or other org files in .emacs.d. The second directory is
-~/.emacs.d itself, which I thought was loaded by default but
-apparently not in all Emacs versions (or at least not in Aquamacs it
-seems).
-
-#+srcname: custom-load-paths
-#+begin_src emacs-lisp :tangle no
-  (add-to-list 'load-path "~/.emacs.d/lib")
-#+end_src
-
-*** Update: Disabled in favor of org-babel-load-file calls
-To avoid accidentally loading old tangled files (or other unwanted
-behavior), we are no longer including ~/.emacs.d/lib in our load
-path. Instead, libraries that we wish to load from here will be
-explicitly tangled and loaded via =org-babel-load-file= in this config
-file (and the files it loads).
-** Load Third-Party Elisp not Managed by *Package*
-#+BEGIN_SRC emacs-lisp
-  (add-to-list 'load-path "~/elisp")
-#+END_SRC
-** Bind Settings Files to Registers
-Bind init.org, .emacs.d/lib/latex.org, and Preferences.el to the
-registers "e", "l", and "p" (resp.) so that they can be opened easily with
-"C-x r j <register>".
-
-#+SRCNAME set-config-registers
-#+BEGIN_SRC emacs-lisp
-  (set-register ?e '(file . "~/.emacs.d/init.org"))
-  (set-register ?i '(file . "~/.emacs.d/.emacs"))
-  (set-register ?l '(file . "~/.emacs.d/lib/latex.org"))
-  (set-register ?o '(file . "~/.emacs.d/lib/org.org"))
-  (set-register ?L '(file . "~/.emacs.d/lib/"))
-  (set-register ?W '(file . "~/workspace/"))
-
-  ;; Also set a register for Preferences.el if on a Mac
-  (if (eq system-type 'darwin)
-    (set-register ?p (cons 'file "~/Library/Preferences/Aquamacs Emacs/Preferences.el")))
-#+END_SRC
-
-*** DONE Determine how to evaluate this file without reloading Aquamacs
-Invoke org-babel-load-file on init.org to retangle and reload this
-file.
-
-To modify and re-evaluate a single code block, use C-c C-c inside the block.
-*** DONE Add registers for .emacs.d/lib/latex.org and Preferences.el
-It might be worth also adding a register for Preferences.el for when I
-want to evaluate this buffer without reloading emacs (although Babel
-probably has an easier way to do that natively).
-** Set the Default Directory
-Make the default directory ~/workspace/ for easy access to LaTeX
-projects.
-
-#+BEGIN_SRC emacs-lisp
-  (setq default-directory "~/workspace/")
-#+END_SRC
-
-** Set the Default Major Mode to Text Mode
-Make Text Mode the default major mode, but disable the Auto-Fill Mode
-hook.
-
-#+BEGIN_SRC emacs-lisp
-  (setq default-major-mode 'text-mode)
-  (remove-hook 'text-mode-hook 'auto-fill-mode)
-  (add-hook 'text-mode-hook 'kill-auto-fill-mode)
-#+END_SRC
-
-** Make Emacs insert a newline at the end of each file
-I can't find a link at the moment, but requiring newlines at the end
-of files prevents some kind of buggy behavior at times. I think I read
-about this on StackExchange at some point.
-
-#+BEGIN_SRC emacs-lisp
-  (setq require-final-newline t)
-#+END_SRC
-** Configure Backup Settings and Location
-#+BEGIN_SRC emacs-lisp
-  ; Store all backup files created by Emacs in the same directory
-  (setq backup-directory-alist '(("." . "~/.backups_emacs")))
-
-  ; Make Emacs create backups by copying files. If this leads to a
-  ; performance hit, see the other available backup methods (or just
-  ; comment out this line), as described in the documentation of the
-  ; make-backup-files variable.
-  (setq backup-by-copying t)
-
-
-  (setq delete-old-versions t
-        kept-new-versions   6
-        kept-old-versions   2
-        version-control     t) ; Use version numbers in backup file
-                               ; names
-#+END_SRC
-** (DISABLED) Force Files to Open in Read Only Mode
-This is a bit of an experiment to see if I like defaulting to this
-behavior, but I'd rather have to actively switch to editing
-dissertation files than accidentally make changes when I'm just
-browsing. Uhoh...this might be a slippery slope towards using evil
-mode, I think. As usual, if selecting from dired I can just use =v=
-(bound by default to [[help:dired-view-file][dired-view-file]]. When loading from the
-minibuffer, the easiest solution is just adding a function that sets
-the buffer to read only to the [[help:find-file-hook][find-file-hook]].
-
-#+SRC_NAME: force-read-only-buffers
-#+BEGIN_SRC emacs-lisp :tangle no
-  (add-hook 'find-file-hook (lambda () (setq buffer-read-only t)))
-#+END_SRC
-
-A better solution is to probably set buffer-read-only to true as a
-file variable when needed.
-
-*Edit:* This has been disabled, since, as I suspected, it breaks
- everything.
-** Other Default Settings
-#+BEGIN_SRC emacs-lisp
-  (setq apropos-do-all t)   ; Make all apropos commands perform more
-                            ; extensive searches
-
-  ;; Make y and n suffice for answers to yes or no questions
-  (fset 'yes-or-no-p 'y-or-n-p)
-#+END_SRC
-** Compilation Behavior                              :Keybindings:Compiling:
-The following is brough to us by bpalmer and zigler on the
-[[https://www.emacswiki.org/emacs/UsingMakefileFromParentDirectory][EmacsWiki]]. It adds a =get-nearest-compilation-file= function that
-searches parent directories for a Makefile (or any file with name in
-=compilation-filenames=) to use during compilation and binds the new
-function to F5.
-#+BEGIN_SRC emacs-lisp
-  (setq compilation-filenames '("Makefile"))
-
-  (defun get-nearest-compilation-file ()
-    "Search for the compilation file traversing up the directory tree."
-    (let ((dir default-directory)
-          (parent-dir (file-name-directory (directory-file-name default-directory)))
-          (nearest-compilation-file 'nil))
-      (while (and (not (string= dir parent-dir))
-                  (not nearest-compilation-file))
-        (dolist (filename compilation-filenames)
-          (setq file-path (concat dir filename))
-          (when (file-readable-p file-path)
-            (setq nearest-compilation-file file-path)))
-        (setq dir parent-dir
-              parent-dir (file-name-directory (directory-file-name parent-dir))))
-      nearest-compilation-file))
-
-  ;; bind compiling with get-nearest-compilation-file to f5
-  (global-set-key [f5] (lambda () (interactive) (compile (format
-             "make -f %s" (get-nearest-compilation-file)))))
-#+END_SRC
-** Indentation & Whitespace Settings
-This deserves its own section, since it is always the part of text
-editors I tweak the most.
-*** Default to indenting with spaces, four at a time
-#+BEGIN_SRC emacs-lisp
-  ;; make return key also do indent, globally
-  ; (electric-indent-mode 1)
-
-  ;; Set tab width to 4
-  (setq tab-stop-list (number-sequence 4 200 4))
-
-  ;; Force emacs to only indent with spaces and never tabs
-  (setq-default indent-tabs-mode nil)
-#+END_SRC
-*** [Tab] behavior
-**** Set =tab-always=indent=: Make [Tab] try to indent or (if already indented) complete the thing-at-point
-Change the =tab-always-indent= setting to "complete", which makes
-[Tab] first try to indent the current line and then, iff it was
-already indented, attempt to complete the thing at the current point.
-
-The other options for this variable are =nil=, which makes [Tab]
-indent the current line if at the left margin or in its indentation
-and otherwise literally insert a TAB character, and =t=, which makes
-[Tab] always indent.
-#+BEGIN_SRC emacs-lisp
-  (setq-default tab-always-indent 'complete)
-#+END_SRC emacs-lisp
-
-**** Bind M-q to =indent-relative=
-#+BEGIN_SRC emacs-lisp
-  ;;
-  ;  Makes M-q indent from cursor to the space prior to the next
-  ;  non-whitespace character on the previous line.
-  ;
-  ;  Example: If the current buffer looks as follows (with the cursor denoted by *)...
-  ;
-  ;          sample text is entertaining to write
-  ;          I completely agree* with you
-  ;
-  ;      Then the result of hitting M-q will be
-  ;
-  ;          sample text is entertaining to write
-  ;          I completely agree          with you
-  ;
-  ;      with the cursor right before the "w" in "with".
-  (global-set-key (kbd "M-q") 'indent-relative)
-#+END_SRC
-***** TODO Consider also setting [Tab] (or something) to (indent-relative-maybe).
-
 * Packages                                                         :Packages:
 The following list comprises all of the packages that (a) are loaded by default
 in most major modes and (b) don't fit elsewhere in this configuration (yet).
