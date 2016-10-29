@@ -67,6 +67,13 @@ since I've been using Skim/external viewers instead.
   (load "preview-latex.el" nil t t)
 #+END_SRC
 * Configuring Minor Modes
+** nlinum Mode
+Display line numbers using nlinum mode.
+#+SRC_NAME latex-mode-hook_add_nlinum-mode
+#+BEGIN_SRC emacs-lisp
+  (dolist (hook '(TeX-mode-hook LaTeX-mode-hook))
+      (add-hook hook #'nlinum-mode))
+#+END_SRC
 ** Outline Minor Mode
 This allows us to fold sections/environments like in Org Mode.
 *** Add outline-minor-mode to (La)TeX hooks
