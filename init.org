@@ -2102,7 +2102,7 @@ size where it now deserves its own config library.
   ;;;     addition to general org tweaks.
   (org-babel-load-file (expand-file-name "~/.emacs.d/lib/org.org"))
 #+END_SRC
-** Magit: Robust Git Porcelain (open with C-x g)
+** Magit                                          :magit:Git:VersionControl:
 [[http://www.emacswiki.org/emacs/Magit][Magit]] is a Git porcelain (aka frontend) for Emacs. We load Magit and
 bind C-x g to the magit-status function (really the only command
 you'll ever invoke).
