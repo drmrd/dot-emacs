@@ -278,6 +278,9 @@
  '(nyan-animate-nyancat nil)
  '(nyan-bar-length 16)
  '(nyan-mode t)
+ '(org-agenda-files
+   (quote
+    ("~/org/habits.org" "~/org/refile.org" "~/org/calendar.org" "~/org/tasks.org")))
  '(org-enforce-todo-dependencies t)
  '(org-habit-graph-column 80)
  '(org-support-shift-select t)
