@@ -3,6 +3,9 @@
 ;;;; This file loads Org-mode and then loads the rest of our Emacs
 ;;;; initialization from Emacs lisp embedded in literate Org-mode files.
 
+;;; Have Emacs prefer newer package source, even over byte compiled files
+(setq load-prefer-newer t)
+
 ;;; Initialize package before calling Org Mode to ensure the ELPA
 ;;; version of Org is loaded instead of the built-in one.
 (require 'package)
