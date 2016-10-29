@@ -2115,6 +2115,9 @@ to do a git pull. [Tab] is also a nice key.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package magit
     :init (remove-hook 'find-file-hook 'vc-find-file-hook)
+          (delight '((magit-wip-after-save-mode nil)
+                     (magit-wip-after-apply-mode nil)
+                     (magit-wip-before-change-mode nil)))
     :bind ("C-x g" . magit-status))
 #+END_SRC
 *** Safety Settings
