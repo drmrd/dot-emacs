@@ -286,7 +286,7 @@
    (quote
     (visual-fill-column paradox powerline gscholar-bibtex helm-bibtex frame-cmds helm-swoop helm-c-yasnippet headlong helm-firefox helm-flx helm-flycheck helm-flyspell helm-fuzzier helm-gitignore helm-google helm-gtags helm-ispell helm-ls-git helm-make helm-mode-manager helm-mu helm-open-github helm-org-rifle helm-package helm-pages helm-proc helm-project-persist helm-projectile helm-pydoc helm-sage helm-spotify helm-themes delight outline-minor-mode git-gutter-fringe keyfreq helm key-chord guide-key guide-key-tip ox-tiddly achievements org-habit re-builder+ dash-functional deferred diminish flycheck-pos-tip flycheck-status-emoji flycheck flycheck-color-mode-line flycheck-pkg-config flycheck-tip smart-mode-line smart-mode-line-powerline-theme calfw calfw-gcal org-gcal f git-commit ivy org projectile s with-editor fci-mode wrap-region tomatinho suggest strings smooth-scrolling smex rainbow-mode pomodoro paredit outline-magic org-trello org-pomodoro org-plus-contrib org-commentary nyan-mode nlinum multiple-cursors minimap markdown-mode magit latex-preview-pane latex-extra ido-ubiquitous idle-highlight-mode ibuffer-projectile hyde flymd fixmee fill-column-indicator ecb dictionary cyberpunk-theme company-statistics company-shell company-math company-flx company-auctex color-theme cmake-project cmake-font-lock cheatsheet bug-hunter better-defaults auto-yasnippet all aggressive-indent adaptive-wrap ace-window abyss-theme)))
  '(paradox-automatically-star nil)
- '(projectile-use-git-grep t)
+ '(projectile-use-git-grep nil)
  '(safe-local-variable-values (quote ((read-only-mode . t))))
  '(scroll-error-top-bottom t)
  '(sml/col-number-format "%2c")
