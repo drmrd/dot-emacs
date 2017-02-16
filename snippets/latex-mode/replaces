@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: replaces
+# key: replaces
+# type: command
+# --
+(yas-expand-snippet (concat "% REPLACES:         " "$1\n"
+                            "% REPLACEMENT DATE: " (format-time-string "%F") "\n"
+                            "$0"))

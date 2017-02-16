@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: cinf
+# key: cinf
+# --
+C^\infty(G)
