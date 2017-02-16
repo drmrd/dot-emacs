@@ -1,0 +1,29 @@
+# -*- mode: snippet; require-final-newline: nil -*-
+# name: beginnew
+# key: beginnew
+# group: environments
+# type: command
+# --
+(let* ((label-nonempty-p nil)
+       (new-label-inserted nil)
+       (is-empty-string-p (lambda (string) (string-equal "" string)))
+;       (insert-if-nonempty (lambda (string insertion-string)
+;                                   (if (funcall is-empty-string-p string)
+;                                       ""
+;                                     insertion-string)))
+)
+  (yas-expand-snippet (concat "\\begin{$1}"
+                              ; Optional arguments:
+                              "${2:$(funcall insert-if-nonempty yas-text \"[\")}"
+                              "$2"
+ ;                             (funcall insert-if-nonempty yas-text "]")
+                              "\n"
+                              ; Label:
+                              "${3:$(if (string-equal \"\" yas-text) \"\\\\label{<key>}\" (progn (setq label-nonempty-p t) (insert \"\\\\label{\")))}$3${3:$(if (string-equal \"\" yas-text) \"\" (if (not 'label-nonempty-p) (progn (insert \"}\\\\n\") (indent-for-tab-command))))}$0
+\\end{$1}")
+                      nil
+                      nil
+                      ((insert-if-nonempty (lambda (string insertion-string)
+                                             (insert (if (string-equal "" string)
+                                                         ""
+                                                       insertion-string)))))))
