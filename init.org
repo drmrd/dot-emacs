@@ -684,7 +684,7 @@ The enemy of civil society. I disable cursor blinking not only
 because I find it obnoxious and distracting, but because it's *the
 right thing to do*.
 #+BEGIN_SRC emacs-lisp
-  (blink-cursor-mode (- (*) (*) (*)))
+  (blink-cursor-mode -1)
 #+END_SRC
 ** Mode Line                                                       :ModeLine:
 *** Show column numbers                                       :ColumnNumbers:
