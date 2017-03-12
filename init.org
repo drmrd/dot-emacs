@@ -493,7 +493,7 @@ in the correct mode containing just this code block. Hit C-x C-s to
 save changes in the original buffer without closing the new one. Hit
 C-c ' again to apply changes to the code block in the org file.
 ** Magit Notes                                                   :Magit:Git:
-*** Q: How can I create a new branched from current changes and revert the current branch? :QUESTIONS:
+*** Q: How can I create a new branch from current changes and revert the current branch? :QUESTIONS:
 **** A: Create a "spinoff" branch (via 'b s')
 See the documentation for [[help:magit-branch-spinoff][magit-branch-spinoff]].
 
