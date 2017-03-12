@@ -1834,7 +1834,7 @@ section]].
   (use-package paradox :ensure t
     :init (setq paradox-execute-asynchronously nil))
 #+END_SRC
-** Popwin (Popup Windows at Bottom of Screen)  :popwin:PopupWindows:UI:
+** popwin                                            :popwin:PopupWindows:UI:
 #+BEGIN_SRC emacs-lisp
   (use-package popwin
     :config (popwin-mode))
