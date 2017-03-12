@@ -1753,7 +1753,7 @@ say about them.
            (shell-command "uuidgen" t))
 #+END_SRC
 *** TODO Throw an error if not on Linux
-* Packages                                                         :Packages:
+* Misc. Packages                                                   :Packages:
 The following list comprises all of the packages that (a) are loaded by default
 in most major modes and (b) don't fit elsewhere in this configuration (yet).
 ** fixmee                                :fixmee:TaskManagement:Navigation:
