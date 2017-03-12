@@ -634,7 +634,15 @@ automatically installed on the current system.
   ;; present on the system.
   (setq use-package-always-ensure t)
 #+END_SRC
+* Config
 * Appearance & UI                                             :Appearance:UI:
+** Clean Up GUI Elements                                 :Toolbar:Scrollbar:
+#+SRC_NAME disable_GUI_elements
+#+BEGIN_SRC emacs-lisp
+  (when (display-graphic-p)
+    (tool-bar-mode 0)
+    (scroll-bar-mode 0))
+#+END_SRC
 ** Miscellany
 *** Set Default Font(s)                                             :Fonts:
 Naturally, fonts are quite OS and machine-specific, so this portion of the
@@ -642,11 +650,9 @@ configuration will probably grow a bit with time. For now, the following
 configuration is appropriate. On Mac OS X, the Vera Sans font family is used,
 while on Linux we employ DejaVu Sans Mono.
 #+BEGIN_SRC emacs-lisp
-  (set-face-attribute 'default nil
-                      :font (case system-type
-                                  ('darwin "-apple-bitstream vera sans
-                                            mono-medium-r-normal--0-0-0-0-m-0-mac-roman")
-                                  ('gnu/linux "DejaVu Sans Mono-10")))
+  (when (eq system-type 'gnu/linux)
+    (set-face-attribute 'default nil
+                        :font "DejaVu Sans Mono-10"))
 #+END_SRC
 *** Disable Cursor Blinking                                   :CursorBlink:
 The enemy of civil society. I disable cursor blinking not only
@@ -740,8 +746,8 @@ the same time.
 #+END_SRC
 ** Theming                                                          :Themes:
 *** (DISABLED) Load a Color Theme
-#+BEGIN_SRC emacs-lisp :tangle no
-  (load-theme 'dracula t)
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (load-theme 'spacemacs-dark t)
 #+END_SRC
 **** (Obsolete) Using color-theme to load a theme
 (I've kept these notes here for reference, in case I'm stranded on a
@@ -781,6 +787,13 @@ Emacs24's built-in custom themes.
 #+BEGIN_SRC emacs-lisp
   (defadvice load-theme (before theme-dont-propagate activate)
                         (mapc #'disable-theme custom-enabled-themes))
+#+END_SRC
+*** Load the Spacemacs Dark theme
+#+SRC_NAME load_spacemacs-dark_theme
+#+BEGIN_SRC emacs-lisp
+  (use-package spacemacs-common
+    :ensure spacemacs-theme
+    :config (load-theme 'spacemacs-dark t))
 #+END_SRC
 ** Display Line Numbers                                 :nlinum:LineNumbers:
 Ah yes, the somewhat notorious problem of displaying line numbers in Emacs in a
