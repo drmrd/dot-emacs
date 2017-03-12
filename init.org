@@ -1754,6 +1754,17 @@ say about them.
 #+END_SRC
 *** TODO Throw an error if not on Linux
 * TODO Modes for Programming Languages                                 :Lang:
+** TODO Jenkins                                                    :Jenkins:
+*** TODO Consider using this Jenkins plugin for monitoring /within/ Emacs
+See [[https://github.com/rmuslimov/jenkins.el][this GitHub repo]].
+** Groovy & Gradle                                      :Groovy:Gradle:Lang:
+#+SRC_NAME groovy_setup
+#+BEGIN_SRC emacs-lisp
+  (use-package groovy-mode
+    :ensure    t
+    :defer     t
+    :mode      ("\\(Jenkinsfile\\|\\.\\(groovy\\|gradle\\)\\)$" . groovy-mode))
+#+END_SRC
 * Misc. Packages                                                   :Packages:
 The following list comprises all of the packages that (a) are loaded by default
 in most major modes and (b) don't fit elsewhere in this configuration (yet).
