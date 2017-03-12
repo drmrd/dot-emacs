@@ -1906,6 +1906,14 @@ automatically.
 =yasnippet= is fantastic for creating simple text replacement templates
 (possibly involving variables), but it lacks certain killer pieces of
 functionality that I'd love to see. For instance, in LaTeX modes,
+** ws-butler                                          :Whitespace:ws_butler:
+Automatically remove trailing whitespace on save, but only on lines that you've
+made other changes to. This is amazingly useful when committing to a repo.
+#+SRC_NAME ws-butler_use-package
+#+BEGIN_SRC emacs-lisp
+  (use-package ws-butler :ensure t
+    :config (ws-butler-global-mode))
+#+END_SRC
 ** TODO Color-identifiers-mode (Unique display colors for unique variables)
 ** TODO Origami: A Multi-Language Folding Mode
 ** TODO Visible-Mark: Make the Current Mark Visible
