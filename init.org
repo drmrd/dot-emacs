@@ -534,52 +534,6 @@ local repo, push the commits pertaining to my current project to the
 remote, and have several more flexible ways to address any merge
 conflicts locally (and when I see fit not when I want to push
 changes).
-* TODOs
-The following is a list of desirable functionality/configuration
-changes that I have yet to take the time to implement or don't know
-how to yet. There are also TODO bullets scattered throughout this
-document that mostly specify desirable modifications of configuration
-tweaks that have already been implemented here and in the init tree.
-** DONE Fix line numbers
-CLOSED: [2016-05-20 Fri 12:49]
-Currently, line numbers are affected by syntax highlighting on the
-current line, including the separator of them and the adjacent line.
-*** Changes
-- <2015-07-14 Tue> Changed from using linum-mode to nlinum-mode
-  globally.
-- <2016-05-20 Fri> nlinum-mode seems to resolve most of the problems I
-  had with linum-mode and faces, so this issue is being marked
-  closed. Now I just need to figure out how to solve a pesky issue
-  where creating new frames can't be created from a buffer using
-  nlinum mode.
-** TODO Fix the bug where new frames can't be opened from buffers with nlinum-mode active.
-** TODO Support operating-system-dependent, emacsen-specific, and terminal/window-specific config settings
-As a simple example, the locations of dot-emacs files differ on Linux
-and in Aquamacs, and the latter has the evil Preferences.el file, as
-well. It would be nice to use the same config file for Aquamacs and
-normal Emacs without modifications.
-
-One possible albeit somewhat inelegant solution would be to wrap all
-operating system/emacs version dependent code in blocks conditional
-blocks. For instance, the following code checks if the current
-operating system is Mac OSX:
-
-#+BEGIN_EXAMPLE
-  ;; For OSX-specific code:
-  (if (eq (system-type 'darwin))
-      (do-something-on-osx)
-    (do-something-else-otherwise))
-
-  ;; For Aquamacs-specific code
-  (if (boundp 'aquamacs-version)
-      (do-something-in-aquamacs)
-    (do-something-otherwise))
-#+END_EXAMPLE
-
-One can also use =emacs-version= to detect the current version of
-Emacs, =window-system= to determine whether or not Emacs is running in
-a terminal, etc.
-
 * Startup
 Enable debugging while loading configuration files. This is disabled
 later in the config file.
