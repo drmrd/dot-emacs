@@ -535,6 +535,31 @@ remote, and have several more flexible ways to address any merge
 conflicts locally (and when I see fit not when I want to push
 changes).
 * Startup
+** Set Up drmrd Customization Group
+#+SRC_NAME setup_drmrd_custom_group
+#+BEGIN_SRC emacs-lisp
+  (defgroup drmrd nil
+    "Settings for drmrd's configuration files"
+    :prefix "drmrd/"
+    :group 'emacs
+    :version "25.1")
+
+  (defcustom drmrd/secrets-directory (concat user-emacs-directory "secure/")
+    "A directory containing private information, API tokens, etc. that shouldn't
+  be shared with the rest of your emacs configuration."
+    :type '(directory)
+    :group 'drmrd
+    :version "25.1")
+
+  (defcustom drmrd/lib-directory (concat user-emacs-directory "lib/")
+      "The root directory for libraries to be loaded by `drmrd'
+      configuration files. This is used, for instance, for convenient loading of
+      library files via `drmrd/load-library'."
+      :type '(directory)
+      :group 'drmrd
+      :version "25.1")
+#+END_SRC
+** Enable Debugging/Detailed Timestamps
 Enable debugging while loading configuration files. This is disabled
 later in the config file.
 
