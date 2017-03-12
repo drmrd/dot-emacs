@@ -1727,18 +1727,6 @@ section]].
 #+BEGIN_SRC emacs-lisp
   (setq paradox-execute-asynchronously nil)
 #+END_SRC
-** pomodoro                           :pomodoro:Productivity:TaskManagement:
-The *pomodoro.el* script adds pomodoro technique indicators to the
-modeline. Enable the minor mode by invoking the `pomodoro'
-command. Refer to the function's documentation for more info.
-
-#+SRC_NAME pomodoro
-#+BEGIN_SRC emacs-lisp
-  (use-package pomodoro
-    :config
-      (setq pomodoro-raise-frame nil))
-#+END_SRC
-
 ** Popwin (Popup Windows at Bottom of Screen)  :popwin:PopupWindows:UI:
 #+BEGIN_SRC emacs-lisp
   (use-package popwin
