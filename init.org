@@ -1794,6 +1794,15 @@ XML mode without use-package
 ** TODO Maven                                                   :Maven:Java:
 See [[https://github.com/Fuco1/.emacs.d/blob/master/files/vendor.el][this init file]] for a /comprehensive/ configuration of =malabar-mode= (a mode
 for Java that boasts [[https://www.emacswiki.org/emacs/MalabarMode]["tight integration with Maven"]].
+** Shell                                                        :Shell:Lang:
+The only shell scripts I use that Emacs doesn't handle well by default are the
+occasional batch files (for Windows).
+#+SRC_NAME batch-mode_setup
+#+BEGIN_SRC emacs-lisp
+  (use-package batch-mode
+    :ensure    batch-mode
+    :mode      ("\\.\\(bat\\)$" . batch-mode))
+#+END_SRC
 * Misc. Packages                                                   :Packages:
 The following list comprises all of the packages that (a) are loaded by default
 in most major modes and (b) don't fit elsewhere in this configuration (yet).
