@@ -1407,6 +1407,24 @@ and otherwise literally insert a TAB character, and =t=, which makes
 ***** TODO Consider also setting [Tab] (or something) to (indent-relative-maybe).
 
 * IDE Features                                      :IDE:Convenience:Editing:
+** CEDET, Semantic, SRefactor, & ECB          :CEDET:Semantic:SRefactor:ECB:
+#+SRC_NAME semantic_setup
+#+BEGIN_SRC emacs-lisp
+  (use-package semantic
+    :defer t
+    :config
+      (global-semantic-idle-scheduler-mode 1)
+      (global-semantic-stickyfunc-mode 1)
+      (global-semanticdb-minor-mode 1))
+#+END_SRC
+
+#+SRC_NAME srefactor_setup
+#+BEGIN_SRC emacs-lisp
+  (use-package srefactor
+    :ensure t
+    :defer t
+    :config (semantic-mode 1))
+#+END_SRC
 ** flycheck & friends: On-the-fly error checking & linting :Lint:ErrorChecking:flycheck:
 #+SRC_NAME enable_global-flycheck-mode
 #+BEGIN_SRC emacs-lisp
