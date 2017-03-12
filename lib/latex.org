@@ -1,6 +1,6 @@
 #+TITLE: LaTeX Emacs Configuration
 #+AUTHOR: DRMRD
-#+PROPERTY: header-args    :tangle ~/.emacs.d/lib/latex.el
+#+PROPERTY: header-args    :tangle ~/.emacs.d/lib/latex.el :comments link :eval query :results output silent
 #+OPTIONS: toc:nil num:nil ^:nil
 #+STARTUP: indent
 

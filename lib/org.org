@@ -2,7 +2,7 @@ DRMRD INIT -*- mode: org -*-
 #+TITLE: drmrd's Org Init File
 #+AUTHOR: drmrd
 #+OPTIONS: toc:nil num:nil ^:nil
-#+PROPERTY: header-args    :comments link
+#+PROPERTY: header-args    :comments link :eval query :results output silent
 #+STARTUP: indent
 * Introduction
 This file contains most of the settings and customizations pertaining
