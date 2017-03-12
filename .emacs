@@ -23,6 +23,9 @@
       package-menu-hide-low-priority t)
 (package-initialize)
 
+;;; Load `cl' here, since we use Common Lisp constructs frequently
+(require 'cl)
+
 ;;; Load `epa-file' for full-file encryption using EasyPG
 (require 'epa-file)
 ; (epa-file-enable)
