@@ -1,4 +1,4 @@
-;;;; .emacs --- Where all the magic begins
+;;;; .emacs --- Where all the magic begins -*- lexical-binding: t; -*-
 ;;;;
 ;;;; This file loads Org-mode and then loads the rest of our Emacs
 ;;;; initialization from Emacs lisp embedded in literate Org-mode files.
