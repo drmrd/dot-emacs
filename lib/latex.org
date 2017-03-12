@@ -23,7 +23,31 @@ always be enabled to complement the built-in modes.
   ; Don't try to load auctex.el. ELPA takes care of this
   ; (load "auctex.el" nil t t)
 #+END_SRC
+** Update Environment
+AucTeX 11.88.9 and beyond check that TeX binaries exist in the =exec-path= (in
+addition to the path), which is important for a number of pieces of AucTeX
+functionality in addition to compilation functions (like =TeX-doc=). (Having it
+in the system's =PATH= alone is not enough.) On OS X El Capitan and beyond, we
+update this variable to pass this test (using the symbolic link to
+=/Library/TeX/texbin= provided by MacTeX/TeXLive to avoid priviledge issues with
+=/usr/local=).
+#+SRC_NAME Add_texbin_to_exec-path_on_macOS
+#+BEGIN_SRC emacs-lisp :tangle no
+  (when (eq system-type 'darwin)
+    (add-to-list 'exec-path "/Library/TeX/texbin" t))
+#+END_SRC
+** Load AucTeX
+AucTeX is the bread-and-butter LaTeX editor for Emacs and should always be
+enabled to complement the built-in modes.
 
+#+SRC_NAME use-package_auctex
+#+BEGIN_SRC emacs-lisp
+    (use-package tex :ensure auctex
+;      :init
+;        (when (eq system-type 'darwin)
+;          (add-to-list 'exec-path "/Library/TeX/texbin" t))
+)
+#+END_SRC
 *** TODO Test whether the sit-for call is necessary
 I no longer remember why I added that. Perhaps the problem has fixed
 itself? Either way, this is why we document our config files,
