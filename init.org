@@ -860,7 +860,26 @@ IntelliJ IDEA I'm hooked. It's amazingly useful without getting in the way.
       :diminish t)
 #+END_SRC
 
-* Navigation                                                     :Navigation:
+** Rainbow Delimiters
+The [[https://github.com/Fanael/rainbow-delimiters][rainbow-delimiters]] package highlights nested parentheses, braces, and other
+delimiters in distinct colors. It's *phenomenal* when writing lisp and LaTeX
+code. We load it in all programming modes by default.
+#+NAME load_and_enable_rainbow-delimiters_in_prog_modes
+#+BEGIN_SRC emacs-lisp
+  (use-package rainbow-delimiters
+    :ensure t
+    :init (dolist (hook '(prog-mode-hook tex-mode-hook latex-mode-hook
+                                         TeX-mode-hook LaTeX-mode-hook))
+            (add-hook hook #'rainbow-delimiters-mode)))
+#+END_SRC
+* Navigation & Window Management                                 :Navigation:
+** ace-jump: Quickly move around in a buffer      :ace_jump:BufferNavigation:
+#+SRC_NAME load_ace-jump
+#+BEGIN_SRC emacs-lisp
+  (use-package ace-jump-mode
+    :ensure t
+    :bind ("C-." . ace-jump-mode))
+#+END_SRC
 ** Ido Mode (Better, Interactive find-file Command) :ido:Completion:FileNavigation:
 Enable Ido Mode for a much improved buffer and file switching/finding
 experience. Configuring Ido Mode, based on the settings in [[http://xgarrido.github.io/emacs-starter-kit/starter-kit-ido.html][xgarrido's
@@ -1099,7 +1118,35 @@ selection mode.
 ** helm                                                                :helm:
 This package is impossible to categorize completely and deserves its own library
 file. See [[*Helm][below]] for the main description.
+** Winner Mode                                                  :WindowMgmt:
+[[help:winner-mode][Winner Mode]] is a built-in global minor mode for tracking and restoring window
+configurations. When enabled, Winner Mode tracks all changes to the dimensions
+and positions of windows in an Emacs session's frames, permitting one to cycle
+through them using [[help:winner-undo][winner-undo]] and [[help:winner-redo][winner-redo]] commands (by default bound to
+=C-c [left]= and =C-c [right]=, respectively). This drastically improves the
+amount of time it takes to reset a complicated window configuration after
+running a command that shifts windows around.
 
+#+SRC_NAME enable_winner-mode
+#+BEGIN_SRC emacs-lisp
+  (when (fboundp 'winner-mode)
+    (winner-mode))
+#+END_SRC
+** Frame Commands (frame-cmds)
+A comprehensive package for manipulating frames interactively and
+programmatically.
+#+SRC_NAME frame-cmds_use-package
+#+BEGIN_SRC emacs-lisp
+  (use-package frame-cmds :ensure t)
+#+END_SRC
+* Search                                                             :Search:
+** Enable Scrolling in isearch               :isearch:Highlighting:Scrolling:
+This allows you to scroll with your mouse in a buffer with an active =isearch=,
+preserving highlighting and the location of the current match.
+#+SRC_NAME enable_scrolling_in_isearch
+#+BEGIN_SRC emacs-lisp
+  (setq isearch-allow-scroll t)
+#+END_SRC
 * Global Settings
 ** Personal Information
 *** Email Address
