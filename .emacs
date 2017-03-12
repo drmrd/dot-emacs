@@ -48,3 +48,5 @@
 
 ;;; Now begin the rest of the configuration process
 (org-babel-load-file (expand-file-name "~/.emacs.d/init.org"))
+(put 'narrow-to-region 'disabled nil)
+(put 'LaTeX-narrow-to-environment 'disabled nil)
