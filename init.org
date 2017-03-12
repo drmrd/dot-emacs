@@ -1773,6 +1773,19 @@ See [[https://github.com/rmuslimov/jenkins.el][this GitHub repo]].
     :init      (grails-projectile-global-mode t)
     :diminish  grails-projectile-mode)
 #+END_SRC
+** XML                                                            :XML:Lang:
+We can use the built-in =nxml-mode= for viewing XML files, so we can configure
+XML mode without use-package
+#+SRC_NAME nxml-mode_setup
+#+BEGIN_SRC emacs-lisp
+  (use-package nxml
+    :init      (setq nxml-slash-auto-complete-flag t
+                     ;; nxml-child-indent             ers-tab-size
+                     ;; nxml-outline-child-indent     ers-tab-size
+                     )
+    :defer     t
+    :mode      ("\\.\\(pom\\|xsd\\|xsl\\|xslt\\|gsp\\)$" . nxml-mode))
+#+END_SRC
 * Misc. Packages                                                   :Packages:
 The following list comprises all of the packages that (a) are loaded by default
 in most major modes and (b) don't fit elsewhere in this configuration (yet).
