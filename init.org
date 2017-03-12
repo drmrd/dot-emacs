@@ -2061,6 +2061,15 @@ OS X/macOS (=darwin= systems).
            ("\\.markdown\\'" . markdown-mode))
     :init (setq markdown-command "multimarkdown"))
 #+END_SRC
+** Multiple Cursors Mode
+#+SRC_NAME multiple-cursors_use-package
+#+BEGIN_SRC emacs-lisp
+  (use-package multiple-cursors :ensure t
+    :config (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
+            (global-set-key (kbd "C->") 'mc/mark-next-like-this)
+            (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+            (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this))
+#+END_SRC
 * Performance Settings
 The following settings improve the performance of Emacs in various
 ways, typically by permitting it to assume our computer wasn't built
