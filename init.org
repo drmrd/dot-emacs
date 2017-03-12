@@ -1,7 +1,7 @@
 #+TITLE: drmrd's Emacs Init File
 #+AUTHOR: drmrd
 #+OPTIONS: toc:nil num:nil ^:nil
-#+PROPERTY: header-args    :comments link
+#+PROPERTY: header-args    :comments link :eval query :results output silent
 #+STARTUP: indent
 
 * General Information/Notes
