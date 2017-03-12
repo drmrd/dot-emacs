@@ -1804,6 +1804,16 @@ occasional batch files (for Windows).
     :mode      ("\\.\\(bat\\)$" . batch-mode))
 #+END_SRC
 ** TODO Cucumber                                 :Cucumber:IntegrationTests:
+** Ruby, Rake, RBENV, Rspec
+#+SRC_NAME setup_ruby_packages
+#+BEGIN_SRC emacs-lisp
+  (use-package rake :ensure t)
+  (use-package rbenv :ensure t)
+  (use-package rspec-mode :ensure t
+    :config (add-hook 'dired-mode-hook 'rspec-dired-mode))
+  (use-package web-mode :ensure t)
+  (use-package robe :ensure t)
+#+END_SRC
 * Misc. Packages                                                   :Packages:
 The following list comprises all of the packages that (a) are loaded by default
 in most major modes and (b) don't fit elsewhere in this configuration (yet).
