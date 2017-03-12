@@ -2089,9 +2089,47 @@ just wrap this command in a version check.
 #+END_SRC
 *** TODO Create custom info files for modes that don't supply them (and personal notes)
 ** Use Terminals Within Emacs
-** TODO eww: Internet browser integrated into Emacs
-Beginning in v24.4, Emacs comes equipped with an internet browser
-=eww= that supports basic HTML and CSS.
+** eww: Internet browser integrated into Emacs              :eww:Keybindings:
+Beginning in v24.4, Emacs comes equipped with an internet browser =eww= that
+supports basic HTML and CSS. Our config was inspired by [[https://github.com/dakrone/eos/blob/master/eos-web.org][dakrone's]].
+
+First we replace the usual email command bound to "C-x m" with
+=browse-url-at-point=
+#+SRC_NAME eww_define_C-x_m
+#+BEGIN_SRC emacs-lisp
+  (global-set-key (kbd "C-x m") 'browse-url-at-point)
+#+END_SRC
+
+#+SRC_NAME load_eww
+#+BEGIN_SRC emacs-lisp
+  (use-package eww
+    :defer t
+    :init
+      ;; Determine which external program to use by default for browsing URLs that
+      ;; eww can't handle.
+      (setq browse-url-generic-program (executable-find "firefox"))
+      (setq browse-url-browser-function
+            '(;; Browse Google Maps links in an external browser
+              ("\(.*\(\.\|\/\)\)*maps\.google\.com/?.*" . browse-url-generic)
+              ;; Browse stackexchange links in an external browser
+              ("stackexchange\.com" . browse-url-generic)
+              ("stackoverflow\.com" . browse-url-generic)
+              ;; Default to browsing with `eww'
+              ("." . eww-browse-url)))
+      ;; Improve eww's readability
+      (add-hook 'eww-mode-hook #'toggle-word-wrap)
+      (add-hook 'eww-mode-hook #'visual-line-mode))
+#+END_SRC
+
+#+SRC_NAME load_eww-lnum
+#+BEGIN_SRC emacs-lisp
+  ;; Improve page navigation in eww with eww-lnum
+  (use-package eww-lnum
+    :ensure t
+    :bind (:map eww-mode-map
+           ("f" . eww-lnum-follow)
+           ("U" . eww-lnum-universal)))
+#+END_SRC
 *** Usage Notes
 - =eww= will only run on versions of Emacs compiled with libxml2. (In
   fact, you can tell whether or not your emacsen are running libxml2
