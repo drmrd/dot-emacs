@@ -1426,6 +1426,19 @@ and otherwise literally insert a TAB character, and =t=, which makes
     :defer t
     :config (semantic-mode 1))
 #+END_SRC
+
+*** TODO ECB                                                          :ECB:
+Loading ECB (the Emacs Code Browser) seems to fail with my current setup, so
+I've disabled it for the time being. Might be worth finding a fix in the
+future.
+#+SRC_NAME ecb_setup
+#+BEGIN_SRC emacs-lisp :tangle no
+  (use-package ecb
+    :defer t
+    :init
+      (semantic-mode 1)
+      (setq stack-trace-on-error t))
+#+END_SRC
 ** flycheck & friends: On-the-fly error checking & linting :Lint:ErrorChecking:flycheck:
 #+SRC_NAME enable_global-flycheck-mode
 #+BEGIN_SRC emacs-lisp
