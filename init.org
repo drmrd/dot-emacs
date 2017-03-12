@@ -747,7 +747,7 @@ appearing in the mode-line.
     "A list of minor modes to hidden in the mode line whenever they're loaded."
       :tag "Adjusted Minor Mode Lighters in the Mode Line"
       :type '(repeat sexp)
-      :group 'emacs)
+      :group 'drmrd)
 #+END_SRC
 
 #+SRC_NAME configure_minor_modes_with_delight :tangle yes
@@ -1463,12 +1463,6 @@ and otherwise literally insert a TAB character, and =t=, which makes
 ** drmrd/load-library
 #+SRC_NAME: def_drmrd/load-library
 #+BEGIN_SRC emacs-lisp
-  (defcustom drmrd/lib-directory "~/.emacs.d/lib"
-    "The root directory for libraries to be loaded by `drmrd'
-    configuration files. This is used, for instance, for convenient loading of
-    library files via `drmrd/load-library'."
-    :type '(directory))
-
   (defun drmrd/load-library (name &optional directory)
     "Load the library `NAME' in the default library. Here `NAME' can be any
     file name or relative path to a file, but it should be relative to the default
