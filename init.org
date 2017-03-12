@@ -827,7 +827,11 @@ schemes. Most recently I've been using nlinum mode for this purpose, but I can't
 seem to use it while loading multiple frames. This is only an issue on my
 laptop, not at the office, so I'm now testing to see if it's some kind of timing
 issue.
+
+#+SRC_NAME setup_nlinum-mode
 #+BEGIN_SRC emacs-lisp
+  (use-package nlinum :ensure t)
+
   (defun initialize-nlinum (&optional frame)
          (require 'nlinum)
          (add-hook 'prog-mode-hook 'nlinum-mode))
