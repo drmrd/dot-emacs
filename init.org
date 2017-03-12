@@ -1765,6 +1765,7 @@ See [[https://github.com/rmuslimov/jenkins.el][this GitHub repo]].
     :defer     t
     :mode      ("\\(Jenkinsfile\\|\\.\\(groovy\\|gradle\\)\\)$" . groovy-mode))
 #+END_SRC
+** TODO Spock                                                        :Spock:
 * Misc. Packages                                                   :Packages:
 The following list comprises all of the packages that (a) are loaded by default
 in most major modes and (b) don't fit elsewhere in this configuration (yet).
