@@ -1855,12 +1855,13 @@ natural to me (and involves the fewest number of excess backslashes).
   (use-package re-builder
       :init (setq reb-re-syntax 'string))
 #+END_SRC
-** re-builder+                                         :rebuilderplus:RegEx:
+** re-builder+                                :rebuilderplus:RegEx:DISABLED:
 Upgrades to [[re-builder]] functionality, including =reb+-query-replace-regexp=,
 which takes what's currently in a =re-builder= buffer and runs a
 =query-replace-regexp= with it in the original buffer.
 
-#+BEGIN_SRC emacs-lisp
+#+SRC_NAME load_re-builder+
+#+BEGIN_SRC emacs-lisp :tangle no
   (require 're-builder+)
 #+END_SRC
 ** strings                                           :strings:Lisp:Internals:
