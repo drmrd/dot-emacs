@@ -1826,7 +1826,8 @@ documentation. Run it by calling M-x paradox-list-packages.  Note that the
 Github token provided to paradox for Github integration is set in an [[*Paradox%20Github%20Token][earlier
 section]].
 #+BEGIN_SRC emacs-lisp
-  (setq paradox-execute-asynchronously nil)
+  (use-package paradox :ensure t
+    :init (setq paradox-execute-asynchronously nil))
 #+END_SRC
 ** Popwin (Popup Windows at Bottom of Screen)  :popwin:PopupWindows:UI:
 #+BEGIN_SRC emacs-lisp
