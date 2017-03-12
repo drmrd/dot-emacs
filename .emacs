@@ -23,6 +23,12 @@
       package-menu-hide-low-priority t)
 (package-initialize)
 
+;;; On macOS, ensure that the environment variables Emacs is seeing are what they're supposed to be. There's a package for that.
+(when (memq window-system '(mac ns))
+  (use-package exec-path-from-shell
+    :ensure t
+    :config (exec-path-from-shell-initialize)))
+
 ;;; Load `cl' here, since we use Common Lisp constructs frequently
 (require 'cl)
 
