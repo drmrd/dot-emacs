@@ -1757,20 +1757,6 @@ Note that
 #+END_SRC
 *** TODO Come up with a good replacement for the fixmee-goto-next-by-position keybinding
 This is M-p by default, but that is currently being used by ace-window.
-** flyspell-lazy                                :flyspelllazy:SpellChecking:
-Load the third-party flyspell-lazy.elc script, which improves flyspell's
-responsiveness by forcing it to only check spelling when Emacs has been idle for
-a little while (as opposed to damn near constantly).
-
-#+BEGIN_SRC emacs-lisp
-  (require 'flyspell-lazy)
-  (flyspell-lazy-mode 1)
-#+END_SRC
-
-*** NOTE: Flyspell must be loaded AFTER this code executes
-Right now this isn't a problem, since flyspell is loaded via major mode hooks
-(see the ./lib/latex.org config file for an example), but should we decide to
-use it globally this code might need to be moved.
 ** gnutls                                                    :gnutls:TLS:SSL:
 TLS and SSL support in Emacs.
 
@@ -2023,6 +2009,27 @@ code is in one place.)
   (use-package uniquify
     :config (setq uniquify-buffer-name-style 'forward)) ; /foo/bar/baz
 #+END_SRC
+*** flyspell-lazy                              :flyspelllazy:SpellChecking:
+Load the third-party flyspell-lazy.elc script, which improves flyspell's
+responsiveness by forcing it to only check spelling when Emacs has been idle for
+a little while (as opposed to damn near constantly).
+
+#+BEGIN_SRC emacs-lisp :tangle no
+  (require 'flyspell-lazy)
+  (flyspell-lazy-mode 1)
+#+END_SRC
+
+**** NOTE: Flyspell must be loaded AFTER this code executes
+Right now this isn't a problem, since flyspell is loaded via major mode hooks
+(see the ./lib/latex.org config file for an example), but should we decide to
+use it globally this code might need to be moved.
+**** DISABLE 2016-11-02
+This mode is not available through ELPA and, as indicated [[https://github.com/rolandwalker/flyspell-lazy][in its documentation]],
+is only useful if you're seeing a performance hit when running =flyspell=. I
+believe I set this up on my office iMac when =flyspell= was making things grind
+to a halt, but on Linux I don't seem to have any need for it. If I start using
+Aquamacs on that iMac again I might enable it globally or (more likely) just on
+OS X/macOS (=darwin= systems).
 * Performance Settings
 The following settings improve the performance of Emacs in various
 ways, typically by permitting it to assume our computer wasn't built
