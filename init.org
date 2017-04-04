@@ -774,7 +774,7 @@ appearing in the mode-line.
 
 #+SRC_NAME load_delight
 #+BEGIN_SRC emacs-lisp
-  (use-package delight)
+  (use-package delight :ensure t)
 #+END_SRC
 **** Create minor mode lighter specifications            :CustomVariables:
 #+SRC_NAME set_drmrd/adjusted-mode-lighter-specs
