@@ -278,7 +278,7 @@ the symbol =eltk= for each =k=, then this looks like the following:
   ;; Using cons:
   (cons elt1 (cons elt2 (cons elt3 [...] (cons eltn ()) [...])))
   ;; In dotted pair notation:
-  '(elt1 . (elt2 . (elt3 [...] (eltn . ()) [...] )))
+  '(elt1 . (elt2 . (elt3 [...] (eltn . ())...)))
   ;; As a list
   '(elt1 elt2 elt3 [...] eltn)
 #+END_EXAMPLE
@@ -294,34 +294,81 @@ One way to represent these visually is as follows:
      |            |                      |
       --> elt1     --> elt2               --> eltn
 #+END_EXAMPLE
-*** Replace an element in an alist
-Use the assq-delete-all and rassq-delete-all commands to delete all
+
+So, in lisp, the following is a binary tree with labels only on its leaves:
+
+#+BEGIN_EXAMPLE emacs-lisp
+  ((((1) (2)) ((3) (4))) (((5) (6)) ((7) (8))))
+#+END_EXAMPLE
+*** Replace an element in an alist :cons:setf:assoc:assq:assq_delete_all:rassq_delete_all:
+Use the [[help:assq-delete-all][assq-delete-all]] and [[help:rassq-delete-all][rassq-delete-all]] commands to delete all
 elements in the alist with a given CAR or CDR, and then prepend the
 element of the same CAR/CDR you were replacing to the resulting list,
 and set the original list equal to the result.
-#+BEGIN_EXAMPLE
-  (setq mylist ((car1 . cdr1) (car2 . cdr2) (car1 . cdr11) (car3 . cdr3)))
+
+#+BEGIN_EXAMPLE emacs-lisp
+  (setq mylist '((car1 . cdr1) (car2 . cdr2) (car1 . cdr11) (car3 . cdr3)))
   (setq mylist (cons '(car1 . newcdr1) (assq-delete-all 'car1 mylist)))
-  sets mylist equal to ((car1 . newcdr1) (car2 . cdr2) (car3 . cdr3))
+  ; => mylist now equals ((car1 . newcdr1) (car2 . cdr2) (car3 . cdr3))
 #+END_EXAMPLE
+
+The [[help:assq-delete-all][assq-delete-all]] and [[help:rassq-delete-all][rassq-delete-all]] functions use, naturally, the [[help:assq][assq]]
+function, which in turn relies on [[help:eq][eq]] for key comparison. This works great for
+symbols and numbers but fails when keys are of a more general breed (including
+strings).
+
+Thankfully, there's more than one way to skin a cat, and some ways are better
+than others for certain use cases. Let's say you know keys in the list are
+unique and you only want to modify the value associated to a particular
+key. This can be achieved (in alists and more generalized list-like objects)
+using the *amazing* [[help:setf][setf macro]] together with the [[help:assoc][assoc]] function (instead of
+[[help:assq][assq]]).
+
+#+BEGIN_EXAMPLE emacs-lisp
+  (setq mylist '(("some-key" . "some-value")
+                 (some-other-key "a string" 1 2 3)
+                 ("a key whose value you'd like to replace"
+                  2 3 5 7 11 'all-the-other-primes)))
+
+  (setf (cdr (assoc "a key whose value you'd like to replace" mylist))
+        "the new value")
+
+  ; => mylist now equals
+  ;    (("some-key" . "some-value")
+  ;     (some-other-key "a string" 1 2 3)
+  ;     ("a key whose value you'd like to replace" "the new value"))
+#+END_EXAMPLE
+
+Study this second example well, since it's actually much more powerful and
+intuitive than the first (not to mention more efficient). The =setf= macro opens
+many doors and is a staple in Common Lisp code.
+
+Note that =setf= could care less whether or not =mylist= is a bonafide
+association list or something stranger. As you can see here, the use of =assoc=
+here also enabled us to find an element with a string as a key. This is
+frequently useful when, say, modifying variables with keys that are patterns to
+match.
 *** Concatenate lists
 Use the [[help:append][append]] command.
 
-#+BEGIN_EXAMPLE
-  (setq l1 '(a b c))
-  (setq l2 '(x y z))
+#+BEGIN_EXAMPLE emacs-lisp
+  (setq l1 '(a b c)
+        l2 '(x y z))
   (append l1 l2)
-    => (a b c x y z)
+  ;  => (a b c x y z)
 #+END_EXAMPLE
 
-Alternatively, use this other one-liner I cooked up while
-tired. (Warning: This is probably destructive for the =a=
-variable. Use at your own risk!)
+Alternatively, use this other one-liner I cooked up while tired and fiddling
+with lisp functions a long time ago. While both inefficient and destructive, it
+introduces two other useful functions: [[help:nreverse][nreverse]] and [[help:mapcar][mapcar]]! (Warning: This
+directly modifies the =a= and =b= variables. Use at your own risk!)
 
-#+BEGIN_EXAMPLE
-  (setq a ("1" "2" "3"))
-  (setq b ("4" "5" "6"))
+#+SRC_NAME destructive_and_inefficient_list_concatenation
+#+BEGIN_EXAMPLE emacs-lisp
+  (setq a ("1" "2" "3")
+        b ("4" "5" "6"))
   (car (nreverse (mapcar (lambda (elt) (push elt b)) (nreverse a))))
+  ;  => ("1" "2" "3" "4" "5" "6") as the value of b
 #+END_EXAMPLE
 *** Guide: Iterating          :NOTE:elisp:lists:Control_Structures:Guide:iteration:
 Elisp has native support for [[help:while][while]] loops, which, when used in
