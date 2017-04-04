@@ -1271,8 +1271,10 @@ preserving highlighting and the location of the current match.
 Disable the welcome screen and instead display a welcome message as a
 comment in the scratch buffer.
 #+BEGIN_SRC emacs-lisp
-    (setq inhibit-startup-screen t)   ; Disable Emacs's welcome screen
-    (setq initial-scratch-message ";; Welcome to Emacs!\n")
+  (setq inhibit-startup-screen t)   ; Disable Emacs's welcome screen
+  (use-package fortune-cookie :ensure t
+    :init (setq fortune-cookie-cowsay-enable nil)
+    :config (fortune-cookie-mode))
 #+END_SRC
 ** Change Where Customizations are Stored
 By default, Emacs adds settings set via the customizations menu to the
