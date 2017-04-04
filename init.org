@@ -2486,3 +2486,4 @@ takes at least one or more distinguished arguments followed by a
 "body" (an arbitrary number of s-expressions in which the final
 expression's value is returned). Examples include =if=, =let=,
 =with-current-buffer=, etc.
+* COMMENT Footer
