@@ -817,7 +817,32 @@ the same time.
     (diminish mode value library))
 #+END_SRC
 ** Theming                                                          :Themes:
-*** (DISABLED) Load a Color Theme
+*** Have load-theme unload other color themes before loading new ones
+I have no idea why this isn't the default behavior. See
+[[http://emacs.stackexchange.com/a/3114/8643][this post]] for a good overview of color-themes, disabling theme when
+loading new ones, and the pros and cons of using color-theme vs
+Emacs24's built-in custom themes.
+#+BEGIN_SRC emacs-lisp
+  (defadvice load-theme (before theme-dont-propagate activate)
+                        (mapc #'disable-theme custom-enabled-themes))
+#+END_SRC
+*** Install/Load Third-Party Themes
+#+SRC_NAME load_spacemacs-dark_theme
+#+BEGIN_SRC emacs-lisp
+  (use-package color-theme-sanityinc-tomorrow :ensure t)
+  (use-package sublime-themes :ensure t)
+  (use-package paganini-theme :ensure t)
+  (use-package avk-emacs-themes :ensure t)
+  ; (use-package aanila :ensure t)
+  (use-package lush-theme :ensure t)
+  (use-package molokai-theme :ensure t)
+  (use-package monokai-theme :ensure t)
+
+  (use-package spacemacs-common
+    :ensure spacemacs-theme
+    :config (load-theme 'spacemacs-dark t))
+#+END_SRC
+*** Load a Color Theme
 #+BEGIN_SRC emacs-lisp :tangle yes
   (load-theme 'spacemacs-dark t)
 #+END_SRC
@@ -850,22 +875,6 @@ added here.
   ;(color-theme-resolve)
   ;(color-theme-shaman)
   ;(color-theme-subtle-hacker)
-#+END_SRC
-*** Have load-theme unload other color themes before loading new ones
-I have no idea why this isn't the default behavior. See
-[[http://emacs.stackexchange.com/a/3114/8643][this post]] for a good overview of color-themes, disabling theme when
-loading new ones, and the pros and cons of using color-theme vs
-Emacs24's built-in custom themes.
-#+BEGIN_SRC emacs-lisp
-  (defadvice load-theme (before theme-dont-propagate activate)
-                        (mapc #'disable-theme custom-enabled-themes))
-#+END_SRC
-*** Load the Spacemacs Dark theme
-#+SRC_NAME load_spacemacs-dark_theme
-#+BEGIN_SRC emacs-lisp
-  (use-package spacemacs-common
-    :ensure spacemacs-theme
-    :config (load-theme 'spacemacs-dark t))
 #+END_SRC
 ** Display Line Numbers                                 :nlinum:LineNumbers:
 Ah yes, the somewhat notorious problem of displaying line numbers in Emacs in a
