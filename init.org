@@ -2457,7 +2457,11 @@ theme it can be a super subtle but great quality of life improvement.
     :diminish volatile-highlights-mode)
 #+END_SRC
 * Emacs Server Setup
-This is currently handled in our [[file:~/.bashrc][.bashrc]] config.
+#+SRC_NAME start_emacs_server
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (server-start)
+#+END_SRC
+** TODO Move server stuff back to .bashrc
 * Clean Up
 ** Close Extra Frames in Aquamacs
 For some reason (in Aquamacs only) my configuration files open
