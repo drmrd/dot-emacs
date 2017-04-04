@@ -1832,17 +1832,36 @@ say about them.
            (shell-command "uuidgen" t))
 #+END_SRC
 *** TODO Throw an error if not on Linux
-* TODO Modes for Programming Languages                                 :Lang:
+* TODO Programming Languages                                           :Lang:
 ** TODO Jenkins                                                    :Jenkins:
 *** TODO Consider using this Jenkins plugin for monitoring /within/ Emacs
 See [[https://github.com/rmuslimov/jenkins.el][this GitHub repo]].
+** Java
+#+SRC_NAME meghanada_use-package
+#+BEGIN_SRC emacs-lisp
+  (use-package meghanada :ensure t
+    :config
+      (add-hook 'java-mode-hook
+                (lambda ()
+                  ;; meghanada-mode on
+                  (meghanada-mode t)
+                  (add-hook 'before-save-hook 'meghanada-code-beautify-before-save)))
+      (add-hook 'groovy-mode-hook
+                (lambda ()
+                  ;; meghanada-mode on
+                  (meghanada-mode t)
+                  (add-hook 'before-save-hook 'meghanada-code-beautify-before-save))))
+#+END_SRC
 ** Groovy & Gradle                                      :Groovy:Gradle:Lang:
 #+SRC_NAME groovy_setup
 #+BEGIN_SRC emacs-lisp
   (use-package groovy-mode
     :ensure    t
     :defer     t
-    :mode      ("\\(Jenkinsfile\\|\\.\\(groovy\\|gradle\\)\\)$" . groovy-mode))
+    :init (add-hook 'groovy-mode-hook
+                    (lambda ()
+                      (c-set-offset 'label 4)))
+    :mode ("\\(Jenkinsfile\\|\\.\\(groovy\\|gradle\\)\\)$" . groovy-mode))
 #+END_SRC
 ** TODO Spock                                                        :Spock:
 ** Grails                                                           :Grails:
