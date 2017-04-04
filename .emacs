@@ -1,7 +1,11 @@
 ;;;; .emacs --- Where all the magic begins -*- lexical-binding: t; -*-
 ;;;;
+;;;; Commentary:
+;;;;
 ;;;; This file loads Org-mode and then loads the rest of our Emacs
-;;;; initialization from Emacs lisp embedded in literate Org-mode files.
+;;;; initialization from Emacs Lisp embedded in literate Org-mode files.
+;;;;
+;;;; Code:
 
 ;;; Have Emacs prefer newer package source, even over byte compiled files
 (setq load-prefer-newer t)
