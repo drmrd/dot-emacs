@@ -933,6 +933,26 @@ code. We load it in all programming modes by default.
                                          TeX-mode-hook LaTeX-mode-hook))
             (add-hook hook #'rainbow-delimiters-mode)))
 #+END_SRC
+
+** Visual Error Sounds (Visual Alarm Bell)
+Among Emacs's most celebrated, modern features is the obnoxious audible bell it
+plays at every error. This informs you of your own egregious errors, triggering
+a loud "ding" when you, say, attempt to move forward past the end of a buffer by
+hitting =C-v=. If, for whatever reason, you would prefer to not have these
+constant reminders of your own failings, you can set the =visible-bell= variable
+to something non-=nil= to substitute the bell with a subtle visual indicator.
+
+If the visual indicator is too much for you on your machine (like on macOS,
+where it's a giant exclamation mark icon), you can also set the
+=ring-bell-function= to anything you'd like in response to errors. It can also
+be set to a function that does nothing in order to disable audio and visual
+error notifications altogether, like I've done below.
+
+#+SRC_NAME visible_bell_sound
+#+BEGIN_SRC emacs-lisp
+  ;(setq visible-bell t)
+  (setq ring-bell-function (lambda ()))
+#+END_SRC
 * Navigation & Window Management                                 :Navigation:
 ** ace-jump: Quickly move around in a buffer      :ace_jump:BufferNavigation:
 #+SRC_NAME load_ace-jump
