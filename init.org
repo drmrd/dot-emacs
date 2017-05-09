@@ -706,7 +706,6 @@ automatically installed on the current system.
   ;; present on the system.
   (setq use-package-always-ensure t)
 #+END_SRC
-* Config
 * Appearance & UI                                             :Appearance:UI:
 ** Clean Up GUI Elements                                 :Toolbar:Scrollbar:
 #+SRC_NAME disable_GUI_elements
