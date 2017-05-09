@@ -653,8 +653,8 @@ etc. are eating up the most startup time.
                 (newline))
             (insert (drmrd/debug/message-time-prefix))))))
 #+END_SRC
-* Load Package Manager and Package-Loader
-** Configure =package=
+** Load Package Manager and Package-Loader  :use_package:package_management:
+*** Configure =package=
 The following code loads =package= for package management, sets the
 default package repositories, and then initializes =package=.
 
@@ -672,7 +672,7 @@ package-archives list to include ELPA, GNU, MELPA, and Marmalade.
  =package= before calling =org= for the first time. This ensures that
  the up-to-date version of =org= from ELPA is used instead of the
  built-in version.
-** Bootstrap =use-package=
+*** Bootstrap =use-package=
 Next, we ensure that =use-package= is installed on our system.
 
 It's mentioned in the [[https://github.com/jwiegley/use-package][use-package README on GitHub]] that it's no longer
