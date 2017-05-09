@@ -582,7 +582,7 @@ remote, and have several more flexible ways to address any merge
 conflicts locally (and when I see fit not when I want to push
 changes).
 * Startup
-** Set Up drmrd Customization Group
+** Set Up drmrd Customization Group                           :drmrd:custom:
 #+SRC_NAME setup_drmrd_custom_group
 #+BEGIN_SRC emacs-lisp
   (defgroup drmrd nil
@@ -1415,6 +1415,13 @@ The following is brough to us by bpalmer and zigler on the
 searches parent directories for a Makefile (or any file with name in
 =compilation-filenames=) to use during compilation and binds the new
 function to F5.
+** Enable "Advanced" Commands
+Here I'm reinstating a number of incredibly useful commands to their rightful
+keybindings that are disabled by default in Emacs to avoid confusing newcomers.
+#+SRC_NAME re-enable_advanced_commands
+#+BEGIN_SRC emacs-lisp
+  (put 'narrow-to-region 'disabled nil)
+#+END_SRC
 #+BEGIN_SRC emacs-lisp
   (setq compilation-filenames '("Makefile"))
 
