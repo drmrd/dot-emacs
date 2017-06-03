@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: embolden
+# key: embolden
+# --
+`(if (region-active-p)
+     (concat "\\\\textbf{" yas-selected-text "}")
+   "\\\\textbf{$1}")`

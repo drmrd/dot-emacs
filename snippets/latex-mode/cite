@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: CITEME
+# key: cite
+# type: command
+# --
+(yas-expand-snippet (concat "% CITEME: ("
+                            (format-time-string "%F")
+                            ") "
+                            "$0"))
