@@ -770,9 +770,16 @@ the theme I'm using. I should read the docs more to see if I'm loading things in
 the wrong order or something.
 
 Need to tweak this to avoid errors.
-#+SRC_NAME smart-mode-line_setup
+
+#+SRC_NAME powerline_use-package
 #+BEGIN_SRC emacs-lisp :tangle no
-  (use-package smart-mode-line
+  (use-package powerline :ensure t)
+#+END_SRC
+
+#+SRC_NAME smart-mode-line_use-package
+#+BEGIN_SRC emacs-lisp :tangle no
+  (use-package smart-mode-line :ensure t
+    :after powerline
     :init
       (setq sml/no-confirm-load-theme t)
     :config
