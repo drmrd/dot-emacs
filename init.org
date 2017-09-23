@@ -586,22 +586,25 @@ changes).
 #+SRC_NAME setup_drmrd_custom_group
 #+BEGIN_SRC emacs-lisp
   (defgroup drmrd nil
-    "Settings for drmrd's configuration files"
+    "Settings for drmrd's configuration files."
     :prefix "drmrd/"
     :group 'emacs
     :version "25.1")
 
   (defcustom drmrd/secrets-directory (concat user-emacs-directory "secure/")
-    "A directory containing private information, API tokens, etc. that shouldn't
-  be shared with the rest of your emacs configuration."
+    "A directory that contains private information.
+
+  Credentials and other data that shouldn't be included in your emacs.d Git
+  repository should be stored here."
     :type '(directory)
     :group 'drmrd
     :version "25.1")
 
   (defcustom drmrd/lib-directory (concat user-emacs-directory "lib/")
-      "The root directory for libraries to be loaded by `drmrd'
-      configuration files. This is used, for instance, for convenient loading of
-      library files via `drmrd/load-library'."
+      "The root directory for libraries loaded by `drmrd' configuration files.
+
+  This is used, for instance, for convenient loading of library files by
+  `drmrd/load-library'."
       :type '(directory)
       :group 'drmrd
       :version "25.1")
