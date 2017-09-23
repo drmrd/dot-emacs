@@ -21,6 +21,7 @@
         ;; (use-package helm-company :ensure t)
         ;; (use-package helm-core :ensure t) ; Is this ever needed on top of helm?
         ;; (use-package helm-css-scss :ensure t)
+        ;; (use-package helm-dash :ensure t) ;; Offline docsets viewer. SET THIS UP!
         (use-package helm-descbinds :ensure t)
         ;; (use-package helm-describe-modes :ensure t)
         ;; (use-package helm-dictionary :ensure t)
