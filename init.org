@@ -785,52 +785,60 @@ Need to tweak this to avoid errors.
     :config
       (sml/setup))
 #+END_SRC
-*** Hide/tweak minor mode lighters :diminish:delight:MinorModeLighters:
-**** delight
-A package for removing/modifying major and minor mode lighters (text indicators)
-appearing in the mode-line.
+*** Hide/tweak minor mode lighters   :ModeLighters:delight:Functions:drmrd:
+Pretty much every mode known to mankind defines its own *mode lighter*, which is
+to say some kind of message that appears in the mode line when the mode is
+active. Since the mode line is prime real estate, it's useful to pare down the
+messages broadcast by all these modes.
 
-#+SRC_NAME load_delight
+The following list's entries describe modes I use frequently and don't care to
+see in the mode line.
+
+#+SRC_NAME set_drmrd/adjusted-mode-lighters
 #+BEGIN_SRC emacs-lisp
-  (use-package delight :ensure t)
-#+END_SRC
-**** Create minor mode lighter specifications            :CustomVariables:
-#+SRC_NAME set_drmrd/adjusted-mode-lighter-specs
-#+BEGIN_SRC emacs-lisp
-  (defcustom drmrd/adjusted-mode-lighter-specs
-    '((ws-butler-mode nil "ws-butler")
+  (defcustom drmrd/adjusted-mode-lighters
+    '((button-lock-mode nil "button-lock")
       (fixmee-mode nil "fixmee")
-      (button-lock-mode nil "button-lock")
-      (yas-minor-mode nil "yasnippet")
+      (git-gutter-mode nil "git-gutter")
+      (guide-key-mode nil "guide-key")
+      (outline-minor-mode nil "outline")
       (projectile-mode nil "projectile")
       (reftex-mode nil "reftex")
-      (guide-key-mode nil "guide-key")
+      (undo-tree-mode nil "undo-tree")
       (visual-line-mode)
-      (git-gutter-mode nil "git-gutter")
-      (outline-minor-mode nil "outline")
-      (undo-tree-mode nil "undo-tree"))
-    "A list of minor modes to hidden in the mode line whenever they're loaded."
-      :tag "Adjusted Minor Mode Lighters in the Mode Line"
-      :type '(repeat sexp)
-      :group 'drmrd)
+      (ws-butler-mode nil "ws-butler")
+      (yas-minor-mode nil "yasnippet"))
+    "Specifies modes whose mode line indicators (a.k.a. 'mode lighters') should be
+  suppressed or replaced (and provides a replacement scheme).  Each entry takes
+  the form (mode &optional lighter library), where MODE is the mode's name,
+  LIGHTER is the string (or function returning a string) with which the default
+  mode lighter for MODE should be replaced, and LIBRARY is the library that
+  provides MODE."
+    :tag "Adjusted Minor Mode Lighters in the Mode Line"
+    :type '(repeat sexp)
+    :group 'drmrd)
 #+END_SRC
 
-#+SRC_NAME configure_minor_modes_with_delight :tangle yes
+The =delight= package simplifies the process of removing/modifying major and
+minor mode lighters (text indicators) appearing in the mode-line.
+
+#+SRC_NAME delight_use-package
 #+BEGIN_SRC emacs-lisp
-  (delight drmrd/adjusted-mode-lighter-specs)
+  (use-package delight :ensure t
+    :config (delight drmrd/adjusted-mode-lighters))
 #+END_SRC
-**** Create function for loading other delighted modes         :Functions:
+
 The following function can be used to load another mode and delight it all at
 the same time.
 
-#+SRC_NAME defun_drmrd/load-diminished-minor-mode
+#+SRC_NAME defun_drmrd/load-delighted-mode
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (defun drmrd/load-diminished-mode(mode value library)
-    "Load mode MODE and use `delight' to format its lighter with
-  specification (MODE VALUE LIBRARY).
+  (defun drmrd/load-delighted-mode(mode value library)
+    "Load mode MODE from LIBRARY and set its mode lighter to VALUE.
 
-  This function is intended for use in hooks, but works equally
-  well when evaluated manually."
+  This function is intended for use in hooks, but works equally well when
+  evaluated manually."
+    (interactive)
     (funcall mode)
     (diminish mode value library))
 #+END_SRC
