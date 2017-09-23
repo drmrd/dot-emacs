@@ -852,8 +852,8 @@ Emacs24's built-in custom themes.
   (defadvice load-theme (before theme-dont-propagate activate)
                         (mapc #'disable-theme custom-enabled-themes))
 #+END_SRC
-*** Install/Load Third-Party Themes
-#+SRC_NAME load_spacemacs-dark_theme
+*** Install/Load Themes
+#+SRC_NAME install_themes
 #+BEGIN_SRC emacs-lisp
   (use-package color-theme-sanityinc-tomorrow :ensure t)
   (use-package sublime-themes :ensure t)
@@ -863,13 +863,12 @@ Emacs24's built-in custom themes.
   (use-package lush-theme :ensure t)
   (use-package molokai-theme :ensure t)
   (use-package monokai-theme :ensure t)
-
-  (use-package spacemacs-common
-    :ensure spacemacs-theme
-    :config (load-theme 'spacemacs-dark t))
+  (use-package spacemacs-common :ensure spacemacs-theme)
 #+END_SRC
-*** Load a Color Theme
-#+BEGIN_SRC emacs-lisp :tangle yes
+
+Now we load our current favorite theme. This changes regularly.
+#+SRC_NAME load_a_theme
+#+BEGIN_SRC emacs-lisp
   (load-theme 'spacemacs-dark t)
 #+END_SRC
 **** (Obsolete) Using color-theme to load a theme
