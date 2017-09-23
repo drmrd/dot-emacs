@@ -22,9 +22,9 @@
           ("melpa-stable" . "https://stable.melpa.org/packages/"))
       package-archive-priorities
         '(("org"          . 30)
-          ("melpa-stable" . 25)
+          ("melpa-stable" . 15) ; lower than melpa for now due to weird bugs
           ("gnu"          . 20)
-          ("melpa"        . 15))
+          ("melpa"        . 25))
       package-menu-hide-low-priority t)
 (package-initialize)
 
