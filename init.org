@@ -712,10 +712,19 @@ automatically installed on the current system.
 * Appearance & UI                                             :Appearance:UI:
 ** Clean Up GUI Elements                                 :Toolbar:Scrollbar:
 #+SRC_NAME disable_GUI_elements
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp tangle: yes
   (when (display-graphic-p)
     (tool-bar-mode 0)
     (scroll-bar-mode 0))
+
+  (defun drmrd/disable-scroll-bars (frame)
+    (modify-frame-parameters frame
+                             '((vertical-scroll-bars . nil)
+                               (horizontal-scroll-bars . nil)
+                               (tool-bar-lines . nil)
+                               (menu-bar-lines . nil))))
+
+  (add-hook 'after-make-frame-functions 'drmrd/disable-scroll-bars)
 #+END_SRC
 ** Miscellany
 *** Set Default Font(s)                                             :Fonts:
