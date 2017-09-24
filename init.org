@@ -733,9 +733,37 @@ configuration will probably grow a bit with time. For now, the following
 configuration is appropriate. On Mac OS X, the Vera Sans font family is used,
 while on Linux we employ DejaVu Sans Mono.
 #+BEGIN_SRC emacs-lisp
-  (when (eq system-type 'gnu/linux)
-    (set-face-attribute 'default nil
-                        :font "DejaVu Sans Mono-10"))
+  (defcustom drmrd/preferred-default-font-families
+    '("Source Code Pro"
+      "DejaVu Sans Mono"
+      "inconsolata"
+      "Lucida Console"
+      "courier")
+    "The list of font families to attempt to use by default.
+
+  Font family names should be listed in descending order of preference."
+    :tag "List of preferred default font families (descending order)"
+    :type '(repeat string)
+    :group 'drmrd)
+
+  (defcustom drmrd/default-font-size 12
+    "The default font size to be used in Emacs."
+    :tag "Default font size in Emacs"
+    :type 'integer
+    :group 'drmrd)
+
+  (defun drmrd/font-family-exists-p (font-family)
+    "Determine if a given font family exists on this computer.
+
+  Returns non-nil if FONT-FAMILY is the name of a font known to Emacs."
+    (car (member font-family (font-family-list))))
+
+  (defun drmrd/default-font-string ()
+    (let ((font-family (cl-some 'drmrd/font-family-exists-p
+                                drmrd/preferred-default-font-families)))
+      (concat font-family "-" (number-to-string drmrd/default-font-size))))
+
+  (set-face-attribute 'default nil :font (drmrd/default-font-string))
 #+END_SRC
 *** Disable Cursor Blinking                                   :CursorBlink:
 The enemy of civil society. I disable cursor blinking not only
