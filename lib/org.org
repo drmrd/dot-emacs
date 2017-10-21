@@ -274,9 +274,9 @@ which require (and can only contain) the key and description entries.)
                 (file+olp "~/org/dissertating.org" "Refile")
                 "* TODO %u %^{Note Headline} %^g:NOTE:\n%^{Description (optional)}\n"
                 :prepend t :kill-buffer t)
-          ("dq" "quickref" item
+          ("dq" "quickref" entry
                 (file+olp "~/org/dissertating.org" "QuickRefs")
-                " - %^{Result Description} :: %^{Label or Citation}"
+                "** %^{Result Description}\n:PROPERTIES:\n:Citation: %^{BibTeX Key}\n:Result: %^{Result}\n:END:"
                 :kill-buffer t)
           ("dt" "task" entry
                 (file "~/org/dissertating.org" "Refile")
