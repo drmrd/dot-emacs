@@ -698,11 +698,6 @@ the "\begin{...}" one.
 *** I've officially learned a trick or two!
 Figuring out the "right" way to implement this in Emacs was daunting a
 few months ago. Today (<2015-12-02 Wed>) I did it in 1.5 hours.
-* Spell Checking
-** Enable Flyspell Mode
-#+BEGIN_SRC emacs-lisp
-  (add-hook 'LaTeX-mode-hook 'flyspell-mode)
-#+END_SRC
 * Debugging
 ** Change TeX debugging mode (for more informative error messages)
 #+BEGIN_SRC emacs-lisp
