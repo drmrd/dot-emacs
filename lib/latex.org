@@ -436,12 +436,46 @@ for the use of fixed-width fonts.
   (add-hook 'LaTeX-mode-hook 'kill-aquamacs-autoface-mode)
 #+END_SRC
 ** Custom Syntax Highlighting
-Syntax Highlighting is controlled by Font Lock Mode, and it is a
-simple matter to add additional keywords for it to recognize and color
-accordingly using the [[help:font-lock-add-keywords][font-lock-add-keywords]] function. Keywords are
-passed to this function as a list of elements of the form described
-[[help:font-lock-keywords][here]].
+Syntax highlighting is controlled by Font Lock Mode, and it is a simple matter
+to add additional keywords for it to recognize and color accordingly using the
+[[help:font-lock-add-keywords][font-lock-add-keywords]] function. Keywords are passed to this function as a list
+of elements of the form described [[help:font-lock-keywords][here]].
 
+AucTeX, however, provides its own LaTeX-tailored keyword configuration variable
+called [[help:font-latex-user-keyword-classes][font-latex-user-keyword-classes]]. It consists of a list of "keyword
+classes", each of the form
+#+SRC_NAME font-latex-user-keyword-classes_keyword_class_syntax
+#+BEGIN_EXAMPLE emacs-lisp
+  (<class> ((<keyword> <args>) ...) <face> <type>)
+#+END_EXAMPLE
+where =<class>=, =<keyword>=, and =<args>= are strings and both =face= and
+=type= are (unquoted) symbols. (The pair =(<keyword> <args>)= can also just be a
+simple string =<keyword>= if you don't care about highlighting arguments/the
+macro takes no arguments/you like the default argument highlighting behavior.)
+The =font-latex= package then handles setting up font-lock matchers for each
+keyword in the class, including for its arguments thanks to its 'argument
+string' (specified by =<arg>= above).
+
+The example provided in the [[help:font-latex-user-keyword-classes][help page]] of an argument string for =\newcommand=
+conveys the idea well. The correct entry in a keyword class for =\newcommand=
+would look like =("newcommand" "*|{\[[{")=, where, character-by-character, the
+string ="*|{\[[{"= indicates that
+  - * :: =\newcommand= can be starred
+  - | :: the next two characters form a pair of alternative arguments (/i.e./,
+         either ={= or =\= will be the next argument).
+  - { :: a mandatory argument (wrapped in ={= and =}=)
+  - \ :: a mandatory argument that is a macro and not wrapped in braces
+  - [ :: an optional argument
+  - [ :: another optional argument
+  - { :: a mandatory argument
+Note the "Polish-style" use of =|= as a /prefix/ to the alternatives ={= and
+=\=. I missed this when first reading the documentation.
+
+#+NAME setup_font-latex-user-keyword-classes
+#+BEGIN_SRC emacs-lisp
+  (setq font-latex-user-keyword-classes
+        '(("idxdefs"  (("idxdef" "[{")
+                       ("NewIndexableMathObject" "{{{{{{")) bold command)))
 #+END_SRC
 
 **** TODO Move this code to init.org
