@@ -119,33 +119,34 @@ the way we do so in Org Mode.
 By default the prefix for outline-minor-mode is the insanely
 inconvenient C-c @, so we change it to M-o instead. We also add
 suffixes for just about every command we could ask for.
+#+SRC_NAME outline-minor-mode_keymap_configuration
 #+BEGIN_SRC emacs-lisp
   ; Outline-minor-mode key map
   (define-prefix-command 'cm-map nil "Outline-")
   ; HIDE
-  (define-key cm-map "q" 'hide-sublevels)    ; Hide everything but the top-level headings
-  (define-key cm-map "\M-q" 'hide-sublevels)
-  (define-key cm-map "t" 'hide-body)         ; Hide everything but headings (all body lines)
-  (define-key cm-map "\M-t" 'hide-body)
-  (define-key cm-map "o" 'hide-other)        ; Hide other branches
-  (define-key cm-map "\M-o" 'hide-other)
-  (define-key cm-map "c" 'hide-entry)        ; Hide this entry's body
-  (define-key cm-map "\M-c" 'hide-entry)
-  (define-key cm-map "l" 'hide-leaves)       ; Hide body lines in this entry and sub-entries
-  (define-key cm-map "\M-l" 'hide-leaves)
-  (define-key cm-map "d" 'hide-subtree)      ; Hide everything in this entry and sub-entries
-  (define-key cm-map "\M-d" 'hide-subtree)
+  (define-key cm-map "q" 'outline-hide-sublevels)    ; Hide everything but the top-level headings
+  (define-key cm-map "\M-q" 'outline-hide-sublevels)
+  (define-key cm-map "t" 'outline-hide-body)         ; Hide everything but headings (all body lines)
+  (define-key cm-map "\M-t" 'outline-hide-body)
+  (define-key cm-map "o" 'outline-hide-other)        ; Hide other branches
+  (define-key cm-map "\M-o" 'outline-hide-other)
+  (define-key cm-map "c" 'outline-hide-entry)        ; Hide this entry's body
+  (define-key cm-map "\M-c" 'outline-hide-entry)
+  (define-key cm-map "l" 'outline-hide-leaves)       ; Hide body lines in this entry and sub-entries
+  (define-key cm-map "\M-l" 'outline-hide-leaves)
+  (define-key cm-map "d" 'outline-hide-subtree)      ; Hide everything in this entry and sub-entries
+  (define-key cm-map "\M-d" 'outline-hide-subtree)
   ; SHOW
-  (define-key cm-map "a" 'show-all)          ; Show (expand) everything
-  (define-key cm-map "\M-a" 'show-all)
-  (define-key cm-map "e" 'show-entry)        ; Show this heading's body
-  (define-key cm-map "\M-e" 'show-entry)
-  (define-key cm-map "i" 'show-children)     ; Show this heading's immediate child sub-headings
-  (define-key cm-map "\M-i" 'show-children)
-  (define-key cm-map "k" 'show-branches)     ; Show all sub-headings under this heading
-  (define-key cm-map "\M-k" 'show-branches)
-  (define-key cm-map "s" 'show-subtree)      ; Show (expand) everything in this heading & below
-  (define-key cm-map "\M-s" 'show-subtree)
+  (define-key cm-map "a" 'outline-show-all)          ; Show (expand) everything
+  (define-key cm-map "\M-a" 'outline-show-all)
+  (define-key cm-map "e" 'outline-show-entry)        ; Show this heading's body
+  (define-key cm-map "\M-e" 'outline-show-entry)
+  (define-key cm-map "i" 'outline-show-children)     ; Show this heading's immediate child sub-headings
+  (define-key cm-map "\M-i" 'outline-show-children)
+  (define-key cm-map "k" 'outline-show-branches)     ; Show all sub-headings under this heading
+  (define-key cm-map "\M-k" 'outline-show-branches)
+  (define-key cm-map "s" 'outline-show-subtree)      ; Show (expand) everything in this heading & below
+  (define-key cm-map "\M-s" 'outline-show-subtree)
   ; MOVE
   (define-key cm-map "u" 'outline-up-heading)                ; Up
   (define-key cm-map "\M-u" 'outline-up-heading)
