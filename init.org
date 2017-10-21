@@ -1320,6 +1320,14 @@ preserving highlighting and the location of the current match.
   (use-package fill-column-indicator
       :config (turn-on-fci-mode))
 #+END_SRC
+*** Increase Kill Ring Size                                 :Helm:KillRing:
+Since we are using helm, the fact that the kill ring is a ring has become less
+relevant, and it makes sense to ratchet up the maximum number of killed pieces
+of text to store there.
+#+SRC_NAME set_max_kill-ring_size
+#+BEGIN_SRC emacs-lisp
+  (setq kill-ring-max 1000)
+#+END_SRC
 ** What to Display at Startup
 Disable the welcome screen and instead display a welcome message as a
 comment in the scratch buffer.
