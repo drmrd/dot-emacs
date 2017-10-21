@@ -182,12 +182,12 @@ this myself!
 #+BEGIN_SRC emacs-lisp
   ;; extra outline headers
   (setq TeX-outline-extra
-        '(("%chapter" 1)
-          ("%section" 2)
-          ("%subsection" 3)
-          ("%subsubsection" 4)
-          ("%paragraph" 5)
-          ("%proof" 5)))
+        '(("^\\s-*%chapter" 1)
+          ("^\\s-*%section" 2)
+          ("^\\s-*%subsection" 3)
+          ("^\\s-*%subsubsection" 4)
+          ("^\\s-*%paragraph" 5)
+          ("^\\s-*%proof" 5)))
 
   ;; add font locking to the headers
   (font-lock-add-keywords
