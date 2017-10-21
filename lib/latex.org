@@ -455,16 +455,25 @@ Within enumerate-like environments (in fact, at any point in a LaTeX
 buffer), hitting [Alt] + [Return] invokes [[help:LaTeX-insert-item][LaTeX-insert-item]]
 * Support for Custom Macros & Environments
 ** Make AUCTeX Aware of Custom Theorem Environments
+#+SRC_NAME auctex_add_custom_environments
 #+BEGIN_SRC emacs-lisp
   (add-hook 'LaTeX-mode-hook
     (lambda ()
       (LaTeX-add-environments
-        '("thm" LaTeX-env-label)
-        '("lem" LaTeX-env-label)
-        '("proof" LaTeX-env-label)
-            '("cor" LaTeX-env-label)
-            '("rem" LaTeX-env-label)
-            '("claim" LaTeX-env-label))))
+        '("claim"      LaTeX-env-label)
+        '("conjecture" LaTeX-env-label)
+        '("convention" LaTeX-env-label)
+        '("cor"        LaTeX-env-label)
+        '("example"    LaTeX-env-label)
+        '("lem"        LaTeX-env-label)
+        '("note"       LaTeX-env-label)
+        '("notation"   LaTeX-env-label)
+        '("proof"      LaTeX-env-label)
+        '("prop"       LaTeX-env-label)
+        '("question"   LaTeX-env-label)
+        '("rem"        LaTeX-env-label)
+        '("thm"        LaTeX-env-label))))
+#+END_SRC
 ** Make RefTeX aware of idxdef and indexdef indexing commands
 Make RefTeX aware of our custom indexing commands and bind some of them to
 keys. We also set =\indexed= to be the default indexing command in RefTeX, which
