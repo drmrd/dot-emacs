@@ -138,6 +138,16 @@ input to insert onto an additional line in the format specified by the
   (setq org-log-done 'time)
 #+END_SRC
 
+* Org Link                                              :Hyperlinks:org_link:
+** Custom Hyperlinks
+#+SRCNAME org_custom_hyperlink_names
+#+BEGIN_SRC emacs-lisp
+  (setq org-link-abbrev-alist
+        '(("google" . "http://www.google.com/search?q=")
+          ("map"    . "http://maps.google.com/maps?q=")
+          ("wiki"   . "https://en.wikipedia.org/wiki/")
+          ("github" . "https://github.com/")))
+#+END_SRC
 * Org Agenda
 ** Set Agenda & Note Files
 #+BEGIN_SRC emacs-lisp
