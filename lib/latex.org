@@ -91,6 +91,14 @@ since I've been using Skim/external viewers instead.
   (load "preview-latex.el" nil t t)
 #+END_SRC
 * General Settings
+** Ensure binaries are in =PATH= and =exec-path=
+#+SRC_NAME latex_add-binaries
+#+BEGIN_SRC emacs-lisp
+  (setenv "PATH" (concat "/usr/texbin" ":"
+                         "/usr/local/bin" ":"
+                         (getenv "PATH")))
+  (setq exec-path (append exec-path '("/usr/local/bin")))
+#+END_SRC
 ** Enable "Advanced" Commands
 As was the case in [[file:~/.emacs.d/init.org::*Enable%20"Advanced"%20Commands][my global settings]], I always enable some of the
 non-beginner-friendly AucTeX commands that I use regularly.
