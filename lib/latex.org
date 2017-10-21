@@ -465,6 +465,23 @@ buffer), hitting [Alt] + [Return] invokes [[help:LaTeX-insert-item][LaTeX-insert
             '("cor" LaTeX-env-label)
             '("rem" LaTeX-env-label)
             '("claim" LaTeX-env-label))))
+** Make RefTeX aware of idxdef and indexdef indexing commands
+Make RefTeX aware of our custom indexing commands and bind some of them to
+keys. We also set =\indexed= to be the default indexing command in RefTeX, which
+is bound to =C-c /=.
+#+SRC_NAME set_reftex-index-macros
+#+BEGIN_SRC emacs-lisp
+  (add-hook 'reftex-mode-hook
+            (lambda ()
+              (setq reftex-index-macros
+                    '(("\\indexed{*}" "idx" ?x "" nil nil)
+                      ("\\idxdef{*}" "idx" ?d "" nil nil)
+                      ("\\indexdef{*}" "idx" ?D "" nil nil)))
+              (setq reftex-index-default-macro '(?x "idx"))))
+#+END_SRC
+*** TODO Create a RefTeX mode hydra, possibly bound to =C-c r=
+There are so many amazing RefTeX mode commands I forget about that it's probably
+worth collecting them somewhere.
 #+END_SRC
 * Custom Functions
 ** TODO Forward/Backward Token/Mode/Environment Boundary Functions
