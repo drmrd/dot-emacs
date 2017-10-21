@@ -427,14 +427,9 @@ in =ispell.el= as follows.
               ;; readable and ready for extension.
               (cdr ispell-tex-skip-alists)))
 #+END_SRC
-* Appearance
-** Disable Aquamacs's Auto-Face Mode
-Use this to disable Aquamacs's Auto-Face Mode, which should then allow
-for the use of fixed-width fonts.
 #+BEGIN_SRC emacs-lisp
-  (add-hook 'TeX-mode-hook 'kill-aquamacs-autoface-mode)
-  (add-hook 'LaTeX-mode-hook 'kill-aquamacs-autoface-mode)
 #+END_SRC
+* Appearance
 ** Custom Syntax Highlighting
 Syntax highlighting is controlled by Font Lock Mode, and it is a simple matter
 to add additional keywords for it to recognize and color accordingly using the
