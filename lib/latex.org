@@ -751,7 +751,34 @@ few months ago. Today (<2015-12-02 Wed>) I did it in 1.5 hours.
   (setq tex-dvi-view-command "xdvi")
 #+END_SRC
 ** TODO Store temporary files in ./tmp
+** Configure view programs                     :Viewing:Output:Evince:Okular:
+This code could equally well be customized, since it's rather volatile or at
+very least system dependent. The current version of this configuration is taken
+from [[http://tex.stackexchange.com/a/150645][this TeX.SE answer]].
+#+SRC_NAME auctex_set_TeX-view-program-list
+#+BEGIN_SRC emacs-lisp
+  ;; See [[help:TeX-expand-list-builtin][TeX-expand-list-builtin]] and
+  ;; [[help:TeX-expand-list][TeX-expand-list]] for a complete list of the "%foo"
+  ;; expansions appearing in the shell commands below.
+  (eval-after-load "tex"
+    (lambda ()
+      (cl-case system-type
 
+        ('gnu/linux
+         (setq TeX-view-program-list      '(("Evince" "evince --page-index=%(outpage) %o")))
+         (setq TeX-view-program-selection '((output-pdf "Evince"))))
+
+        ('darwin
+         ;; Use Skim as default PDF viewer
+         ;; Skim's displayline is used for forward search (from .tex to .pdf)
+         ;; Its -b option highlights the current line; option -g opens Skim in the
+         ;; background
+         (setq TeX-view-program-list
+               '(("Skim" "/Applications/Skim.app/Contents/SharedSupport/displayline -b -g %n %o %b")
+                 ("Preview" "open -a Preview.app %n")))
+         (setq TeX-view-program-selection '((output-pdf "Skim")))))))
+
+#+END_SRC
 * Wrap Up
 There is nothing to do here for the time being, but we'll at least
 record that we've loaded the file successfully in the *Messages* buffer.
