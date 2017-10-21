@@ -1,4 +1,3 @@
-DRMRD INIT -*- mode: org -*-
 #+TITLE: drmrd's Org Init File
 #+AUTHOR: drmrd
 #+OPTIONS: toc:nil num:nil ^:nil
@@ -26,6 +25,14 @@ cost to the structure of my config files.) Some org libraries must be
 loaded prior to tangling [[file:~/.emacs.d/init.org][init.org]] (org-crypt, for instance), and so a
 minimal configuration for these is provided in my [[file:~/.emacs.d/.emacs][.emacs]] file.
 
+* Keybindings                                                   :Keybindings:
+** Navigation                                                   :Navigation:
+** Editing                                                         :Editing:
+#+SRC_NAME org-mode_keybindings_navigation
+#+BEGIN_SRC emacs-lisp
+  (define-key org-mode-map (kbd "C-M-<enter>") 'org-insert-subheading)
+  (define-key org-mode-map (kbd "C-M-S-<enter>") 'org-insert-todo-subheading)
+#+END_SRC
 * Configure Default Directory, Agenda Directory, and Notes File
 For now the org-agenda-files list simply contains ~/org, but it can
 readily be modified to a list of subdirectories, files, etc. if
