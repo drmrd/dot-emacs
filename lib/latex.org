@@ -98,16 +98,17 @@ non-beginner-friendly AucTeX commands that I use regularly.
 #+BEGIN_SRC emacs-lisp
   (put 'LaTeX-narrow-to-environment 'disabled nil)
 #+END_SRC
-* Configuring Minor Modes
-** nlinum Mode
-Display line numbers using nlinum mode.
+* Editor Features
+** Line Numbers
+Display line numbers using [[help:nlinum-mode][=nlinum-mode=]].
 #+SRC_NAME latex-mode-hook_add_nlinum-mode
 #+BEGIN_SRC emacs-lisp
   (dolist (hook '(TeX-mode-hook LaTeX-mode-hook))
       (add-hook hook #'nlinum-mode))
 #+END_SRC
-** Outline Minor Mode
-This allows us to fold sections/environments like in Org Mode.
+** Code Folding
+Enabling [[help:outline-minor-mode][=outline-minor-mode=]] allows us to fold sections/environments akin to
+the way we do so in Org Mode.
 *** Add outline-minor-mode to (La)TeX hooks
 #+SRC_NAME enable_outline-minor-mode_in_TeX-mode_and_LaTeX-mode
 #+BEGIN_SRC emacs-lisp
