@@ -13,15 +13,9 @@
 | Indentation         | [[help:LaTeX-current-indentation][LaTeX-current-indentation]]    |
 | Verbatim Macro      | [[help:LaTeX-current-verbatim-macro][LaTeX-current-verbatim-macro]] |
 * Startup
-** Load AucTeX and Preview LaTeX
-AucTeX is the bread-and-butter LaTeX editor for Emacs and should
-always be enabled to complement the built-in modes.
-
+#+SRC_NAME LaTeX_config_start_notification
 #+BEGIN_SRC emacs-lisp
-  (sit-for 1)
   (message "Loading LaTeX configuration...")
-  ; Don't try to load auctex.el. ELPA takes care of this
-  ; (load "auctex.el" nil t t)
 #+END_SRC
 ** Update Environment
 AucTeX 11.88.9 and beyond check that TeX binaries exist in the =exec-path= (in
@@ -48,10 +42,6 @@ enabled to complement the built-in modes.
 ;          (add-to-list 'exec-path "/Library/TeX/texbin" t))
 )
 #+END_SRC
-*** TODO Test whether the sit-for call is necessary
-I no longer remember why I added that. Perhaps the problem has fixed
-itself? Either way, this is why we document our config files,
-children!
 ** AUCTeX Initialization/Configuration
 *** Parse Document on Load and Save
 #+BEGIN_SRC emacs-lisp
