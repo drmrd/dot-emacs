@@ -427,7 +427,17 @@ in =ispell.el= as follows.
               ;; readable and ready for extension.
               (cdr ispell-tex-skip-alists)))
 #+END_SRC
+** Save Place Mode                  :save_place_mode:Persistence:Navigation:
+When opening a file, Save Place Mode restores the point to the last place it
+appeared in a buffer containing the file. For each tracked file, point locations
+are stored in the =save-place-file=, which defaults to =.emacs.d/places= for
+Emacs versions 25.1+. While =save-place-mode= is global, storing file positions
+for every file you open in Emacs, you can be more selective with when this
+occurs by turning on =save-place-local-mode= instead on a per file or major mode
+basis.  #+SRC_NAME latex_hook_to_save-place-local-mode
 #+BEGIN_SRC emacs-lisp
+  (dolist (hook '(TeX-mode-hook LaTeX-mode-hook))
+    (add-hook hook #'save-place-local-mode))
 #+END_SRC
 * Appearance
 ** Custom Syntax Highlighting
@@ -472,8 +482,6 @@ Note the "Polish-style" use of =|= as a /prefix/ to the alternatives ={= and
         '(("idxdefs"  (("idxdef" "[{")
                        ("NewIndexableMathObject" "{{{{{{")) bold command)))
 #+END_SRC
-
-**** TODO Move this code to init.org
 * TODO Improving Help Commands
 Wouldn't it be amazing if there was a =describe-latex-macro= command
 for Emacs with the same functionality as =describe-function=? This is
