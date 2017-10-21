@@ -204,40 +204,124 @@ this myself!
 **** TODO Consider expanding on this
 For instance, we could add support for TODO comments that appear like
 the ones in Org.
-** Visual Line Mode
-A WYSIWYG mode for Emacs's navigation keybindings, which binds keys
-like C-f, C-e, and C-k to new commands that respect soft-wrapping
-(and, hence, the visually-displayed line instead of the logical line
-you are on in the current file).
+** Soft Line Wrapping
+*** Navigate soft-wrapped lines visually
+=visual-line-mode= is a WYSIWYG mode for Emacs's navigation keybindings, which
+binds keys like =C-f=, =C-e=, and =C-k= to new commands that respect
+soft-wrapping (and, hence, the visually-displayed line instead of the logical
+line you are on in the current file).
 
-As we should have been doing from the beginning in our config files,
-we begrudgingly define a visual-line-mode-on function that ensures the
-mode is active and then add that to the relevant hooks. This is to
-ensure backwards compatibility, e.g., with the pre-v24.1 Emacsen I
-encounter regularly. If by some wonderful twist of fate I eventually
-only ever work with v24.1 and above, then this can simply be changed
-to (add-hook 'relevant-mode-hook #'visual-line-mode) (note the
-function-quoting #' used on the function symbol to allow for byte
-compilation).
 #+SRC_NAME enable_visual-line-mode_in_TeX-mode_and_LaTeX-mode
 #+BEGIN_SRC emacs-lisp
   (dolist (hook '(TeX-mode-hook LaTeX-mode-hook))
     (add-hook hook #'visual-line-mode))
 #+END_SRC
-*** TODO Consider using visual-fill-column to wrap at a fixed column
-See [[http://melpa.org/#/visual-fill-column][here]] for its MELPA documentation page. It's a small minor mode
-that does this one thing and this one thing quite well. More
-convention implementations of soft line wrapping at a fixed column
-could be somewhat buggy.
-** Adaptive Wrap Prefix Mode
+
+*** Continue indentation level on soft-wrapped lines
+By default Emacs does not preserve indentation on softly-wrapped lines. For
+instance, suppose you had the following text in a buffer:
+
+#+NAME: soft-wrapping_indentation_example__no_wrapping_whatsoever
+#+BEGIN_EXAMPLE
+  This is a paragraph talking about something. As the paragraph continues, it becomes clear that we should provide an example of what we're talking about to the dear reader. Our imaginary markup language visually emphasizes indented blocks differently than their unindented counterparts, so we provide the example as follows:
+
+      This is our example. It is longer than sixty characters in length, and then some. In fact, it is longer than twice that length, if I am not mistaken. And I rarely am about line lengths, since I have a convenient column indicator in my mode line. In fact, goodness me, we're far past twice sixty, steadily encroaching on six times that length!
+
+  Following this example, we continue our discussion here in another paragraph. It's just as relevant as the previous one. If you're still reading what might as well be lorem ipsum at this point, kudos.
+#+END_EXAMPLE
+
+In a window that is only sixty characters in width, this text will be
+soft-wrapped as follows by default:
+
+#+NAME: soft-wrapping_indentation_example__no_adaptive-wrap-prefix-mode
+#+BEGIN_EXAMPLE
+  This is a paragraph talking about something. As the
+  paragraph continues, it becomes clear that we should provide
+  an example of what we're talking about to the dear
+  reader. Our imaginary markup language visually emphasizes
+  indented blocks differently than their unindented
+  counterparts, so we provide the example as follows:
+
+      This is our example. It is longer than sixty characters
+  in length, and then some. In fact, it is longer than twice
+  that length, if I am not mistaken. And I rarely am about
+  line lengths, since I have a convenient column indicator in
+  my mode line. In fact, goodness me, we're far past twice
+  sixty, steadily encroaching on six times that length!
+
+  Following this example, we continue our discussion here in
+  another paragraph. It's just as relevant as the previous
+  one. If you're still reading what might as well be lorem
+  ipsum at this point, kudos.
+#+END_EXAMPLE
+
+As you can see, the built-in soft-wrapping in Emacs at best leaves much to be
+desired in terms of preserving the syntactic meaning of a buffer's context. In
+fact it has already potentially introduced syntactic ambiguity: is the second
+paragraph in the soft-wrapped text an indented paragraph or a soft-wrapped,
+indented example?
+
+Compare this to the output of =fill-region= (or an equivalent auto-filling,
+hard-wrapping command) operating on the original buffer:
+
+#+BEGIN_EXAMPLE
+  This is a paragraph talking about something. As the
+  paragraph continues, it becomes clear that we should provide
+  an example of what we're talking about to the dear
+  reader. Our imaginary markup language visually emphasizes
+  indented blocks differently than their unindented
+  counterparts, so we provide the example as follows:
+
+      This is our example. It is longer than sixty characters
+      in length, and then some. In fact, it is longer than
+      twice that length, if I am not mistaken. And I rarely am
+      about line lengths, since I have a convenient column
+      indicator in my mode line. In fact, goodness me, we're
+      far past twice sixty, steadily encroaching on six times
+      that length!
+
+  Following this example, we continue our discussion here in
+  another paragraph. It's just as relevant as the previous
+  one. If you're still reading what might as well be lorem
+  ipsum at this point, kudos.
+#+END_EXAMPLE
+
+Here the indented example syntax remains clear but only at the potential cost of
+losing semantic meaning. Imagine, for instance, that we'd placed each sentence
+in our example text onto its own line originally. This is not so far-fetched,
+since it's what I do when writing in version-controlled LaTeX files. It has the
+advantage of allowing parsers to easily perform sentence-level transformations
+to text and also can prove invaluable when =diff=ing the changes between two
+versions of a paper. Hard-wrapping a region in a buffer obliterates this
+semantic information (/i.e./, the demarcation of the beginning and end of each
+sentence).
+
+This is just one of the many semantically-destructive aspects of hard-wrapping
+lines in text (prose or otherwise) that compel me to prefer efficient
+indentation-manipulating commands coupled with smart soft-wrapping over the
+convenience of =auto-fill-mode=. So far, by "smart" I mean "capable of
+preserving indentation on soft-wrapped lines and respecting the =fill-column=.
+We enable [[help:adaptive-wrap-prefix-mode][=adaptive-wrap-prefix-mode=]] to achieve the former.
+
+#+SRC_NAME adaptive-wrap-prefix-mode_use-package
 #+BEGIN_SRC emacs-lisp
-  (defun adaptive-wrap-prefix-mode-on()
-    "Turn on `adaptive-wrap-prefix-mode' minor mode."
-    (interactive)
-    (adaptive-wrap-prefix-mode 1))
-  (add-hook 'TeX-mode-hook #'adaptive-wrap-prefix-mode-on)
-  (add-hook 'LaTeX-mode-hook #'adaptive-wrap-prefix-mode-on)
+  (use-package adaptive-wrap :ensure t
+    :init (add-hook 'visual-line-mode-hook 'adaptive-wrap-prefix-mode))
 #+END_SRC
+
+Likewise, we enable =visual-fill-column-mode= whenever =visual-line-mode= is
+active to soft-wrap buffers at the current =fill-column=. See [[http://melpa.org/#/visual-fill-column][here]] for
+=visual-fill-column-mode='s MELPA documentation page. It's a small minor mode
+that does this one thing and this one thing quite well. More conventional
+implementations of soft line wrapping at a fixed column could be somewhat
+buggy.
+
+#+SRC_NAME visual-fill-column_use-package
+#+BEGIN_SRC emacs-lisp
+  (use-package visual-fill-column :ensure t
+    :init (global-visual-fill-column-mode))
+#+END_SRC
+
 ** LaTeX Math Mode
 Load [[help:LaTeX-math-mode][LaTeX Math Mode]] by default. This is usually bound to 'C-c ~' (and
 can still be toggled using that keybinding, but it's useful enough to
@@ -358,14 +442,6 @@ accordingly using the [[help:font-lock-add-keywords][font-lock-add-keywords]] fu
 passed to this function as a list of elements of the form described
 [[help:font-lock-keywords][here]].
 
-** Line Wrapping
-*** Enable Soft Line Wrapping
-This is achieved through Visual Line Mode and Adaptive Wrap Prefix
-Mode. The former enables basic soft wrapping, and the latter indents
-softly wrapped lines to the appropriate levels.
-
-#+BEGIN_SRC emacs-lisp
-  (add-hook 'visual-line-mode-hook 'adaptive-wrap-prefix-mode)
 #+END_SRC
 
 **** TODO Move this code to init.org
