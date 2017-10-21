@@ -750,7 +750,7 @@ few months ago. Today (<2015-12-02 Wed>) I did it in 1.5 hours.
   (setq tex-dvi-print-command "dvips")
   (setq tex-dvi-view-command "xdvi")
 #+END_SRC
-** Store temporary files in ./tmp
+** TODO Store temporary files in ./tmp
 
 * Wrap Up
 There is nothing to do here for the time being, but we'll at least
