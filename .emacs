@@ -2,7 +2,7 @@
 ;;;
 ;;; Commentary:
 ;;;
-;;; This file loads Org-mode and then loads the rest of our Emacs
+;;; This file loads Org-mode and then loads the rest of my Emacs
 ;;; initialization from Emacs Lisp embedded in literate Org-mode files.
 
 
@@ -11,8 +11,8 @@
 ;; Have Emacs prefer newer package source, even over byte compiled files
 (setq load-prefer-newer t)
 
-;; Initialize package before calling Org Mode to ensure the ELPA
-;; version of Org is loaded instead of the built-in one.
+;; Initialize package before calling Org Mode to ensure the ELPA version of Org
+;; is loaded instead of the built-in one.
 (require 'package)
 (setq package-enable-at-startup nil
       package-archives
@@ -28,18 +28,19 @@
       package-menu-hide-low-priority t)
 (package-initialize)
 
-;; On macOS, ensure that the environment variables Emacs is seeing are what they're supposed to be. There's a package for that.
+;; On macOS, ensure that the environment variables Emacs is seeing are what
+;; they're supposed to be. There's a package for that.
 (when (memq window-system '(mac ns))
   (use-package exec-path-from-shell
     :ensure t
     :config (exec-path-from-shell-initialize)))
 
-;; Load `cl' here, since we use Common Lisp constructs frequently
-(require 'cl)
+;; Load `cl-lib' here, since we use Common Lisp constructs frequently
+(require 'cl-lib)
 
 ;; Load `epa-file' for full-file encryption using EasyPG
 (require 'epa-file)
-; (epa-file-enable)
+(epa-file-enable)
 
 ;; Load the ELPA-installed `org' package
 (require 'org)
