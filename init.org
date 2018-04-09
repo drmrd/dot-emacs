@@ -2563,7 +2563,7 @@ For some reason (in Aquamacs only) my configuration files open
 multiple frames as they're being processed. So we close them after
 loading everything. At present, this doesn't seem to work.
 #+BEGIN_SRC emacs-lisp
-  (if (eq system-type 'darwin)
+  (when (eq system-type 'darwin)
     (delete-other-frames))
 #+END_SRC
 ** Disable Debugging
@@ -2574,8 +2574,10 @@ Now that we've loaded all of our config files, disable debugging.
 #+END_SRC
 ** Record when config finishes loading
 Record the time when all config files have finished loading.
+#+SRC_NAME log_when_init_finishes_loading
 #+BEGIN_SRC emacs-lisp
-  (message (concat "Finished loading Emacs configuration at " (format-time-string "%I:%M%p (%S.%3Ns)")))
+  (message "Finished loading Emacs configuration at %s"
+           (format-time-string "%I:%M%p (%S.%3Ns)"))
 #+END_SRC
 
 * Footnotes
