@@ -139,7 +139,7 @@ names with its own name, this generates a reasonably complete list.
 An alist is a list =mylist= of cons cells =(car . cdr)= (in dotted
 pair notation) and atoms. For example:
 
-#+BEGIN_EXAMPLE
+#+BEGIN_EXAMPLE emacs-lisp
   (setq mylist
     '((setting1 . value1)
      (setting2 . value2)
@@ -197,7 +197,7 @@ object, etc.
 Let's say you have a variable named =Paddington=, and you wish to
 replace its value with the string "A Bear Called Paddington". This can
 be achieved as follows:
-#+BEGIN_EXAMPLE
+#+BEGIN_EXAMPLE emacs-lisp
   (setq Paddington "A Bear Called Paddington")
 #+END_EXAMPLE
 Note that quoting is unnecessary here, since =(setq foo bar)= sets the
@@ -207,7 +207,7 @@ Note that quoting is unnecessary here, since =(setq foo bar)= sets the
 Indeed, if you want to get unnecessarily fancy here (and to emphasize
 what the apostrophe is doing) you could execute the following
 equivalent code, too:
-#+BEGIN_EXAMPLE
+#+BEGIN_EXAMPLE emacs-lisp
   (setq Paddington (concat "A Bear Called " (symbol-name 'Paddington)))
 #+END_EXAMPLE
 Note that we can't just use =(concat "A Bear Called " 'Paddington)=
@@ -218,14 +218,14 @@ the emacs documentation for variables and symbols.)
 Suppose you have a list variable named =mylist= and you'd like to add
 the string "A Bear Called Paddington" to it. In conjunction with the
 =add-to-list= function, you can use quoting to achieve this:
-#+BEGIN_EXAMPLE
+#+BEGIN_EXAMPLE emacs-lisp
   (add-to-list 'mylist "A Bear Called Paddington")
 #+END_EXAMPLE
 You can also add the string to the end of this list by setting the first
 optional argument of =add-to-list= to =t= (or anything non-nil).
 *** Add an element to a list
 **** Approach 1: (add-to-list ...)
-#+BEGIN_EXAMPLE
+#+BEGIN_EXAMPLE emacs-lisp
   (add-to-list LIST-VAR ELEMENT &optional APPEND COMPARE-FCN)
 #+END_EXAMPLE
 
@@ -241,7 +241,7 @@ the list is then returned.
 ***** Example 1: Unnamed =LIST-VAR=
 To add 4 to an unnamed list containing 1, 2, and 3.
 
-#+BEGIN_EXAMPLE
+#+BEGIN_EXAMPLE emacs-lisp
   (add-to-list '(1 2 3) 4)
   ; Returns (4 1 2 3)
 
@@ -253,11 +253,11 @@ To add 4 to an unnamed list containing 1, 2, and 3.
 Suppose =mylist= is a variable with value =(3 2 1)=. Then we may
 prepend 4 to =mylist= with the following command:
 
-#+BEGIN_EXAMPLE
+#+BEGIN_EXAMPLE emacs-lisp
   (add-to-list 'mylist 4)
 #+END_EXAMPLE
 **** Approach 2: (cons car cdr)
-#+BEGIN_EXAMPLE
+#+BEGIN_EXAMPLE emacs-lisp
   (setq foo (cons car cdr))
 #+END_EXAMPLE
 =cons= is /the/ list creation function in elisp, and most other
@@ -274,7 +274,7 @@ By definition (in Lisp) a *list* is a series of cons cells =C1=, =C2=,
 and the CDR of =Ck= is =Ck+1=, except for the CDR of =Cn= which is
 =nil= (or =()=, equivalently). If the list object in the CAR of Ck is
 the symbol =eltk= for each =k=, then this looks like the following:
-#+BEGIN_EXAMPLE
+#+BEGIN_EXAMPLE emacs-lisp
   ;; Using cons:
   (cons elt1 (cons elt2 (cons elt3 [...] (cons eltn ()) [...])))
   ;; In dotted pair notation:
@@ -380,7 +380,7 @@ in applying a fixed function to every member of a list then [[help:mapcar][mapca
 what you're looking for.
 **** while + progn == until                            :while:progn:until:
 Given the definitions of while and progn, the code block
-#+BEGIN_EXAMPLE
+#+BEGIN_EXAMPLE emacs-lisp
   (while (progn <sexp1>
                 <sexp2>
                 ...
@@ -413,7 +413,7 @@ practices.
 *** Source Code Layout & Organization
 **** Use spaces for indentation
 **** For regular (that is, non-special[fn:specialfcn]) functions, vertically align function arguments
-#+BEGIN_EXAMPLE
+#+BEGIN_EXAMPLE emacs-lisp
   ;; Good
   (format "%s %d"
           something
@@ -425,7 +425,7 @@ practices.
     something-else)
 #+END_EXAMPLE
 **** If the first argument /is on a new line/, align it with the function's name
-#+BEGIN_EXAMPLE
+#+BEGIN_EXAMPLE emacs-lisp
   ;; Good
   (format
    "%s %d"
@@ -443,7 +443,7 @@ The special argument(s) should be either on the same line as the form
 name or indented by 4 spaces. The non-special arguments should be
 indented by 2 spaces. It should not be aligned like a regular
 function.
-#+BEGIN_EXAMPLE
+#+BEGIN_EXAMPLE emacs-lisp
   ;; Good
   (when (condition)
     (action))
@@ -464,7 +464,7 @@ function.
 ***** Example: =if= forms
 The if-clause (executed when the condition passed to if is non-nil) is
 a special argument, so it is indented by 4 spaces.
-#+BEGIN_EXAMPLE
+#+BEGIN_EXAMPLE emacs-lisp
   ;; Good
   (if (condition)
       (if-clause)
@@ -476,7 +476,7 @@ a special argument, so it is indented by 4 spaces.
     (else-clause))
 #+END_EXAMPLE
 **** Vertically align =let= bindings
-#+BEGIN_EXAMPLE
+#+BEGIN_EXAMPLE emacs-lisp
   ;; Good
   (let ((animalName "elephant")
         (woof "Woof!"))
@@ -492,7 +492,7 @@ a special argument, so it is indented by 4 spaces.
 #+END_EXAMPLE
 **** Always use CRLF (Unix) line endings
 **** Separate text on the "outside" of brackets from the brackets by a space but not on the inside
-#+BEGIN_EXAMPLE
+#+BEGIN_EXAMPLE emacs-lisp
   ;; Good
   (foo (bar baz) qux)
 
@@ -504,7 +504,7 @@ a special argument, so it is indented by 4 spaces.
   ( foo ( bar baz ) qux )
 #+END_EXAMPLE
 **** Place all trailing parentheses on the same line, in contact with the last form
-#+BEGIN_EXAMPLE
+#+BEGIN_EXAMPLE emacs-lisp
   ;; Good
   (when (foo)
     (bar))
@@ -515,7 +515,7 @@ a special argument, so it is indented by 4 spaces.
   )
 #+END_EXAMPLE
 **** With few exceptions, separate top-level forms with an empty line
-#+BEGIN_EXAMPLE
+#+BEGIN_EXAMPLE emacs-lisp
   ;; Good
   (defvar foo ...)
 
@@ -526,7 +526,7 @@ a special argument, so it is indented by 4 spaces.
   (defun bar ...)
 #+END_EXAMPLE
 ***** Exception: When group related definitions together
-#+BEGIN_EXAMPLE
+#+BEGIN_EXAMPLE emacs-lisp
   ;; Good
   (defconst min-rows 10)
   (defconst max-rows 20)
