@@ -600,13 +600,13 @@ changes).
     :version "25.1")
 
   (defcustom drmrd/lib-directory (concat user-emacs-directory "lib/")
-      "The root directory for libraries loaded by `drmrd' configuration files.
+    "The root directory for libraries loaded by `drmrd' configuration files.
 
   This is used, for instance, for convenient loading of library files by
   `drmrd/load-library'."
-      :type '(directory)
-      :group 'drmrd
-      :version "25.1")
+    :type '(directory)
+    :group 'drmrd
+    :version "25.1")
 #+END_SRC
 ** Enable Debugging/Detailed Timestamps
 Enable debugging while loading configuration files. This is disabled
