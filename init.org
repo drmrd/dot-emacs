@@ -2542,12 +2542,21 @@ theme it can be a super subtle but great quality of life improvement.
     :config (volatile-highlights-mode)
     :diminish volatile-highlights-mode)
 #+END_SRC
-* Emacs Server Setup
+* Emacs Server Setup                                     :emacsclient:server:
 #+SRC_NAME start_emacs_server
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (server-start)
+  (require 'server)
+  (unless (server-running-p)
+    ; (setq server-socket-dir (expand-file-name "server" user-emacs-directory))
+    (server-start))
 #+END_SRC
 ** TODO Move server stuff back to .bashrc
+** HOLD Move server stuff back to .profile
+- State "HOLD"       from "TODO"       [2017-05-13 Sat 18:06] \\
+  No longer sure if the =emacs --daemon= approach (and its ilk) are better than
+  just conditionally doing the server start here. If I want to start the server
+  when the OS starts, I should just leave this here and add an =emacs --daemon==
+  call in =.profile= instead.
 * Clean Up
 ** Close Extra Frames in Aquamacs
 For some reason (in Aquamacs only) my configuration files open
