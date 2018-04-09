@@ -404,7 +404,7 @@ break points as described here and, instead, incorporate possible
 break points into the progn test for the outer while loop; what you've
 written in a nest chain of loops as described can usually be flattened
 into a more readable single while loop.
-** Elisp Style Guide                                :NOTE:elisp:Style_Guide:
+** Style Guide                                      :NOTE:elisp:Style_Guide:
 Perhaps the simplest-albeit-complete, community-driven, and sensible
 style guide is bbatsov's [[https://github.com/bbatsov/emacs-lisp-style-guide][Emacs Lisp Style Guide]] on GitHub. I need to
 incorporate these changes into my older code and, ideally, setup
@@ -484,7 +484,6 @@ a special argument, so it is indented by 4 spaces.
     ...)
 
   ;; Bad
-  ;; Good
   (let ((animalName "elephant")
     (woof "Woof!"))
     (body-clause)
