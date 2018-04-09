@@ -2563,7 +2563,6 @@ Now that we've loaded all of our config files, disable debugging.
   (setq debug-on-error nil)
   (setq debug-on-quit nil)
 #+END_SRC
-*** TODO Disable debug-on-error when things are running smoothly
 ** Record when config finishes loading
 Record the time when all config files have finished loading.
 #+BEGIN_SRC emacs-lisp
