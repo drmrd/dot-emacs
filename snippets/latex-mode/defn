@@ -3,7 +3,7 @@
 # key: defn
 # binding: direct-keybinding
 # --
-\begin{defn}$1
+\begin{defn}%$1
     \label{defn:$2}
     $0
 \end{defn}

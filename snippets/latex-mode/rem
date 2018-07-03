@@ -3,7 +3,7 @@
 # key: rem
 # binding: direct-keybinding
 # --
-\begin{rem}$1
+\begin{rem}%$1
     \label{rem:$2}
     $0
 \end{rem}

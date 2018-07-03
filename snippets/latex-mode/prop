@@ -3,7 +3,7 @@
 # key: prop
 # binding: direct-keybinding
 # --
-\begin{prop}$1
+\begin{prop}%$1
     \label{prop:$2}
     $0
 \end{prop}

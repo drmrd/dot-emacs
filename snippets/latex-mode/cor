@@ -3,7 +3,7 @@
 # key: cor
 # binding: direct-keybinding
 # --
-\begin{cor}$1
+\begin{cor}%$1
     \label{cor:$2}
     $0
 \end{cor}

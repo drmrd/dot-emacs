@@ -3,7 +3,7 @@
 # key: lem
 # binding: direct-keybinding
 # --
-\begin{lem}$1
+\begin{lem}%$1
     \label{lem:$2}
     $0
 \end{lem}
