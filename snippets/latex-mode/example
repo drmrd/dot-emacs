@@ -3,7 +3,7 @@
 # key: example
 # binding: direct-keybinding
 # --
-\begin{example}$1
+\begin{example}%$1
     \label{example:$2}
     $0
 \end{example}
