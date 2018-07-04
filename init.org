@@ -655,25 +655,23 @@ etc. are eating up the most startup time.
                 (newline))
             (insert (drmrd/debug/message-time-prefix))))))
 #+END_SRC
-** Load Package Manager and Package-Loader  :use_package:package_management:
-*** Configure =package=
-The following code loads =package= for package management, sets the
-default package repositories, and then initializes =package=.
+** Load Package Manager and Package-Loader :package_management:use_package:quelpa:
+*** +Configure =package=+
++The following code loads =package= for package management, sets the+
++default package repositories, and then initializes =package=.+
 
-Load Package, load all default packages, and link to all standard
-package repositories.
++Load Package, load all default packages, and link to all standard+
++package repositories.+
 
-We first ensure that the Package package for package management
-(that's a mouthful!) has been loaded. Then we call package-initialize,
-which loads all packages specified in the variable
-package-load-list. After loading the default packages, we redefine the
-package-archives list to include ELPA, GNU, MELPA, and Marmalade.
++We first ensure that the Package package for package management+
++(that's a mouthful!) has been loaded. Then we call package-initialize,+
++which loads all packages specified in the variable+
++package-load-list. After loading the default packages, we redefine the+
++package-archives list to include ELPA, GNU, MELPA, and Marmalade.+
 
-*Update:* I now do all of the above in the .emacs (or Preferences.el
- in the case of Aquamacs) file instead, so that I can initialize
- =package= before calling =org= for the first time. This ensures that
- the up-to-date version of =org= from ELPA is used instead of the
- built-in version.
+*Update:* I now do all of the above in [[file:.emacs][~.emacs~]] instead, so that I can
+initialize =package= before calling =org= for the first time. This ensures that
+an up-to-date version of =org= from ELPA is loaded instead of the built-in one.
 *** Bootstrap =use-package=
 Next, we ensure that =use-package= is installed on our system.
 
@@ -683,7 +681,7 @@ putting the following code at the start of our config, which uses
 =eval-when-compile= to load =use-package= only when necessary, further
 reducing load time.
 
-#+SRC_NAME use-package--init
+#+SRC_NAME use-package_bootstrap
 #+BEGIN_SRC emacs-lisp
   ;; Install `use-package' (if not already done)
   (unless (package-installed-p 'use-package)
@@ -699,10 +697,10 @@ reducing load time.
   (require 'bind-key)
 #+END_SRC
 
-We also ensure that all packages loaded through =use-package= are
-automatically installed on the current system.
+We also ensure that all packages we ~use~ through ~use-package~ are downloaded
+and installed by default when no local version is present.
 
-#+SRC_NAME use-package--config
+#+SRC_NAME use-package_configuration
 #+BEGIN_SRC emacs-lisp
   ;; Install packages from a repo that we attempt to load but are not
   ;; present on the system.
