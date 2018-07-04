@@ -961,7 +961,8 @@ Emacs24's built-in custom themes.
 Now we load our current favorite theme. This changes regularly.
 #+SRC_NAME load_a_theme
 #+BEGIN_SRC emacs-lisp
-  (load-theme 'spacemacs-dark t)
+  (message "DRMRD Debug: Loading theme")
+  (load-theme 'sanityinc-tomorrow-day t)
 #+END_SRC
 **** (Obsolete) Using color-theme to load a theme
 (I've kept these notes here for reference, in case I'm stranded on a
