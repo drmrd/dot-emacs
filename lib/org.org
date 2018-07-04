@@ -24,15 +24,25 @@ is just a good fool-proof way to address the problem without too big a
 cost to the structure of my config files.) Some org libraries must be
 loaded prior to tangling [[file:~/.emacs.d/init.org][init.org]] (org-crypt, for instance), and so a
 minimal configuration for these is provided in my [[file:~/.emacs.d/.emacs][.emacs]] file.
-
-* Keybindings                                                   :Keybindings:
+* General Settings & Keybindings                                :Keybindings:
 ** Navigation                                                   :Navigation:
+#+SRC_NAME org-mode/general-settings/navigation
+#+BEGIN_SRC emacs-lisp :tangle yes
+  ; (when (boundp 'spacemacs-version) "yes")
+  (setq org-special-ctrl-a/e t)
+#+END_SRC
+
 ** Editing                                                         :Editing:
-#+SRC_NAME org-mode_keybindings_navigation
+
+#+SRC_NAME org-mode/general-settings/editing
 #+BEGIN_SRC emacs-lisp
+  (setq org-M-RET-may-split-line '((headline) (item) (default . t)))
+
   (define-key org-mode-map (kbd "C-M-<enter>") 'org-insert-subheading)
   (define-key org-mode-map (kbd "C-M-S-<enter>") 'org-insert-todo-subheading)
 #+END_SRC
+
+** TODO Move other generic keybindings here
 * Configure Default Directory, Agenda Directory, and Notes File
 For now the org-agenda-files list simply contains ~/org, but it can
 readily be modified to a list of subdirectories, files, etc. if
