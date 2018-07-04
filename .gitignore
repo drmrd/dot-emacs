@@ -31,3 +31,9 @@ request
 /helm-adaptive-history
 /.mc-lists.el
 /meghanada
+.cache
+/customizations.el
+/projectile.cache
+quelpa
+magithub
+/ido.last
