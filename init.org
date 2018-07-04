@@ -609,8 +609,8 @@ changes).
     :version "25.1")
 #+END_SRC
 ** Enable Debugging/Detailed Timestamps
-Enable debugging while loading configuration files. This is disabled
-later in the config file.
+Enable debugging while loading configuration files. This is disabled later in
+the config file after initialization has finished.
 
 #+BEGIN_SRC emacs-lisp
   (setq debug-on-error t)
