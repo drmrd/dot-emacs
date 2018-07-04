@@ -706,6 +706,73 @@ and installed by default when no local version is present.
   ;; present on the system.
   (setq use-package-always-ensure t)
 #+END_SRC
+*** Bootstrap ~quelpa~, the 'package' manager for source repositories
+[[https://github.com/quelpa/quelpa][~quelpa~]] is a fantastic solution to the problem of installing Emacs list
+libraries from GitHub, EmacsWiki, and other sources that aren't provided the
+conventional package structure required for (or at least aren't mirrored in)
+ELPA, MELPA, etc. Instead, ~quelpa~ clones source repositories and wraps the
+source code in the necessary package syntax automatically. That way the
+installed source code is not only available to the user but also recognized by
+Emacs as providing features, etc.
+
+~quelpa~ can also be used to install other Emacs packages straight
+from source, regardless of whether or not they're packages. For instance,
+~(quelpa 'magit)~ will "will fetch the magit source code from GitHub, build a
+package in the ELPA format, and install it". It can also be called interactively
+to install packages from MELPA recipes and their dependencies.
+
+The package ships with a bootstrapper and encourages allowing it to upgrade
+itself. The following code is their recommended install and auto-upgrade
+logic:
+
+#+SRC_NAME quelpa_bootstrap
+#+BEGIN_SRC emacs-lisp
+  (ignore-errors
+    (if (require 'quelpa nil t)
+        (quelpa-self-upgrade)
+      (with-temp-buffer
+        (url-insert-file-contents "https://raw.github.com/quelpa/quelpa/master/bootstrap.el")
+        (eval-buffer))))
+#+END_SRC
+
+As you can probably guess, replacing the ~if~ with an ~unless~ and removing the
+~(quelpa-self-upgrade)~ call leaves you with just the bootstrapper (if you don't
+trust its self-upgrading functionality). Also, we call ~ignore-errors~ to avoid
+an error being signalled by ~url-insert-file-contents~ when working offline.
+
+We also install ~quelpa-use-package~, which adds a ~:quelpa~ keyword to
+~use-package~, which enables ~use-package~ to install from source, as well.
+
+#+SRC_NAME quelpa-use-package_quelpa_install
+#+BEGIN_SRC emacs-lisp
+  (quelpa
+   '(quelpa-use-package
+     :fetcher github
+     :repo "quelpa/quelpa-use-package"))
+  (require 'quelpa-use-package)
+#+END_SRC
+
+See the [[https://github.com/quelpa/quelpa-use-package][~quelpa-use-package~ repo]] for usage examples and more.
+
+The following macro is [[https://github.com/jwiegley/use-package/issues/471#issuecomment-308503507][due to joewreschnig]] on GitHub and makes using the
+~:quelpa~ keyword with GitHub projects a bit more readable. Note that I've
+swapped the order of the keyword and the ~body~ form found in the original
+version, since conditional keywords in the ~body~ won't work as expected unless
+they occur prior to the ~quelpa~ line.
+
+#+SRC_NAME use-github-package_defmacro
+#+BEGIN_SRC emacs-lisp
+  (defmacro use-github-package (name repo &rest body)
+    "Fetch package NAME from GitHub repository REPO, and use it.
+
+  Any forms appropriate for `use-package' may be passed in BODY."
+    (declare (indent 2))
+    (quelpa-use-package-activate-advice)
+    `(use-package ,name
+       ,@body
+       :quelpa (,name :repo ,repo :fetcher github))
+    (quelpa-use-package-deactivate-advice))
+#+END_SRC
 * Appearance & UI                                             :Appearance:UI:
 ** Clean Up GUI Elements                                 :Toolbar:Scrollbar:
 #+SRC_NAME disable_GUI_elements
