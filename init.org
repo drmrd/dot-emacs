@@ -1002,17 +1002,38 @@ seem to use it while loading multiple frames. This is only an issue on my
 laptop, not at the office, so I'm now testing to see if it's some kind of timing
 issue.
 
-#+SRC_NAME setup_nlinum-mode
+#+SRC_NAME nlinum-mode_use-package
 #+BEGIN_SRC emacs-lisp
-  (use-package nlinum :ensure t)
+  (use-package nlinum :ensure t
+    :config ;; (add-hook 'prog-mode-hook (lambda () (nlinum-mode t)))
+    (if (< emacs-major-version 25)
+        (progn
+          (message "emacs version < 25, will not use nlinum globally,
+        using workaround")
+          ;; nlinum workaround
+          (defun initialize-nlinum (&optional frame)
+            (require 'nlinum)
+            (add-hook 'prog-mode-hook 'nlinum-mode))
+          (when (daemonp)
+            (add-hook 'window-setup-hook 'initialize-nlinum)
+            (defadvice make-frame (around toggle-nlinum-mode compile activate)
+              (nlinum-mode -1) ad-do-it (nlinum-mode 1))))
+      (progn
+        (message "emacs version >= 25, will use nlinum globally")
+        (require 'nlinum)
+        (global-nlinum-mode 1)
+        ;; specify line number format
+        (unless window-system
+          (setq nlinum-format "%d "))))
+    :bind (("C-c t l" . nlinum-mode)))
 
-  (defun initialize-nlinum (&optional frame)
-         (require 'nlinum)
-         (add-hook 'prog-mode-hook 'nlinum-mode))
+    ;; (defun initialize-nlinum (&optional frame)
+    ;;        (require 'nlinum)
+    ;;        (add-hook 'prog-mode-hook 'nlinum-mode))
 
-  (add-hook 'window-setup-hook 'initialize-nlinum)
-  (defadvice make-frame (around toggle-nlinum-mode compile activate)
-             (nlinum-mode -1) ad-do-it (nlinum-mode 1))
+    ;; (add-hook 'window-setup-hook 'initialize-nlinum)
+    ;; (defadvice make-frame (around toggle-nlinum-mode compile activate)
+    ;;            (nlinum-mode -1) ad-do-it (nlinum-mode 1))
 #+END_SRC
 ** Highlight the Current Line                      :hlline:LineHighlighting:
 Highlights the current line in every buffer by default
