@@ -3140,6 +3140,16 @@ pull. [Tab] is also a nice key.
         (setq vc-handled-backends (delq 'Git vc-handled-backends))
     :bind ("C-x g" . magit-status))
 #+END_SRC
+
+We also install the ~magit-gh-pulls~ magit extension for managing and creating
+GitHub pull requests.
+
+#+SRC_NAME magit-gh-pulls_use-package
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package magithub :ensure t
+    :after magit
+    :config (magithub-feature-autoinject t))
+#+END_SRC
 ** mu4e
 An actively developed and feature-full email client in Emacs. See the wonderful
 [[http://www.djcbsoftware.nl/code/mu/mu4e/index.html#SEC_Contents][manual]] for all your basic installation and configuration needs.
