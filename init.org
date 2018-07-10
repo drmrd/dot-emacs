@@ -1413,6 +1413,57 @@ programmatically.
             (user-error "%s" "This buffer isn't visiting a file or directory"))
           (drmrd/sudo-find-alternate-file file position)))))
 #+END_SRC
+** Window Splitting
+Most modes will use the function [[help:split-window-preferred-function][split-window-preferred-function]] points to
+splitting the current window.  This function is set to [[help:split-window-sensibly][split-window-sensibly]] by
+default, which is biased towards splitting the window "vertically", which in
+Emacs means splitting the window into two windows one on top of the other (/not/
+split them along a vertical line).  This behavior is mostly controlled (for
+~split-window-sensible~ at least) by the variables [[help:split-width-threshold][split-width-threshold]] and
+[[help:split-height-threshold][split-height-threshold]], and we lower the former to increase the likelihood of
+windows splitting horizontally.
+
+#+SRC_NAME window-splitting
+#+BEGIN_SRC emacs-lisp :tangle no
+  (setq split-width-threshold 1)
+  (setq split-height-threshold 1200)
+
+  (defun my-split-window-sensibly (&optional window)
+      "Replacement `split-window-sensibly' function which prefers horizontal splits"
+      (interactive)
+      (let ((window (or window (selected-window))))
+          (or (and (window-splittable-p window t)
+                   (with-selected-window window
+                       (split-window-right)))
+              (and (window-splittable-p window)
+                   (with-selected-window window
+                       (split-window-below))))))
+
+  (setq split-window-preferred-function #'my-split-window-sensibly)
+
+
+
+  ;; (setq pop-up-windows t)
+
+  (defun my-display-buffer-function (buf not-this-window)
+    (if (and (not pop-up-frames)
+             (one-window-p)
+             (or not-this-window
+                 (not (eq (window-buffer (selected-window)) buf)))
+             (> (frame-width) 162))
+        (split-window-horizontally))
+    ;; Note: Some modules sets `pop-up-windows' to t before calling
+    ;; `display-buffer' -- Why, oh, why!
+    (let ((display-buffer-function nil)
+          (pop-up-windows nil))
+      (display-buffer buf not-this-window)))
+
+  (setq display-buffer-function 'my-display-buffer-function)
+#+END_SRC
+
+Finer-grained control over window splitting can be accomplished by changing the
+value of ~split-window-preferred-function~ to a custom function.
+
 * Search                                                             :Search:
 ** Enable Scrolling in isearch               :isearch:Highlighting:Scrolling:
 This allows you to scroll with your mouse in a buffer with an active =isearch=,
