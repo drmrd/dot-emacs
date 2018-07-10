@@ -205,7 +205,7 @@ via =apt-get=.
 
 This code is a modified form of that posted by user @scaramouche in [[http://emacs.stackexchange.com/a/5821/8643][this answer]]
 to a question on Emacs.SE and @holocronweaver's comment in response.
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (require 'appt)
   (appt-activate t)
 
