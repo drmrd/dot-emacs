@@ -1627,8 +1627,10 @@ the world. You should always avoid storing access tokens in a public place.
 #+END_SRC
 ** Default Keybinding Replacements                              :Keybindings:
 #+BEGIN_SRC emacs-lisp
-  (global-set-key (kbd "M-/") 'hippie-expand)
-  (global-set-key (kbd "M-z") 'zap-up-to-char)
+  (bind-key "M-/" 'hippie-expand)
+  (bind-key "M-S-z" 'zap-up-to-char)
+
+  (bind-key "M-!" 'eshell-command)
 
   (setq select-enable-clipboard             t
         select-enable-primary               t
