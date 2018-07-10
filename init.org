@@ -2284,11 +2284,10 @@ See [[https://github.com/rmuslimov/jenkins.el][this GitHub repo]].
     :mode ("\\(Jenkinsfile\\|\\.\\(groovy\\|gradle\\)\\)$" . groovy-mode))
 #+END_SRC
 ** TODO Spock                                                        :Spock:
-** Grails                                                           :Grails:
-#+SRC_NAME grails_setup
+** Grails                                                :Grails:Projectile:
+#+SRC_NAME grails-projectile-mode_use-package
 #+BEGIN_SRC emacs-lisp
   (use-package grails-projectile-mode
-    :init      (grails-projectile-global-mode t)
     :diminish  grails-projectile-mode)
 #+END_SRC
 ** XML                                                            :XML:Lang:
@@ -2373,6 +2372,12 @@ that =.zsh= files are a thing
 #+SRC_NAME jinja2-mode_use-package
 #+BEGIN_SRC emacs-lisp
   (use-package jinja2-mode :ensure t)
+#+END_SRC
+** Clojure                                                   :Clojure:CIDER:
+#+SRC_NAME clojure-mode_use-package
+#+BEGIN_SRC emacs-lisp
+  (use-package clojure-mode :ensure t)
+  (use-package cider :ensure t)
 #+END_SRC
 * Misc. Packages                                                   :Packages:
 The following list comprises all of the packages that (a) are loaded by default
