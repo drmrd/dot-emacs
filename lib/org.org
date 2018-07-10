@@ -47,46 +47,7 @@ minimal configuration for these is provided in my [[file:~/.emacs.d/.emacs][.ema
 For now the org-agenda-files list simply contains ~/org, but it can
 readily be modified to a list of subdirectories, files, etc. if
 necessary.
-#+BEGIN_SRC emacs-lisp
-  (setq org-directory "~/org")
 #+END_SRC
-* Hyperlinks
-** Custom Hyperlinks
-#+SRCNAME org_custom_hyperlink_names
-#+BEGIN_SRC emacs-lisp
-  ;;; Create custom hyperlink prefixes for org-mode. For any prefix
-  ;;; `foo' defined in this list, writing (in any org file)
-  ;;;     [[foo:suffix][description]]
-  ;;; will display a link in org with text `description' and pointing to
-  ;;; the expansion of `foo' in this list, with the following
-  ;;; replacement rules:
-  ;;;
-  ;;;     - If the expansion text is a string without any of the
-  ;;;       items listed in the next three bullets as substrings, simply
-  ;;;       insert the contatenation of this replacement string and
-  ;;;       `suffix'.
-  ;;;     - "%s" is replaced by `suffix'
-  ;;;     - "%h" is replaced by `suffix' converted into a url-encoded
-  ;;;            string using the `url-hexify-string' function
-  ;;;     - "%(some-function)" is replaced by the output of
-  ;;;            `some-function'. It is assumed that `some-function'
-  ;;;            takes a single argument (which will be `suffix' here)
-  ;;;            as input and outputs a string.
-  ;;;     - The expansion of `foo' can also be a function (instead of a
-  ;;;       string), which is assumed to be of the same form (in terms
-  ;;;       of inputs and outputs) as `some-function' in the previous
-  ;;;       bullet.
-  ;;;
-  ;;; See the description of this variable for more info.
-  (setq org-link-abbrev-alist
-        '(("google" . "http://www.google.com/search?q=")
-          ("map"    . "http://maps.google.com/maps?q=%s")
-          ("wiki"   . "https://en.wikipedia.org/wiki/%s")))
-#+END_SRC
-*** TODO Test these further and improve with %(some-function) calls
-For instance, check to see if I need to change the "wiki" linkkey's
-expansion to either %h or something like %(drmrd/spaces-to-underlines)
-to ensure that Wikipedia links are working as expected.
 * Task Management (TODO Keywords, Tags, etc.)
 ** Settings for TODOs
 *** Set the TODO keywords
