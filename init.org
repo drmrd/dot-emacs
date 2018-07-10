@@ -1535,9 +1535,62 @@ preserving highlighting and the location of the current match.
 #+BEGIN_SRC emacs-lisp
   (setq isearch-allow-scroll t)
 #+END_SRC
+** Swap roles of C-s and C-M-s, C-r and C-M-r (i.e., regex search by default) :RegEx:Keybindings:
+I search via regular expressions frequently, so it only makes sense to make this
+the default search method.
+#+SRC_NAME prefer_searching_via_regex
 #+BEGIN_SRC emacs-lisp
+  (bind-key "C-s" 'isearch-forward-regexp)
+  (bind-key "C-M-s" 'isearch-forward)
+
+  (bind-key "C-r" 'isearch-backward-regexp)
+  (bind-key "C-M-r" 'isearch-backward)
+#+END_SRC
+** Proximity search (=NEAR= & =AROUND= search operators) :ProximitySearch:AROUND:
+Many library/prose-oriented search tools (including Google) make it straight
+forward to identify occurrences of two or more phrases in close proximity to one
+another. In Google's case, for instance, you can write
+
+#+SRC_NAME AROUND_operator
+#+BEGIN_EXAMPLE
+  foo AROUND(20) bar
+#+END_EXAMPLE
+
+to find webpages containing =foo= and =bar= within 20 words of one another.
+
+The same functionality can be approximated in isearch, swoop, etc. using regular
+expressions like
+
+#+SRC_NAME AROUND_regex
+#+BEGIN_EXAMPLE
+  \<foo\>\W\(\w+\W+\)\{,20\}\<bar\>\|\<bar\>\W\(\w+\W+\)\{,20\}\<foo\>
+#+END_EXAMPLE
+
+but this isn't exactly convenient to type out in the middle of another task. So
+we provide a couple functions for it!
+
+#+SRC_NAME proximity_search_functions
+#+BEGIN_SRC emacs-lisp
+  (defun proximity-search ()
+    "Find all occurrences of two words at most a given number of words apart."
+    ;; TODO: Update to support arbitrary numbers of words. That algorithm is much
+    ;; more interesting!
+    (interactive)
+    (let ((word1 (read-string "First word:"))
+          (word2 (read-string "Second word:"))
+          (word-distance (read-number "Distance:" 1)))
+      (occur (concat "\\<"
+                     word1 "\\>\\(\\W\\<\\w+\\>\\)\\{,"
+                     (number-to-string word-distance) "\\}\\W+\\<" word2 "\\>\\|\\<"
+                     word2 "\\>\\(\\W+\\<\\w+\\>\\)\\{,"
+                     (number-to-string word-distance) "\\}\\W+\\<" word1 "\\>"))))
+
+  (defalias 'proximity-word-search 'proximity-search)
+  (defalias 'near-search 'proximity-search)
+  (defalias 'near-word-search 'proximity-search)
 #+END_SRC
 
+Reference: https://www.emacswiki.org/emacs/SearchNear
 * General Settings
 ** Personal Information                                           :Personal:
 *** Name & Email Address                           :Name:Email:ContactInfo:
