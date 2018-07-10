@@ -152,7 +152,9 @@ As was the case in [[file:~/.emacs.d/init.org::*Enable%20"Advanced"%20Commands][
 non-beginner-friendly AucTeX commands that I use regularly.
 #+SRC_NAME latex-mode_re-enable_advanced_commands
 #+BEGIN_SRC emacs-lisp
-  (put 'LaTeX-narrow-to-environment 'disabled nil)
+  (cl-dolist (disabled-function '(TeX-narrow-to-group
+                                  LaTeX-narrow-to-environment))
+    (put disabled-function 'disabled nil))
 #+END_SRC
 * Editor Features
 ** Code Folding
