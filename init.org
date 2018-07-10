@@ -2358,6 +2358,11 @@ that =.zsh= files are a thing
   (use-package apiwrap :ensure t)
 #+END_SRC
 *** TODO Determine if this deserves its own top-level header (or is better placed elsewhere)
+** Dockerfiles                                           :Docker:Dockerfile:
+#+SRC_NAME dockerfile-mode_use-package
+#+BEGIN_SRC emacs-lisp
+  (use-package dockerfile-mode :ensure t)
+#+END_SRC
 ** Terraform                                           :Terraform:Hashicorp:
 #+SRC_NAME terraform-mode_use-package
 #+BEGIN_SRC emacs-lisp
