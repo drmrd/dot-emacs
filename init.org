@@ -3082,10 +3082,10 @@ pull. [Tab] is also a nice key.
           ;; than the rest of the current hunk. Set to 'all to do this in all
           ;; hunks instead (or nil to disable this).
           (setq magit-diff-refine-hunk t)
-          ;; Enable commit style convention checking with recommended defaults
+          ;; Enable commit style convention checking with recommended defaults.
           (setq git-commit-style-convention-checks '(non-empty-second-line
                                                      overlong-summary-line)
-                git-commit-summary-max-length 52
+                git-commit-summary-max-length 50
                 git-commit-fill-column 72)
 
   ;;         ;; TODO: This function needs to be fixed to work with the most
