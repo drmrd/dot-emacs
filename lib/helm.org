@@ -17,9 +17,6 @@
       :diminish helm-mode
       :init
         (require 'helm-config)
-
-        ;; (use-package ace-jump-helm-line :ensure t)
-        (use-package helm-bibtex :ensure t)
         ;; (use-package helm-c-yasnippet :ensure t)
         ;; (use-package helm-clojuredocs :ensure t)
         ;; (use-package helm-company :ensure t)
