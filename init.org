@@ -3088,21 +3088,25 @@ to do a git pull. [Tab] is also a nice key.
                                                      overlong-summary-line)
                 git-commit-summary-max-length 52
                 git-commit-fill-column 72)
-          ;; TODO: (2017-06-03) Adjust this experimental function as needed.
-          (defun drmrd/magit/change-section-visibility-defaults(section)
-            "Tweak which sections are collapsed by default in magit buffers.
 
-  Use this function by adding it to `magit-section-set-visibility-hook'."
-            (let ((section-type (magit-section-type section))
-                  (section-value (magit-section-value section)))
-              (when (or (and (memq section-type '(unpulled unpushed))
-                             (string-match-p "@{upstream}" section-value))
-                        (and (eq section-type 'stashes)
-                             (string-match-p "refs/stash" section-value)))
-                'hide)))
+  ;;         ;; TODO: This function needs to be fixed to work with the most
+  ;;         ;;       recent magit versions
+  ;;         ;; TODO: (2017-06-03) Adjust this experimental function as needed.
+  ;;         (defun drmrd/magit/change-section-visibility-defaults(section)
+  ;;           "Tweak which sections are collapsed by default in magit buffers.
+  ;;
+  ;; Use this function by adding it to `magit-section-set-visibility-hook'."
+  ;;           (let ((section-type (magit-section-type section))
+  ;;                 (section-value (magit-section-value section)))
+  ;;             (when (or (and (memq section-type '(unpulled unpushed))
+  ;;                            (string-match-p "@{upstream}" section-value))
+  ;;                       (and (eq section-type 'stashes)
+  ;;                            (string-match-p "refs/stash" section-value)))
+  ;;               'hide)))
+  ;;
+  ;;         (add-hook 'magit-section-set-visibility-hook
+  ;;                   'drmrd/magit/change-section-visibility-defaults)
 
-          (add-hook 'magit-section-set-visibility-hook
-                    'drmrd/magit/change-section-visibility-defaults)
           ;; TODO: (2017-05-29) Create a drmrd/git-repository-locations custom
           ;; variable that uses some kind of drmrd/setq-list-with-secrets function
           ;; to generate a list of local and remote repos. This should somehow
@@ -3115,13 +3119,18 @@ to do a git pull. [Tab] is also a nice key.
           ;; be taken to ensure that repos are only listed from machines I own,
           ;; though.)
     :config ;; Disable magit-auto-revert-mode
-            (magit-auto-revert-mode -1)
             ;; Enable pushing to origin HEAD:refs/for/develop (for use with Gerrit)
             ;; by hitting 'R' in magit's push popup.
             (magit-define-popup-action 'magit-push-popup
               ?R "refspecs to origin HEAD:refs/for/develop"
               '(lambda () (interactive)
                  (magit-push-refspecs "origin" "HEAD:refs/for/develop" nil)))
+        (setq magit-restore-window-configuration t) ; that's the default actually
+        (setq magit-status-buffer-switch-function
+              (lambda (buffer) ; there might already be an Emacs function which does this
+                (pop-to-buffer buffer)
+                (delete-other-windows)))
+                (magit-auto-revert-mode -1)
         ;; Prevent the built-in VC package from doing work in the background by
         ;; disabling it in Git repositories.
         (setq vc-handled-backends (delq 'Git vc-handled-backends))
