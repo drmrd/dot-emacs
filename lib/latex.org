@@ -155,13 +155,6 @@ non-beginner-friendly AucTeX commands that I use regularly.
   (put 'LaTeX-narrow-to-environment 'disabled nil)
 #+END_SRC
 * Editor Features
-** Line Numbers
-Display line numbers using [[help:nlinum-mode][=nlinum-mode=]].
-#+SRC_NAME latex-mode-hook_add_nlinum-mode
-#+BEGIN_SRC emacs-lisp
-  (dolist (hook '(TeX-mode-hook LaTeX-mode-hook))
-      (add-hook hook #'nlinum-mode))
-#+END_SRC
 ** Code Folding
 Enabling [[help:outline-minor-mode][=outline-minor-mode=]] allows us to fold sections/environments akin to
 the way we do so in Org Mode.
