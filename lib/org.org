@@ -536,7 +536,7 @@ indenting the code in a way that's appropriate for each block's language.
 #+END_SRC
 * Load Minor Modes
 ** Auto Fill Mode
-auto-fill-mode works beautifully in Org files, and we enable it
+=auto-fill-mode= works beautifully in Org files, and we enable it
 accordingly.
 #+BEGIN_SRC emacs-lisp
   (add-hook 'org-mode-hook 'auto-fill-mode)
