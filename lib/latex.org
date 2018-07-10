@@ -535,10 +535,25 @@ Note the "Polish-style" use of =|= as a /prefix/ to the alternatives ={= and
 =\=. I missed this when first reading the documentation.
 
 #+NAME setup_font-latex-user-keyword-classes
+#+BEGIN_SRC emacs-lisp :tangle no
+  (with-eval-after-load "font-latex"
+    (setq font-latex-user-keyword-classes
+          '(("idxdefs"
+             (("idxdef" "[{")
+              ("NewIndexableMathObject" "{{{{{{"))
+             bold command))))
+#+END_SRC
+
+#+SRC_NAME font-latex-match-reference-keywords_configuration
 #+BEGIN_SRC emacs-lisp
-  (setq font-latex-user-keyword-classes
-        '(("idxdefs"  (("idxdef" "[{")
-                       ("NewIndexableMathObject" "{{{{{{")) bold command)))
+  (setq font-latex-match-reference-keywords
+        '(("indexed" "[{")
+          ("autocites" "[[{[[{[[{[[{[[{[[{")
+          ("autocites" "[[{[[{[[{[[{[[{")
+          ("autocites" "[[{[[{[[{[[{")
+          ("autocites" "[[{[[{[[{")
+          ("autocites" "[[{[[{")
+          ("compoundcref" "{{")))
 #+END_SRC
 * TODO Improving Help Commands
 Wouldn't it be amazing if there was a =describe-latex-macro= command
