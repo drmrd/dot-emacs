@@ -2526,6 +2526,27 @@ problems encountered between GnuTLS and Emacs.
 #+BEGIN_SRC emacs-lisp
   (setq gnutls-log-level 1)
 #+END_SRC
+** guide-key                                :learning:guide_key:keybindings:
+[[https://github.com/kai2nenobu/guide-key][guide-key mode]] displays Magit-like popup menus displaying all suffixes bound to
+commands after a given key prefix has been pressed. This is great for learning
+new keybindings.
+#+SRC_NAME guide-key_use-package_and_config
+#+BEGIN_SRC emacs-lisp
+  (defun drmrd/guide-key/hook-for-org-mode ()
+    (guide-key/add-local-guide-key-sequence "C-c")
+    (guide-key/add-local-guide-key-sequence "C-c C-x")
+    (guide-key/add-local-highlight-command-regexp "org-"))
+
+  (use-package guide-key
+    :config (setq guide-key/guide-key-sequence '("C-x r" "C-x 4")
+                  guide-key/recursive-key-sequence-flag t
+                  guide-key/highlight-command-regexp
+                  '(("rectangle" . "hot pink")
+                    ("register"  . "light green")
+                    ("bookmark"  . "cyan")))
+            (add-hook 'org-mode-hook 'drmrd/guide-key/hook-for-org-mode)
+    :init (guide-key-mode 1))
+#+END_SRC
 ** hydra                                       :hydra:Keybindings:Libraries:
 Groups of keybindings/registers on steroids
 
