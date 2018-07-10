@@ -492,3 +492,10 @@ entire block start or end tag. Better still, we can create our own!
                  ("\\subsection\{%s\}" . "\\subsection*\{%s\}")
                  ("\\subsubsection\{%s\}" . "\\subsubsection*\{%s\}")))
 #+END_EXAMPLE
+* Org Ref
+#+SRC_NAME org-ref_use-package
+#+BEGIN_SRC emacs-lisp
+  (use-package org-ref :ensure t
+    :init (setq org-ref-default-bibliography reftex-default-bibliography
+                bibtex-completion-bibliography reftex-default-bibliography))
+#+END_SRC
