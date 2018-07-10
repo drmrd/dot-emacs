@@ -2520,8 +2520,8 @@ provided by the package.
 #+BEGIN_SRC emacs-lisp :tangle no
   (use-package auto-yasnippet
     :bind
-      ("H-w" . aya-create)
-      ("H-y" . aya-expand))
+      (("H-w" . aya-create)
+       ("H-y" . aya-expand)))
 #+END_SRC
 **** *Update (2016-05-04):* Disable auto-yasnippet
 I've disabled this package since I have yet to actually use
