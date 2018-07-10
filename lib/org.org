@@ -500,6 +500,7 @@ want which behavior, but here's a start.
   (setq-default org-catch-invisible-edits 'smart)
 #+END_SRC
 * Org Babel: Set Default Header Arguments
+** Set default header arguments
 The global defaults for how code-blocks are evaluated in org-mode are
 stored in *=org-babel-default-header-args=*. Change the default
 setting for code-block evaluation, so that the results of evaluation
@@ -508,6 +509,15 @@ are not displayed in a new element.
   (setq-default org-babel-default-header-args
     (cons '(:results . "silent")
           (assq-delete-all :results org-babel-default-header-args)))
+#+END_SRC
+** Load extra languages
+#+BEGIN_SRC emacs-lisp
+  (with-eval-after-load 'org
+    ; (setq geiser-default-implementation 'mit)
+    (org-babel-do-load-languages
+     'org-babel-load-languages
+     '((scheme . t)
+       (python . t))))
 #+END_SRC
 * Ensure that syntax highlighting is enabled while in Org Mode
 #+BEGIN_SRC emacs-lisp
