@@ -2122,7 +2122,7 @@ is especially useful when working with regular expressions.
                         (kill-new (buffer-substring (point-min) (point-max))))
       (message "Regexp copied to kill-ring")))
 #+END_SRC
-** kill-auto-fill-mode: Disable auto-fill-mode (use as a hook)
+** kill-auto-fill-mode: Disable auto-fill-mode (use as a hook) :Aquamacs:macOS:
 #+BEGIN_SRC emacs-lisp
   (defun kill-auto-fill-mode ()
          "Disables auto-fill-mode when used as a hook"
@@ -2133,7 +2133,7 @@ is especially useful when working with regular expressions.
          (when (eq system-type 'darwin)
            (remove-hook 'text-mode-hook 'auto-detect-wrap)))
 #+END_SRC
-** kill-aquamacs-autoface-mode: Disable aquamacs-autoface-mode (use as a hook)
+** kill-aquamacs-autoface-mode: Disable aquamacs-autoface-mode (use as a hook) :Aquamacs:macOS:
 #+BEGIN_SRC emacs-lisp
   (defun kill-aquamacs-autoface-mode ()
     "Disables Aquamacs's built-in `aquamacs-autoface-mode' when used as a hook."
