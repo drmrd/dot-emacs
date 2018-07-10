@@ -1302,30 +1302,6 @@ way Ido Mode does for buffers and files.
       ("C-x C-r" . recentf-open-files))
 #+END_SRC
 
-** Bookmarks                            :bookmarks:Bookmarks:FileNavigation:
-Bookmarks are supported by default in recent versions of Emacs, but
-there are possible enhancement packages, notably =bookmarks+=, that we
-should consider using.
-*** Keybindings
-All of the following keybindings are defaults.
-
-|------------+-----------------------+---------------------------------|
-| Keybinding | Command Name          | Description                     |
-|------------+-----------------------+---------------------------------|
-| C-x r m    | =bookmark-set=        | Create a new bookmark to the    |
-|            |                       | current location in a file      |
-|            |                       | buffer and prompt the user for  |
-|            |                       | its name.                       |
-|------------+-----------------------+---------------------------------|
-| C-x r b    | =bookmark-jump=       | Prompt the user for the name of |
-|            |                       | another bookmark and open it in |
-|            |                       | this buffer.                    |
-|------------+-----------------------+---------------------------------|
-| C-x r l    | =bookmark-bmenu-list= | Display a list of existing      |
-|            |                       | bookmarks in a buffer entitled  |
-|            |                       | *Bookmark List*.                |
-|------------+-----------------------+---------------------------------|
-
 ** TODO Dired+: Extensions to Dired               :diredplus:FileNavigation:
 ** ace-window: Easy Window Navigation with M-p :acewindow:WindowNavigation:Frames:Windows:
 The ace-window package makes switching between more than two windows
