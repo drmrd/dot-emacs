@@ -1050,12 +1050,23 @@ Highlights the current line in every buffer by default
 Displays a minimalist indicator in the fringe (side margin) of changes made to
 the current file since the last commit. After seeing this in Sublime Text and
 IntelliJ IDEA I'm hooked. It's amazingly useful without getting in the way.
-#+SRC_NAME enable_git-gutter-fringe
+
+=git-gutter-fringe= is based on its sibling mode =git-gutter=, which instead
+displays diff information in the gutter of each line
+buffers. Both are developed by syohex on GitHub:
+
+  - [[github:syohex/emacs-git-gutter][git-gutter]]
+  - [[github:syohex/emacs-git-gutter-fringe][git-gutter-fringe]]
+
+#+SRC_NAME git-gutter-fringe_use-package
 #+BEGIN_SRC emacs-lisp
   (use-package git-gutter-fringe
       ;; Move fringe to the right margin
       :init (setq git-gutter-fr:side 'right-fringe)
-      :config (global-git-gutter-mode t)
+      :config
+      (progn
+        (global-git-gutter-mode t)
+        (git-gutter:linum-setup))
       :ensure t
       :diminish t)
 #+END_SRC
