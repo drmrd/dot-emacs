@@ -3085,6 +3085,21 @@ to do a git pull. [Tab] is also a nice key.
                                                      overlong-summary-line)
                 git-commit-summary-max-length 52
                 git-commit-fill-column 72)
+          ;; TODO: (2017-06-03) Adjust this experimental function as needed.
+          (defun drmrd/magit/change-section-visibility-defaults(section)
+            "Tweak which sections are collapsed by default in magit buffers.
+
+  Use this function by adding it to `magit-section-set-visibility-hook'."
+            (let ((section-type (magit-section-type section))
+                  (section-value (magit-section-value section)))
+              (when (or (and (memq section-type '(unpulled unpushed))
+                             (string-match-p "@{upstream}" section-value))
+                        (and (eq section-type 'stashes)
+                             (string-match-p "refs/stash" section-value)))
+                'hide)))
+
+          (add-hook 'magit-section-set-visibility-hook
+                    'drmrd/magit/change-section-visibility-defaults)
     :config ;; Disable magit-auto-revert-mode
             (magit-auto-revert-mode -1)
             ;; Enable all of magit's WIP modes
