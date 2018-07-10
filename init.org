@@ -1106,7 +1106,7 @@ error notifications altogether, like I've done below.
 #+END_SRC
 * Navigation & Window Management                                 :Navigation:
 ** ace-jump: Quickly move around in a buffer      :ace_jump:BufferNavigation:
-#+SRC_NAME load_ace-jump
+#+SRC_NAME ace-jump_use-package
 #+BEGIN_SRC emacs-lisp
   (use-package ace-jump-mode
     :ensure t
