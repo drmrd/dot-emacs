@@ -279,6 +279,7 @@ but these should suffice for now.)  A task may be started with the "C-c C-c"
 command in this mode, which will make org-capture start monitoring time spent on
 the given task.
 
+#+SRC_NAME keybinding_global_org-capture
 #+BEGIN_SRC emacs-lisp
   (global-set-key (kbd "C-c c") 'org-capture)
 #+END_SRC
