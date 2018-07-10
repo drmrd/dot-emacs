@@ -1681,7 +1681,7 @@ end of the .emacs file.
 #+BEGIN_SRC emacs-lisp
   (add-to-list 'load-path "~/elisp")
 #+END_SRC
-** Bind Settings Files to Registers
+** Bind Settings Files to Registers                            :Keybindings:
 Bind init.org, .emacs.d/lib/latex.org, and Preferences.el to the
 registers "e", "l", and "p" (resp.) so that they can be opened easily with
 "C-x r j <register>".
