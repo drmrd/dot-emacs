@@ -2241,7 +2241,13 @@ say about them.
            (shell-command "uuidgen" t))
 #+END_SRC
 *** TODO Throw an error if not on Linux
-* TODO Programming Languages                                           :Lang:
+* Programming Languages                                                :Lang:
+** Ansible                                                         :Ansible:
+#+SRC_NAME configure_ansible_packages
+#+BEGIN_SRC emacs-lisp
+  (use-package ansible :ensure t)
+  (use-package ansible-vault :ensure t)
+#+END_SRC
 ** TODO Jenkins                                                    :Jenkins:
 *** TODO Consider using this Jenkins plugin for monitoring /within/ Emacs
 See [[https://github.com/rmuslimov/jenkins.el][this GitHub repo]].
