@@ -238,26 +238,46 @@ but things that are not compiled by LaTeX (comments)), and I'm dead
 set on trying this out. Frankly, I can't believe I hadn't thought of
 this myself!
 #+BEGIN_SRC emacs-lisp
-  ;; extra outline headers
+  ;; Extra outline headers
   (setq TeX-outline-extra
-        '(("^\\s-*%chapter" 1)
+        '(
+          ;; Fake preamble headers
+          ("^\\s-*%meta" 1) ; for code sections (e.g., Local Variables)
+          ("^\\s-*%psection" 2)
+          ("^\\s-*%psubsection" 3)
+
+          ;; Fake body headers
+          ("^\\s-*%chapter" 1)
           ("^\\s-*%section" 2)
           ("^\\s-*%subsection" 3)
           ("^\\s-*%subsubsection" 4)
           ("^\\s-*%paragraph" 5)
           ("^\\s-*%proof" 5)))
 
-  ;; add font locking to the headers
-  (font-lock-add-keywords
-   'latex-mode
-   '(("^%\\(chapter\\|\\(sub\\|subsub\\)?section\\|paragraph\\|proof\\)"
-      0 'font-lock-keyword-face t)
-     ("^\\s-*%chapter{\\(.*\\)}"       1 'font-latex-sectioning-1-face t)
-     ("^\\s-*%section{\\(.*\\)}"       1 'font-latex-sectioning-2-face t)
-     ("^\\s-*%subsection{\\(.*\\)}"    1 'font-latex-sectioning-3-face t)
-     ("^\\s-*%subsubsection{\\(.*\\)}" 1 'font-latex-sectioning-4-face t)
-     ("^\\s-*%paragraph{\\(.*\\)}"     1 'font-latex-sectioning-5-face t)
-     ("^\\s-*%proof{\\(.*\\)}"         1 'font-latex-sectioning-5-face t)))
+  (add-hook 'LaTeX-mode-hook
+            (lambda ()
+              ;; Add font locking to the fake preamble headers
+              (font-lock-add-keywords
+               'latex-mode
+               '(("^\\s-*\\(%\\(meta\\|psection\\|psubsection\\)\\)"
+                  1 'font-lock-keyword-face t)
+                 ("^\\s-*%meta{\\(.*\\)}" 'font-latex-sectioning-1-face t)
+                 ("^\\s-*%psection{\\(.*\\)}" 'font-latex-sectioning-2-face t)
+                 ("^\\s-*%psubsection{\\(.*\\)}" 'font-latex-sectioning-3-face t)))
+
+              ;; Add font locking to the fake headers
+              (font-lock-add-keywords
+               'latex-mode
+               '(("^\\s-*\\(%\\(chapter\\|\\(\\(sub\\)\\{0,4\\}\\)?section\\|paragraph\\|proof\\)\\)"
+                  1 'font-lock-keyword-face t)
+
+                 ("^\\s-*%chapter{\\(.*\\)}"       1 'font-latex-sectioning-1-face t)
+                 ("^\\s-*%section{\\(.*\\)}"       1 'font-latex-sectioning-2-face t)
+                 ("^\\s-*%subsection{\\(.*\\)}"    1 'font-latex-sectioning-3-face t)
+                 ("^\\s-*%subsubsection{\\(.*\\)}" 1 'font-latex-sectioning-4-face t)
+                 ("^\\s-*%subsubsubsection{\\(.*\\)}" 1 'font-latex-sectioning-4-face t)
+                 ("^\\s-*%paragraph{\\(.*\\)}"     1 'font-latex-sectioning-5-face t)
+                 ("^\\s-*%proof{\\(.*\\)}"         1 'font-latex-sectioning-5-face t)))))
 #+END_SRC
 **** TODO Consider expanding on this
 For instance, we could add support for TODO comments that appear like
