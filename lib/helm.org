@@ -162,8 +162,10 @@
              :map helm-command-map
                   ("C-c h" . helm-execute-persistent-action)
              :map helm-map
-                  ("<tab>" . helm-execute-persistent-action) ; rebind tab to run persistent action
-                  ("C-i"   . helm-execute-persistent-action) ; make TAB work in terminal
-                  ("C-z"   . helm-select-action))            ; list actions using C-z
-  )
+                  ;; rebind tab to run persistent action
+                  ("<tab>" . helm-execute-persistent-action)
+                  ;; Also rebind <tab> in terminals (i.e., the cryptic "C-i") to do the same
+                  ("C-i"   . helm-execute-persistent-action)
+                  ;; List actions using C-z
+                  ("C-z"   . helm-select-action)))
 #+END_SRC
