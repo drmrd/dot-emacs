@@ -2384,6 +2384,15 @@ that =.zsh= files are a thing
 * Misc. Packages                                                   :Packages:
 The following list comprises all of the packages that (a) are loaded by default
 in most major modes and (b) don't fit elsewhere in this configuration (yet).
+** discover                                                       :discover:
+A relatively new kid on the block for learning some of Emacs's more obscure
+switches through Magit-style context menus. See the [[obscurehttps://www.masteringemacs.org/article/discoverel-discover-emacs-context-menus][Mastering Emacs]] article for
+more information. It's currently enabled for registers (=C-x r=), dired mode
+(=?=), and isearch (=M-s=).
+#+SRC_NAME discover_use-package
+#+BEGIN_SRC emacs-lisp :tangle no
+  (use-package discover :init (global-discover-mode 1))
+#+END_SRC
 ** fixmee                                :fixmee:TaskManagement:Navigation:
 A package for displaying and navigating TODOs, FIXMEs, etc. throughout a
 project. Works great with =projectile=, too! Use the =C-x f= keybinding to load
