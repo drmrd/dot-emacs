@@ -2290,7 +2290,7 @@ See [[https://github.com/rmuslimov/jenkins.el][this GitHub repo]].
   (use-package grails-projectile-mode
     :diminish  grails-projectile-mode)
 #+END_SRC
-** XML                                                            :XML:Lang:
+** XML                                                                 :XML:
 We can use the built-in =nxml-mode= for viewing XML files, so we can configure
 XML mode without use-package
 #+SRC_NAME nxml-mode_setup
