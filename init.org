@@ -1676,26 +1676,7 @@ end of the .emacs file.
   (setq custom-file "~/.emacs.d/customizations.el")
   (load custom-file)
 #+END_SRC
-** Load Other Config Files
-We now add several directories to the load-path. The directory
-~/workspace/elisp is a git repository containing some older
-configuration file, which I should probably just incorporate into this
-file and/or other org files in .emacs.d. The second directory is
-~/.emacs.d itself, which I thought was loaded by default but
-apparently not in all Emacs versions (or at least not in Aquamacs it
-seems).
 
-#+srcname: custom-load-paths
-#+begin_src emacs-lisp :tangle no
-  (add-to-list 'load-path "~/.emacs.d/lib")
-#+end_src
-
-*** Update: Disabled in favor of org-babel-load-file calls
-To avoid accidentally loading old tangled files (or other unwanted
-behavior), we are no longer including ~/.emacs.d/lib in our load
-path. Instead, libraries that we wish to load from here will be
-explicitly tangled and loaded via =org-babel-load-file= in this config
-file (and the files it loads).
 ** Load Third-Party Elisp not Managed by *Package*
 #+BEGIN_SRC emacs-lisp
   (add-to-list 'load-path "~/elisp")
