@@ -439,6 +439,22 @@ change this by configuring [[help:org-refile-targets][org-refile-targets]] appro
 #+BEGIN_SRC emacs-lisp
   (require 'org-habit)
 #+END_SRC
+* (Org) HabitRPG
+#+SRC_NAME habitrpg_use-package
+#+BEGIN_SRC emacs-lisp :tangle no
+; (unless (boundp 'spacemacs-version) "yes")
+  (use-github-package habitrpg "ryjm/habitrpg.el"
+    :config
+    (progn (load-file (concat (expand-file-name drmrd/secrets-directory "habitrpg.el")))
+
+           (setq-default hrpg-repeat-interval 900)
+           (add-hook 'org-clock-in-hook 'habitrpg-clock-in)
+           (add-hook 'org-clock-out-hook 'habitrpg-clock-out)
+
+           (add-to-list 'hrpg-bad-tags-list '("wasting_time" . "10 minutes")))
+    :bind (("<f9> a" . habitrpg-status)
+           ("C-c C-x h" . habitrpg-add)))
+#+END_SRC
 * Org Pomodoro                       :org_pomodoro:GTD:TaskMgmt:Productivity:
 #+BEGIN_SRC emacs-lisp
   (use-package org-pomodoro)
