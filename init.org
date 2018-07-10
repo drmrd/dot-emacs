@@ -3103,6 +3103,17 @@ to do a git pull. [Tab] is also a nice key.
 
           (add-hook 'magit-section-set-visibility-hook
                     'drmrd/magit/change-section-visibility-defaults)
+          ;; TODO: (2017-05-29) Create a drmrd/git-repository-locations custom
+          ;; variable that uses some kind of drmrd/setq-list-with-secrets function
+          ;; to generate a list of local and remote repos. This should somehow
+          ;; (using another custom function) conditionally include TRAMP repos
+          ;; like those in
+          ;;
+          ;;     /ssh:drmrd-remote-user@drmrd-remote-host:/drmrd/remote/repos
+          ;;
+          ;; when SSH connections exist providing access to them. (Care needs to
+          ;; be taken to ensure that repos are only listed from machines I own,
+          ;; though.)
     :config ;; Disable magit-auto-revert-mode
             (magit-auto-revert-mode -1)
             ;; Enable pushing to origin HEAD:refs/for/develop (for use with Gerrit)
