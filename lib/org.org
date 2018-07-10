@@ -378,6 +378,10 @@ which require (and can only contain) the key and description entries.)
            "| %T | %^{Systolic (Upper #)} | %^{Diastolic (Lower #)} | %^{Pulse (beats / min)} | %^{Comments} |"
            :immediate-finish t :kill-buffer t)
 
+          ("b" "org protocol default capture" entry
+           (file+datetree ,(drmrd/org-file-to-path "notes.org"))
+           "* %^{Title}\n\n  Source: %u, %c\n\n  %i"
+           :empty-lines 1)
           ))
 #+END_SRC
 ** Remove empty logbook entries when capturing                     :Logbook:
@@ -394,6 +398,32 @@ which occur when we spend less than a minute capturing something.
 
   (add-hook 'org-clock-out-hook 'bh/remove-empty-drawer-on-clock-out 'append)
 #+END_SRC
+* Org Protocol
+#+SRC_NAME configure_org-protocol
+#+BEGIN_SRC emacs-lisp
+  (setq-default org-protocol-default-template-key "b")
+  (require 'org-protocol)
+#+END_SRC
+
+#+BEGIN_EXAMPLE emacs-lisp
+  (setq-default org-capture-templates
+        '(("b" "Default template"
+           entry
+           (file+headline "~/org/capture.org" "Notes")
+           "* %^{Title}\n\n  Source: %u, %c\n\n  %i"
+           :empty-lines 1)
+          ;; ... more templates here ...
+          ))
+  ;; `b' makes this one the default template used for "org-protocol://capture://"
+  ;;     URLs (configurable via the `org-protocol-default-template-key' variable
+  ;; `entry' makes it a regular entry with a headline
+  ;; `file+headline' files the note in file "~/org/capture.org" as child of the
+  ;;                 headline "Notes"
+  ;; `%c' will be replaced by an Org-link pointing to the location of the page you
+  ;;      have been visiting when clicking on the link. The page title will be the
+  ;;      link's description.
+  ;; `%i' will be replaced by the selected text in your browser window if any.
+#+END_EXAMPLE
 * Org Refile
 ** Setting up refile targets
 By default, org-refile only supports refiling trees in the current
