@@ -2805,7 +2805,23 @@ theme it can be a super subtle but great quality of life improvement.
     ; (setq server-socket-dir (expand-file-name "server" user-emacs-directory))
     (server-start))
 #+END_SRC
-** TODO Move server stuff back to .bashrc
+
+The following hack from [[https://lists.gnu.org/archive/html/help-gnu-emacs/2010-04/msg00151.html][Jim Burton]] uses a terminal-compatible theme for terminal
+frames while using a fancier theme in GUI frames. Using fancy themes with a
+daemonized Emacs will lead to init errors without something like this in place.
+
+Setting ~color-theme-is-global~ to ~nil~ makes the hook only affect the current
+frame (not all frames at once).
+#+SRC_NAME set_color_theme_differently_in_terminal_frames
+#+BEGIN_SRC emacs-lisp :tangle no
+  (setq color-theme-is-global nil)
+  (add-hook 'after-make-frame-functions
+            '(lambda (f)
+               (with-selected-frame f
+                 (if (window-system f)
+                     (color-theme-gray30)
+                   (color-theme-emacs-nw)))))
+#+END_SRC
 ** HOLD Move server stuff back to .profile
 - State "HOLD"       from "TODO"       [2017-05-13 Sat 18:06] \\
   No longer sure if the =emacs --daemon= approach (and its ilk) are better than
