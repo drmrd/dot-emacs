@@ -219,24 +219,24 @@ The following package allows links to lines in PDF files to be opened in
         org-agenda-span               'day
   )
 
-  ; The next setting and function are courtesy of:
-  ;     http://dept.stat.lsa.umich.edu/~jerrick/org_agenda_calendar.html
-  (add-hook 'org-finalize-agenda-hook
-            (lambda ()
-              (save-excursion
-                ; TODO: Customize color-org-header so that it doesn't color everything in the line, effectively making habit graphs useless.
-                (color-org-header "Habits:"     "gold")
-                )))
+  ;; ; The next setting and function are courtesy of:
+  ;; ;     http://dept.stat.lsa.umich.edu/~jerrick/org_agenda_calendar.html
+  ;; (add-hook 'org-finalize-agenda-hook
+  ;;           (lambda ()
+  ;;             (save-excursion
+  ;;               ; TODO: Customize color-org-header so that it doesn't color everything in the line, effectively making habit graphs useless.
+  ;;               (color-org-header "Habits:"     "gold")
+  ;;               )))
 
-  (defun color-org-header (tag col)
-    "Color agenda items with category TAG (including trailing
-  colon) with color COL."
-    (interactive)
-    ;(goto-char (point-min))
-    ;(while (re-search-forward tag nil t)
-    ;  (add-text-properties (match-beginning 0) (point-at-eol)
-    ;                       `(face (:foreground ,col))))
-  )
+  ;; (defun color-org-header (tag col)
+  ;;   "Color agenda items with category TAG (including trailing
+  ;; colon) with color COL."
+  ;;   (interactive)
+  ;;   ;(goto-char (point-min))
+  ;;   ;(while (re-search-forward tag nil t)
+  ;;   ;  (add-text-properties (match-beginning 0) (point-at-eol)
+  ;;   ;                       `(face (:foreground ,col))))
+  ;; )
 #+END_SRC
 ** Connect to =appt=                          :appt:Reminders:Notifications:
 Improve org-agenda-to-appt so that it reliably sends appointments to =appt=,
