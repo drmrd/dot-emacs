@@ -3028,35 +3028,36 @@ replacing =ido= and =smex= for finding files and commands to controlling Spotify
 from within Emacs. This is my second attempt to switch to =helm= from =ido=, and
 I think I'll stick with it this time around.
 
-#+SRC_NAME load_helm_library
+#+SRC_NAME load-helm-library
 #+BEGIN_SRC emacs-lisp
   (org-babel-load-file (expand-file-name "~/.emacs.d/lib/helm.org"))
 #+END_SRC
 ** (La)TeX Mode
 Next we load the file ~/.emacs.d/lib/latex.org, which contains and/or
 dynamically loads all of our custom LaTeX settings.
+
 #+SRC_NAME load-latex-config
 #+BEGIN_SRC emacs-lisp
   ;;; (La)TeX Mode
   ;;;
-  ;;;     Loads our configuration library for LaTeX-related major modes
-  ;;;     and AUCTeX. Naturally it is primarily focused on `TeX-mode'
-  ;;;     and `LaTeX-mode', but it also includes settings and hooks for,
-  ;;;     e.g., `outline-minor-mode', the `outline-magic' package, and
-  ;;;     (depending on my mood) `preview-latex'.
+  ;;;     Loads our configuration library for LaTeX-related major modes and
+  ;;;     AUCTeX. Naturally it is primarily focused on `TeX-mode' and
+  ;;;     `LaTeX-mode', but it also includes settings and hooks for, e.g.,
+  ;;;     `outline-minor-mode', the `outline-magic' package, and (depending on my
+  ;;;     mood) `preview-latex'.
   (org-babel-load-file (expand-file-name "~/.emacs.d/lib/latex.org"))
 #+END_SRC
 ** Org Mode
-Our Org mode configuration has been slowly but surely growing to a
-size where it now deserves its own config library.
+Our Org mode configuration has been slowly but surely growing to a size where it
+now deserves its own config library.
+
 #+SRC_NAME load-org-config
 #+BEGIN_SRC emacs-lisp
   ;;; Org-Mode
   ;;;
-  ;;;     Loads our Org-mode config library. This includes customization
-  ;;;     for all official and community `org-*' modes/packages (e.g.,
-  ;;;     both `org-agenda', `org-babel', and `org-pomodoro'), in
-  ;;;     addition to general org tweaks.
+  ;;;     Loads our Org-mode config library. This includes customization for all
+  ;;;     official and community `org-*' modes/packages (e.g., both `org-agenda',
+  ;;;     `org-babel', and `org-pomodoro'), in addition to general org tweaks.
   (org-babel-load-file (expand-file-name "~/.emacs.d/lib/org.org"))
 #+END_SRC
 ** Magit                                          :Magit:Git:VersionControl:
