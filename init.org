@@ -1144,8 +1144,6 @@ the behavior being the opposite if nil (unless otherwise specified).
 |                       |                                  | 'never                     |
 | use-virtual-buffers   |                                  | Boolean                    |
 |                       |                                  |                            |
-| handle-duplicate      | ??? (...obsolete?)               | ???                        |
-| -virtual-buffers      |                                  |                            |
 | default-buffer-method | Determines where/how the         | selected-window            |
 |                       | selected buffer is opened        | other-window               |
 |                       |                                  | display                    |
@@ -1176,8 +1174,6 @@ the behavior being the opposite if nil (unless otherwise specified).
         ido-use-filename-at-point t
         ido-max-prospects         10
         ido-create-new-buffer     'always
-        ;; ido-use-virtual-buffers   t
-        ;; ido-handle-duplicate-virtual-buffers 2
         ido-default-buffer-method 'selected-window
         ido-default-file-method   'selected-window)
 #+END_SRC
