@@ -1988,6 +1988,41 @@ future.
     (org-babel-load-file (expand-file-name name (or directory
                                                     drmrd/lib-directory))))
 #+END_SRC
+** TODO Testing things exist                          :drmrd_shell_commandp:
+This needs to be fixed and DRYed up
+#+SRC_NAME drmrd/shell-commandp_defun :tangle no
+#+BEGIN_SRC emacs-lisp
+  (defun drmrd/shell-commandp (command &optional test-command-and-failure-check)
+    "Determine whether a shell COMMAND is known to the default shell.
+
+  No attempt is made to ensure COMMAND isn't an alias.  It uses the current user's
+  default or whatever shell is pointed to by `shell-file-name'.  It tries to
+  intelligently choose between using a 'type' or 'whence' built-in for testing
+  based on the current shell, but its choice can be overridden and an explicit
+  test command to pass COMMAND into (as a suffix) and a function to test the
+  output can be set by providing the optional TEST-COMMAND-AND-FAILURE-CHECK
+  parameter."
+    (let* '((shell-name (file-name-nondirectory shell-file-name))
+            (test-command
+             (or test-command-and-failure-check
+                 (cond ((or (string-equal shell-name "zsh")
+                            (string-equal shell-name "ksh"))
+                        (cons "whence -w "
+                              (lambda (output)
+                                (string-equal output (concat command ": none")))))
+                       ((or (string-equal shell-name "sh")
+                            (string-equal shell-name "bash")
+                            (string-equal shell-name "fish"))
+                        (cons "type -t "
+                              (lambda (output)
+                                (eq (length output) 0))))
+                       (t (error "Unknown shell '%s'" shell-name)))))
+            (test-output (substring
+                          (shell-command-to-string
+                           (concat (car test-command-and-failure-check) command))
+                          0 -1)))
+      (funcall (cdr test-command-and-failure-check) test-output)))
+#+END_SRC
 ** insert-to-last-eol
 #+BEGIN_SRC emacs-lisp
   (defun get-beginning-of-line-position (&optional arg)
@@ -2288,14 +2323,29 @@ XML mode without use-package
 ** TODO Maven                                                   :Maven:Java:
 See [[https://github.com/Fuco1/.emacs.d/blob/master/files/vendor.el][this init file]] for a /comprehensive/ configuration of =malabar-mode= (a mode
 for Java that boasts [[https://www.emacswiki.org/emacs/MalabarMode]["tight integration with Maven"]].
-** Shell                                                        :Shell:Lang:
-The only shell scripts I use that Emacs doesn't handle well by default are the
-occasional batch files (for Windows).
-#+SRC_NAME batch-mode_setup
+** Shell                                                             :Shell:
+The only shell scripts I use that Emacs doesn't handle well by default are
+Windows batch files (although I can't remember the last time I was on Windows
+long enough to edit one of those) and Fish scripts. We also need to make
+[[help:shell-script-mode][shell-script-mode]] (a.k.a. [[help:sh-mode][sh-mode]] (not a.k.a. [[help:shell-mode][shell-mode]] (confusingly))) aware
+that =.zsh= files are a thing
+
+#+SRC_NAME batch-mode_use-package
 #+BEGIN_SRC emacs-lisp
-  (use-package batch-mode
-    :ensure    batch-mode
-    :mode      ("\\.\\(bat\\)$" . batch-mode))
+  (use-package batch-mode :ensure    t
+    :mode ("\\.\\(bat\\)$" . batch-mode))
+#+END_SRC
+
+#+SRC_NAME fish-mode_use-package
+#+BEGIN_SRC  emacs-lisp
+  (use-package fish-mode :ensure t
+    :mode ("\\.\\(fish\\)$" . fish-mode))
+#+END_SRC
+
+#+SRC_NAME sh-mode_config
+#+BEGIN_SRC emacs-lisp
+  (setq-default sh-learn-basic-offset 'good-guess
+                sh-indentation        4)
 #+END_SRC
 ** TODO Cucumber                                 :Cucumber:IntegrationTests:
 ** Ruby, Rake, RBENV, Rspec
