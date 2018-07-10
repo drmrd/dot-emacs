@@ -250,6 +250,25 @@ to a question on Emacs.SE and @holocronweaver's comment in response.
     (dolist (i (number-sequence 0 (1- (length min-to-app))))
       (call-process my-appt-notification-app nil nil nil (nth i min-to-app) (nth i msg)))))
 #+END_SRC
+* Org Present
+Present Org files as slideshows.
+#+SRC_NAME org-present_use-package
+#+BEGIN_SRC emacs-lisp :tangle no
+; (unless (boundp 'spacemacs-version) "yes")
+    (use-package org-present
+      :config (add-hook 'org-present-mode-hook
+                        (lambda ()
+                          (org-present-big)
+                          (org-display-inline-images)
+                          (org-present-hide-cursor)
+                          (org-present-read-only)))
+              (add-hook 'org-present-mode-quit-hook
+                        (lambda ()
+                          (org-present-small)
+                          (org-remove-inline-images)
+                          (org-present-show-cursor)
+                          (org-present-read-write))))
+#+END_SRC
 * Org Capture
 Now we bind [[help:org-capture][org-capture]] mode globally to =C-c c=. This and the capture templates
 that follow will allow us to automatically create TODOs, notes, etc., linked to
