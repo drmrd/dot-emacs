@@ -2696,7 +2696,7 @@ tree, naturally), change branches, etc.
     :diminish undo-tree-mode
     :init     (global-undo-tree-mode))
 #+END_SRC
-** yasnippet                               :yasnippet:Completion:Templating:
+** TODO yasnippet                          :yasnippet:Completion:Templating:
 Yet Another Snippet is a templating package for Emacs, enabling rapid template
 creation and reuse. Snippets for use in =foo-mode= should be store in the
 =~/.emacs.d/snippets/foo-mode= directory to ensure they're loaded
