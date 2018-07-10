@@ -172,49 +172,194 @@ the way we do so in Org Mode.
   (add-hook 'LaTeX-mode-hook #'outline-minor-mode)
 #+END_SRC
 *** Configure sane keybindings for outline-minor-mode
+*** Configure sane keybindings for outline-minor-mode              :hydras:
 By default the prefix for outline-minor-mode is the insanely
 inconvenient C-c @, so we change it to M-o instead. We also add
 suffixes for just about every command we could ask for.
 #+SRC_NAME outline-minor-mode_keymap_configuration
 #+BEGIN_SRC emacs-lisp
-  ; Outline-minor-mode key map
-  (define-prefix-command 'cm-map nil "Outline-")
-  ; HIDE
-  (define-key cm-map "q" 'outline-hide-sublevels)    ; Hide everything but the top-level headings
-  (define-key cm-map "\M-q" 'outline-hide-sublevels)
-  (define-key cm-map "t" 'outline-hide-body)         ; Hide everything but headings (all body lines)
-  (define-key cm-map "\M-t" 'outline-hide-body)
-  (define-key cm-map "o" 'outline-hide-other)        ; Hide other branches
-  (define-key cm-map "\M-o" 'outline-hide-other)
-  (define-key cm-map "c" 'outline-hide-entry)        ; Hide this entry's body
-  (define-key cm-map "\M-c" 'outline-hide-entry)
-  (define-key cm-map "l" 'outline-hide-leaves)       ; Hide body lines in this entry and sub-entries
-  (define-key cm-map "\M-l" 'outline-hide-leaves)
-  (define-key cm-map "d" 'outline-hide-subtree)      ; Hide everything in this entry and sub-entries
-  (define-key cm-map "\M-d" 'outline-hide-subtree)
-  ; SHOW
-  (define-key cm-map "a" 'outline-show-all)          ; Show (expand) everything
-  (define-key cm-map "\M-a" 'outline-show-all)
-  (define-key cm-map "e" 'outline-show-entry)        ; Show this heading's body
-  (define-key cm-map "\M-e" 'outline-show-entry)
-  (define-key cm-map "i" 'outline-show-children)     ; Show this heading's immediate child sub-headings
-  (define-key cm-map "\M-i" 'outline-show-children)
-  (define-key cm-map "k" 'outline-show-branches)     ; Show all sub-headings under this heading
-  (define-key cm-map "\M-k" 'outline-show-branches)
-  (define-key cm-map "s" 'outline-show-subtree)      ; Show (expand) everything in this heading & below
-  (define-key cm-map "\M-s" 'outline-show-subtree)
-  ; MOVE
-  (define-key cm-map "u" 'outline-up-heading)                ; Up
-  (define-key cm-map "\M-u" 'outline-up-heading)
-  (define-key cm-map "n" 'outline-next-visible-heading)      ; Next
-  (define-key cm-map "\M-n" 'outline-next-visible-heading)
-  (define-key cm-map "p" 'outline-previous-visible-heading)  ; Previous
-  (define-key cm-map "\M-p" 'outline-previous-visible-heading)
-  (define-key cm-map "f" 'outline-forward-same-level)        ; Forward - same level
-  (define-key cm-map "\M-f" 'outline-forward-same-level)
-  (define-key cm-map "b" 'outline-backward-same-level)       ; Backward - same level
-  (define-key cm-map "\M-b" 'outline-backward-same-level)
-  (global-set-key "\M-o" cm-map)
+  (defhydra hydra-outline (:color blue :hint nil)
+    "
+  ^Hide^             ^Show^           ^Move
+  ^^^^^^------------------------------------------------------
+  _h_: _h_ide menu     _s_: _s_how menu   _u_: up (parent)
+                                  _n_: next
+  _q_: sublevels     _a_: all         _p_: previous
+  _t_: body          _e_: entry
+  _o_: other         _i_: children    _f_: forward sibling
+  _c_: entry         _k_: branches    _b_: backward sibling
+  _l_: leaves        _S_: subtree
+  _d_: subtree
+
+  "
+    ;; Hiding things
+    ("h" hydra-outline/hide/body)
+    ("q" hide-sublevels)    ;
+    ("t" hide-body)         ;
+    ("o" hide-other)        ; Hide other branches
+    ("c" hide-entry)        ; Hide this entry's body
+    ("l" hide-leaves)       ; Hide body lines in this entry and sub-entries
+    ("d" hide-subtree)      ; Hide everything in this entry and sub-entries
+
+    ;; Showing things
+    ("s" hydra-outline/show/body)
+    ("a" show-all)          ; Show (expand) everything
+    ("e" show-entry)        ; Show this heading's body
+    ("i" show-children)     ; Show this heading's immediate child sub-headings
+    ("k" show-branches)     ; Show all sub-headings under this heading
+    ("S" show-subtree)      ; Show (expand) everything in this heading & below
+
+    ;; Movement
+    ("u" outline-up-heading)                ; Up
+    ("n" outline-next-visible-heading)      ; Next
+    ("p" outline-previous-visible-heading)  ; Previous
+    ("f" outline-forward-same-level)        ; Forward - same level
+    ("b" outline-backward-same-level)       ; Backward - same level
+    ("z" nil "leave")
+
+    ;; Hiding things
+    ("M-h" hydra-outline/hide/body)
+    ("M-q" hide-sublevels)    ;
+    ("M-t" hide-body)         ;
+    ("M-o" hide-other)        ; Hide other branches
+    ("M-c" hide-entry)        ; Hide this entry's body
+    ("M-l" hide-leaves)       ; Hide body lines in this entry and sub-entries
+    ("M-d" hide-subtree)      ; Hide everything in this entry and sub-entries
+
+    ;; Showing things
+    ("M-s" hydra-outline/show/body)
+    ("M-a" show-all)          ; Show (expand) everything
+    ("M-e" show-entry)        ; Show this heading's body
+    ("M-i" show-children)     ; Show this heading's immediate child sub-headings
+    ("M-k" show-branches)     ; Show all sub-headings under this heading
+    ("M-S" show-subtree)      ; Show (expand) everything in this heading & below
+
+    ;; Movement
+    ("M-u" outline-up-heading)                ; Up
+    ("M-n" outline-next-visible-heading)      ; Next
+    ("M-p" outline-previous-visible-heading)  ; Previous
+    ("M-f" outline-forward-same-level)        ; Forward - same level
+    ("M-b" outline-backward-same-level)       ; Backward - same level
+    ("M-z" nil "leave"))
+
+
+  (defhydra hydra-outline/hide (:color blue :hint nil)
+  "
+  ^Hide^
+  ^^^^^^
+  _S_: Hide all _S_ubheadings (and bodies)
+  _B_: Hide all _B_odies (everything but headings) (hides _L_eaves in all trees)
+  _O_: Hide all _O_ther branches (everything but current tree)
+
+  _e_: Hide _c_urrent _e_ntry's _b_ody
+  _l_: Hide all _l_eaves (bodies in subtree)
+  _s_: Hide _s_ubtree
+
+  "
+  ("S" outline-hide-sublevels)
+  ("B" outline-hide-body)
+  ("L" outline-hide-body)
+  ("O" outline-hide-other)
+
+  ("e" outline-hide-entry)
+  ("c" outline-hide-entry)
+  ("b" outline-hide-entry)
+  ("l" outline-hide-leaves)
+  ("s" outline-hide-subtree)
+
+  ("M-S" outline-hide-sublevels)
+  ("M-B" outline-hide-body)
+  ("M-L" outline-hide-body)
+  ("M-O" outline-hide-other)
+
+  ("M-e" outline-hide-entry)
+  ("M-c" outline-hide-entry)
+  ("M-b" outline-hide-entry)
+  ("M-l" outline-hide-leaves)
+  ("M-s" outline-hide-subtree))
+
+  (defhydra hydra-outline/show (:color blue :hint nil)
+  "
+  ^Show^
+  ------
+  _A_: _a_ll
+
+  _e_: _c_urrent _e_ntry's _b_ody
+  _C_: _C_hildren
+  _B_: _B_ranches
+  _s_: _s_ub_t_ree (starting at point)
+
+  "
+  ("A" outline-show-all)
+  ("a" outline-show-all)
+
+  ("e" outline-show-entry)
+  ("c" outline-show-entry)
+  ("b" outline-show-entry)
+  ("C" outline-show-children)
+  ("B" outline-show-branches)
+  ("s" outline-show-subtree)
+  ("t" outline-show-subtree)
+
+  ("M-A" outline-show-all)
+  ("M-a" outline-show-all)
+
+  ("M-e" outline-show-entry)
+  ("M-c" outline-show-entry)
+  ("M-b" outline-show-entry)
+  ("M-C" outline-show-children)
+  ("M-B" outline-show-branches)
+  ("M-s" outline-show-subtree)
+  ("M-t" outline-show-subtree))
+
+  (global-set-key "\M-o" 'hydra-outline/body)
+
+  ;; ; Outline-minor-mode key map
+  ;; (define-prefix-command 'drmrd/LaTeX/outline-minor-mode-map nil "Outline-")
+
+  ;; ; HIDE
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "q" 'outline-hide-sublevels)
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "\M-q" 'outline-hide-sublevels)
+
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "t" 'outline-hide-body)
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "\M-t" 'outline-hide-body)
+
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "o" 'outline-hide-other)
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "\M-o" 'outline-hide-other)
+
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "c" 'outline-hide-entry)
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "\M-c" 'outline-hide-entry)
+
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "l" 'outline-hide-leaves)
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "\M-l" 'outline-hide-leaves)
+
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "d" 'outline-hide-subtree)
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "\M-d" 'outline-hide-subtree)
+
+  ;; ; SHOW
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "a" 'outline-show-all)
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "\M-a" 'outline-show-all)
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "e" 'outline-show-entry)
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "\M-e" 'outline-show-entry)
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "i" 'outline-show-children)
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "\M-i" 'outline-show-children)
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "k" 'outline-show-branches)
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "\M-k" 'outline-show-branches)
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "s" 'outline-show-subtree)
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "\M-s" 'outline-show-subtree)
+
+  ;; ; MOVE
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "u" 'outline-up-heading)
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "\M-u" 'outline-up-heading)
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "n" 'outline-next-visible-heading)
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "\M-n" 'outline-next-visible-heading)
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "p" 'outline-previous-visible-heading)
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "\M-p" 'outline-previous-visible-heading)
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "f" 'outline-forward-same-level)
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "\M-f" 'outline-forward-same-level)
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "b" 'outline-backward-same-level)
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "\M-b" 'outline-backward-same-level)
+  ;; (global-set-key "\M-o" drmrd/LaTeX/outline-minor-mode-map)
 #+END_SRC
 **** TODO Move to init.org
 *** Load outline-magic and bind outline-cycle to C-tab
