@@ -1782,19 +1782,27 @@ file variable when needed.
   ;; commands as C-x C-w [...], you know why this is here.
   (setq confirm-kill-emacs 'y-or-n-p)
 #+END_SRC
-** Compilation Behavior                              :Keybindings:Compiling:
-The following is brough to us by bpalmer and zigler on the
-[[https://www.emacswiki.org/emacs/UsingMakefileFromParentDirectory][EmacsWiki]]. It adds a =get-nearest-compilation-file= function that
-searches parent directories for a Makefile (or any file with name in
-=compilation-filenames=) to use during compilation and binds the new
-function to F5.
 ** Enable "Advanced" Commands
 Here I'm reinstating a number of incredibly useful commands to their rightful
 keybindings that are disabled by default in Emacs to avoid confusing newcomers.
 #+SRC_NAME re-enable_advanced_commands
 #+BEGIN_SRC emacs-lisp
-  (put 'narrow-to-region 'disabled nil)
+  (cl-dolist (disabled-function '(dired-find-alternate-file
+                                  downcase-region
+                                  erase-buffer
+                                  Info-edit
+                                  narrow-to-page
+                                  narrow-to-region
+                                  scroll-left
+                                  set-goal-column
+                                  upcase-region))
+    (put disabled-function 'disabled nil))
 #+END_SRC
+** Compilation Behavior                               :Keybindings:Compiling:
+The following is brought to us by bpalmer and zigler on the [[https://www.emacswiki.org/emacs/UsingMakefileFromParentDirectory][EmacsWiki]]. It adds a
+=get-nearest-compilation-file= function that searches parent directories for a
+Makefile (or any file with name in =compilation-filenames=) to use during
+compilation and binds the new function to F5.
 #+BEGIN_SRC emacs-lisp
   (setq compilation-filenames '("Makefile"))
 
