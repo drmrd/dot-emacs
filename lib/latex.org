@@ -431,7 +431,7 @@ line you are on in the current file).
 
 #+SRC_NAME enable_visual-line-mode_in_TeX-mode_and_LaTeX-mode
 #+BEGIN_SRC emacs-lisp
-  (dolist (hook '(TeX-mode-hook LaTeX-mode-hook))
+  (cl-dolist (hook '(TeX-mode-hook LaTeX-mode-hook))
     (add-hook hook #'visual-line-mode))
 #+END_SRC
 
@@ -654,7 +654,7 @@ for every file you open in Emacs, you can be more selective with when this
 occurs by turning on =save-place-local-mode= instead on a per file or major mode
 basis.  #+SRC_NAME latex_hook_to_save-place-local-mode
 #+BEGIN_SRC emacs-lisp
-  (dolist (hook '(TeX-mode-hook LaTeX-mode-hook))
+  (cl-dolist (hook '(TeX-mode-hook LaTeX-mode-hook))
     (add-hook hook #'save-place-local-mode))
 #+END_SRC
 * Appearance
