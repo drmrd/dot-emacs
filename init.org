@@ -2358,6 +2358,11 @@ that =.zsh= files are a thing
   (use-package apiwrap :ensure t)
 #+END_SRC
 *** TODO Determine if this deserves its own top-level header (or is better placed elsewhere)
+** Jinja2                                :Jinja2:Python:TemplatingLanguages:
+#+SRC_NAME jinja2-mode_use-package
+#+BEGIN_SRC emacs-lisp
+  (use-package jinja2-mode :ensure t)
+#+END_SRC
 * Misc. Packages                                                   :Packages:
 The following list comprises all of the packages that (a) are loaded by default
 in most major modes and (b) don't fit elsewhere in this configuration (yet).
