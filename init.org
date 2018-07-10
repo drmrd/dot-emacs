@@ -2696,7 +2696,8 @@ mode: file permissions!
                (expand-file-name "./info/" user-emacs-directory))
 #+END_SRC
 *** TODO Create custom info files for modes that don't supply them (and personal notes)
-** Use Terminals Within Emacs
+** Use Terminals within Emacs                                       :Eshell:
+Use [[help:eshell][eshell]]!
 ** eww: Internet browser integrated into Emacs              :eww:Keybindings:
 Beginning in v24.4, Emacs comes equipped with an internet browser =eww= that
 supports basic HTML and CSS. Our config was inspired by [[https://github.com/dakrone/eos/blob/master/eos-web.org][dakrone's]].
