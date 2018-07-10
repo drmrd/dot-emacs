@@ -2640,6 +2640,29 @@ just wrap this command in a version check.
 #+BEGIN_SRC emacs-lisp
   ;;;; Major Mode Customizations
 #+END_SRC
+** Dired Mode: Directory Browsing/Editing      :Dired:DirectoryTreeBrowsing:
+*** Wdired Mode                                                    :Wdired:
+One of the killer features in Emacs that I originally stumbled on accidentally
+is Dired's "writable" mode. If you press ~C-x C-q~ (or whatever your
+~toggle-read-only~ keybinding is set to) while in dired mode (like I did as a
+joke), you'll discover that it does /exactly what you'd expect/; you'll be able
+to rename files in the current directory by just editing their names in the
+dired buffer, delete files by completely deleting their names, and even move
+files by adding relative/abolute paths to their names. Best of all, ~wdired~
+only performs these changes after you "commit" them with ~C-c C-c~ (or by
+hitting ~C-x C-q~ again and confirming), and you can revert your proposed
+changes at any time by typing ~C-c C-k~. It also works flawlessly on remote
+system with ~tramp~, and it's up there with [[help:dired-do-query-replace-regexp][~dired-do-query-replace-regexp~]] as
+one of my all-time favorite sysadmin workflow features within ~dired~.
+
+~wdired~ is baked into ~dired~ by default, with all of those features
+standard. The following takes this a step further by allowing you to edit the
+only remaining part of the ~dired~ buffer that makes sense to edit in ~wdired~
+mode: file permissions!
+#+SRC_NAME wdired_config
+#+BEGIN_SRC emacs-lisp
+  (setq wdired-allow-to-change-permissions t)
+#+END_SRC
 ** CC Mode: Editing in C-like languages             :CCmode:C:Cpp:Java:Perl:
 *** Code Style and Indentation                      :Indentation:CodeStyle:
 #+SRC_NAME CC-mode
