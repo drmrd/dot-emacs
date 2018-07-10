@@ -96,13 +96,9 @@ update this variable to pass this test (using the symbolic link to
 AucTeX is the bread-and-butter LaTeX editor for Emacs and should always be
 enabled to complement the built-in modes.
 
-#+SRC_NAME use-package_auctex
+#+SRC_NAME auctex_use-package
 #+BEGIN_SRC emacs-lisp
-    (use-package tex :ensure auctex
-;      :init
-;        (when (eq system-type 'darwin)
-;          (add-to-list 'exec-path "/Library/TeX/texbin" t))
-)
+    (use-package tex :ensure auctex)
 #+END_SRC
 ** AUCTeX Initialization/Configuration
 *** Parse Document on Load and Save
