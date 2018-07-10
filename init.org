@@ -2256,23 +2256,19 @@ say about them.
 ** TODO Jenkins                                                    :Jenkins:
 *** TODO Consider using this Jenkins plugin for monitoring /within/ Emacs
 See [[https://github.com/rmuslimov/jenkins.el][this GitHub repo]].
-** Java
+** Java                                                     :Java:meghanada:
 #+SRC_NAME meghanada_use-package
 #+BEGIN_SRC emacs-lisp
-  (use-package meghanada :ensure t
-    :config
-      (add-hook 'java-mode-hook
-                (lambda ()
-                  ;; meghanada-mode on
-                  (meghanada-mode t)
-                  (add-hook 'before-save-hook 'meghanada-code-beautify-before-save)))
-      (add-hook 'groovy-mode-hook
-                (lambda ()
-                  ;; meghanada-mode on
-                  (meghanada-mode t)
-                  (add-hook 'before-save-hook 'meghanada-code-beautify-before-save))))
+  ;; (use-package meghanada :ensure t
+  ;;   :config
+  ;;     (add-hook 'java-mode-hook
+  ;;               (lambda ()
+  ;;                 ;; meghanada-mode on
+  ;;                 (meghanada-mode)
+  ;;                 (add-hook 'before-save-hook
+  ;;                           'meghanada-code-beautify-before-save))))
 #+END_SRC
-** Groovy & Gradle                                      :Groovy:Gradle:Lang:
+** Groovy & Gradle                                 :Groovy:Gradle:meghanada:
 #+SRC_NAME groovy_setup
 #+BEGIN_SRC emacs-lisp
   (use-package groovy-mode
@@ -2281,6 +2277,12 @@ See [[https://github.com/rmuslimov/jenkins.el][this GitHub repo]].
     :init (add-hook 'groovy-mode-hook
                     (lambda ()
                       (c-set-offset 'label 4)))
+          ;; (add-hook 'groovy-mode-hook
+          ;;           (lambda ()
+          ;;             ;; meghanada-mode on
+          ;;             (meghanada-mode)
+          ;;             (add-hook 'before-save-hook
+          ;;                       'meghanada-code-beautify-before-save)))
     :mode ("\\(Jenkinsfile\\|\\.\\(groovy\\|gradle\\)\\)$" . groovy-mode))
 #+END_SRC
 ** TODO Spock                                                        :Spock:
