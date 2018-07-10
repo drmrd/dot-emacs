@@ -13,6 +13,7 @@
     :init (setq helm-ag-fuzzy-match t))
   (use-package helm
       :ensure t
+      :demand t
       :diminish helm-mode
       :init
         (require 'helm-config)
