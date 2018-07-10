@@ -2346,7 +2346,115 @@ than FIXME.)
     :after wiki-nav
     :init
       (require 'button-lock)
+
+      (defun drmrd/car-or-self-safe (object)
+        "Return the car of OBJECT if it has one and OBJECT otherwise.  This
+  functionality should be considered complementary to the `car-safe' function."
+        (if (consp object) (car object) object))
+
+      (defun drmrd/coerce-to-string (object)
+        "Attempt to convert OBJECT to a string.  For the time being, this function
+  will convert any character, string, or symbol to a string with no guarantee of
+  success when OBJECT is of another form."
+        (cond ((symbolp object) (symbol-name object))
+              (t (coerce object 'string))))
+
+      (defun drmrd/regexp-matching-char-case-insensitively (char)
+        "Convert the character CHAR to a regular expression in string form that
+  matches one occurrence of CHAR case insensitively.  For example, if CHAR is the
+  lowercase letter 'a', then the output of this function is the string \"[aA]\".
+  If CHAR is not a character with lowercase and uppercase forms recognized by
+  `downcase' and `upcase', this simply returns CHAR as a string."
+        (unless (characterp char)
+          (error "The provided argument is not a character: %s" char))
+        (let* ((char-as-string (string char))
+               (lowercase-char (downcase char-as-string))
+               (uppercase-char (upcase char-as-string)))
+          (if (equal lowercase-char uppercase-char)
+              char-as-string
+            (concat "[" lowercase-char uppercase-char "]"))))
+
+      (defun drmrd/words-to-fixmees (&rest tags)
+        "Convert a list of words indicating comment flags to a format
+  `fixmee-mode' understands.  The TAGS should consist of strings, symbols (to be
+  converted to strings), and pairs of the form (STRING-OR-SYMBOL
+  CASE-SENSITIVE-P), where STRING-OR-SYMBOL is either a string or a symbol to be
+  recognized by fixmee as a fixmee flag and CASE-SENSITIVE-P indicates whether or
+  not STRING-OR-SYMBOL should be considered case-sensitive.
+
+  This function does not check whether or not its arguments can be converted into
+  valid tags for fixmee comments.  Please read the help page for
+  `fixmee-notice-regexp' to see which strings are permissible."
+
+        (let* ((fixmee-tag-spec (first tags))
+               (fixmee-tag (drmrd/coerce-to-string
+                            (drmrd/car-or-self-safe fixmee-tag-spec)))
+               (case-sensitive-p (cdr-safe fixmee-tag-spec))
+               (fixmee-string
+                (concatenate
+                 'string
+                 (if case-sensitive-p
+                     fixmee-tag
+                   (apply #'concat (mapcar #'drmrd/regexp-matching-char-case-insensitively
+                                           (coerce fixmee-tag 'list))))
+                 "+"))
+               (remaining-tags (rest tags)))
+          (if remaining-tags
+              (concatenate 'string
+                           fixmee-string
+                           "\\|"
+                           (apply #'drmrd/words-to-fixmees remaining-tags))
+            fixmee-string)))
+
+      (defcustom drmrd/fixmee-keywords '("todo" "maybe" "started" "fixme" "citeme"
+                                         (XXX case-sensitive))
+        "The keywords that indicate tasks to be highlighted in `fixmee-mode'.
+
+  Case-insensitive keyword <keyword> should be given as either a string or symbol
+  while a case-sensitive <keyword> should be provided as a cons cell
+  (<keyword> case-sensitive). See the documentation and value of
+  `fixmee-notice-regexp' to get a better idea how these are passed into
+  `fixmee-mode'.
+
+  Elisp-escaped regular expression strings might work here, too, so long as they
+  do not include (numbered) matching groups. At this time, however, they are not
+  officially supported."
+      :tag "List of Fixmee Keywords"
+      :type '(repeat sexp)
+      :link '(variable-link fixmee-notice-regexp)
+      :group 'drmrd)
+
+      ;; TODO: (2017-06-11) See what, if any, of the junk in this regexp can be
+      ;;                    removed.
+      ;; TODO: (2017-06-11) After cleaning up this regexp, make it aware of dates
+      ;;                    & trailing tags.
+      (setq-default fixmee-notice-regexp
+            (concat ; "[∵∴⇔⇝←→<>↓↑v\^[:space:]]*"
+                    "\\("
+                      "@@@+"
+                    "\\|"
+                      "\\_<"  ; ← '\_<' == Beginning of a "symbol"
+                      "\\(?:" ; The keyword in the fixmee notice (except @@@[…])
+                        (apply #'drmrd/words-to-fixmees
+                               drmrd/fixmee-keywords)
+                      "\\)"
+                    "\\)"
+                    "\\(?:" ; Patterns that can end a fixmee notice
+                      "[/:?!.[:space:]\\n]+"
+                    "\\|"
+                      "-+\\(?:\\s-\\|[\n]\\)"
+                    "\\|"
+                      "\\_>" ; ← '\_>' == End of a "symbol"
+                    "\\)"))
+
+      (setq fixmee-cache-refresh-interval 5)
+
     :config
+      (set-face-attribute 'fixmee-notice-face nil
+                          :background "white"
+                          :foreground "red"
+                          :weight 'bold)
+
       (global-fixmee-mode 1))
 #+END_SRC
 *** TODO Come up with a good replacement for the fixmee-goto-next-by-position keybinding
