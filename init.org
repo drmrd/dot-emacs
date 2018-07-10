@@ -2393,6 +2393,19 @@ more information. It's currently enabled for registers (=C-x r=), dired mode
 #+BEGIN_SRC emacs-lisp :tangle no
   (use-package discover :init (global-discover-mode 1))
 #+END_SRC
+** fasd                                              :emacs_fasd:find_files:
+#+SRC_NAME fasd_use-package
+#+BEGIN_SRC emacs-lisp
+  (use-package fasd :ensure t
+    ;; TODO: (2017-11-19) ":if (shell-command-p "fasd")"
+    ;;                    or ":if (package-installed-p \"fasd\")"
+    :config (global-fasd-mode 1)
+    :bind ("C-x C-/" . fasd-find-file))
+
+  (use-github-package helm-fasd "madper/helm-fasd"
+      :bind (("C-x /" . helm-fasd)
+             ("C-c h F" . helm-fasd)))
+#+END_SRC
 ** fixmee                                :fixmee:TaskManagement:Navigation:
 A package for displaying and navigating TODOs, FIXMEs, etc. throughout a
 project. Works great with =projectile=, too! Use the =C-x f= keybinding to load
