@@ -1591,7 +1591,7 @@ comment in the scratch buffer.
     :init (setq fortune-cookie-cowsay-enable nil)
     :config (fortune-cookie-mode))
 #+END_SRC
-** Change Where Customizations are Stored
+** Change Where Customizations are Stored                   :Customizations:
 By default, Emacs adds settings set via the customizations menu to the
 end of the .emacs file.
 #+SRC_NAME set_customizations_file
