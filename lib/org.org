@@ -149,7 +149,13 @@ input to insert onto an additional line in the format specified by the
 #+BEGIN_SRC emacs-lisp
   (setq-default org-log-done 'time)
 #+END_SRC
-
+* Diary
+While not technically an Org feature, I use the Emacs diary almost exclusively
+with Org mode, so it makes some sense to configure it here.
+#+SRC_NAME diary_settings
+#+BEGIN_SRC emacs-lisp
+  (setq diary-file (expand-file-name "~/org/diary"))
+#+END_SRC
 * Org Link                                              :Hyperlinks:org_link:
 ** Custom Hyperlinks
 #+SRCNAME org_custom_hyperlink_names
