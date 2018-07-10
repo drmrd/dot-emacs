@@ -1813,7 +1813,7 @@ compilation and binds the new function to F5.
           (nearest-compilation-file 'nil))
       (while (and (not (string= dir parent-dir))
                   (not nearest-compilation-file))
-        (dolist (filename compilation-filenames)
+        (cl-dolist (filename compilation-filenames)
           (setq file-path (concat dir filename))
           (when (file-readable-p file-path)
             (setq nearest-compilation-file file-path)))
