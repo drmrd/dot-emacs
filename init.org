@@ -3073,9 +3073,12 @@ to do a git pull. [Tab] is also a nice key.
   (use-package magit
     :init (remove-hook 'find-file-hook 'vc-find-file-hook)
           ;; Hide magit's work in progress mode lighters.
-          (delight '((magit-wip-after-save-mode nil)
-                     (magit-wip-after-apply-mode nil)
-                     (magit-wip-before-change-mode nil)))
+          (delight '((magit-wip-after-save-mode nil nil)
+                     (magit-wip-after-apply-mode nil nil)
+                     (magit-wip-before-change-mode nil nil)))
+          (setq magit-wip-after-save-local-mode nil
+                magit-wip-after-apply-mode-lighter nil
+                magit-wip-before-change-mode-lighter nil)
           ;; Make magit highlight actual changes in lines in a brighter color
           ;; than the rest of the current hunk. Set to 'all to do this in all
           ;; hunks instead (or nil to disable this).
@@ -3102,10 +3105,6 @@ to do a git pull. [Tab] is also a nice key.
                     'drmrd/magit/change-section-visibility-defaults)
     :config ;; Disable magit-auto-revert-mode
             (magit-auto-revert-mode -1)
-            ;; Enable all of magit's WIP modes
-            (magit-wip-after-save-mode)
-            (magit-wip-after-apply-mode)
-            (magit-wip-before-change-mode)
             ;; Enable pushing to origin HEAD:refs/for/develop (for use with Gerrit)
             ;; by hitting 'R' in magit's push popup.
             (magit-define-popup-action 'magit-push-popup
