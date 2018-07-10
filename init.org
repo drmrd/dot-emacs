@@ -2728,6 +2728,171 @@ automatically.
 =yasnippet= is fantastic for creating simple text replacement templates
 (possibly involving variables), but it lacks certain killer pieces of
 functionality that I'd love to see. For instance, in LaTeX modes,
+*** TODO Dive deeper into advanced yasnippeting
+Take a look at the following example snippets that are in the package's snippet
+repo.
+#+NAME simple_matching_and_entered_string_analysis
+#+BEGIN_EXAMPLE
+  (${1:name} :initarg :${1:$(yas/substr yas-text "[^: ]*")}
+             :initform (error ":${1:$(yas/substr yas-text "[^: ]*")} must be specified")
+             ;; :accessor ${1:$(yas/substr yas-text "[^: ]*")}
+             :reader ${1:$(yas/substr yas-text "[^: ]*")}-changed
+
+#+END_EXAMPLE
+
+#+NAME reflection
+#+BEGIN_EXAMPLE
+  \${${2:n}:${4:\$(${5:reflection-fn})}\}$0
+#+END_EXAMPLE
+
+Here's a little example illustrating transformations. Note that the first dollar
+sign in the pair can be replaced with any non-empty string (possibly with a few
+character limitations I'm unaware of). Something is needed there for the
+interpreter to be able to distinguish between "mirrors" and "transformations".
+
+#+NAME transformation
+#+BEGIN_EXAMPLE
+  # name: alternator
+  # contributor: Daniel Moore
+  # key: alternator
+  # --
+  ${1:$$(apply #'string (reverse (string-to-list yas-text)))}$0
+#+END_EXAMPLE
+
+Here's a clever hack (that's since been replaced with something better in the
+current version of this snippet). The following allows you to selectively delete
+the =\label{...}= in a LaTeX environment without escaping from the snippet.
+#+BEGIN_EXAMPLE
+  # -*- mode: snippet; require-final-newline: nil -*-
+  # name: begin
+  # key: begin
+  # group: environments
+  # contributor: Daniel Moore
+  # --
+  \begin{$1}${2:
+      \label{${3:<label here>}}}
+      $0
+  \end{$1}
+#+END_EXAMPLE
+
+Or how about comment snippets that work in all programming language modes
+without any additional configuration? The following several snippets can be
+defined for =prog-mode= to enable this functionality. First, one defines some
+functions in a =.yas-setup= file in the =prog-mode= snippets directory.
+
+#+NAME yas-setup_file_example
+#+BEGIN_EXAMPLE emacs-lisp
+  (require 'yasnippet)
+
+  (defun yas-with-comment (str)
+    (format "%s%s%s" comment-start str comment-end))
+
+  ;; whitespace removing functions from Magnar Sveen ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (defun yas-s-trim-left (s)
+    "Remove whitespace at the beginning of S."
+    (if (string-match "\\`[ \t\n\r]+" s)
+        (replace-match "" t t s)
+      s))
+
+  (defun yas-s-trim-right (s)
+    "Remove whitespace at the end of S."
+    (if (string-match "[ \t\n\r]+\\'" s)
+        (replace-match "" t t s)
+      s))
+
+  (defun yas-s-trim (s)
+    "Remove whitespace at the beginning and end of S."
+    (yas-s-trim-left (yas-s-trim-right s)))
+
+
+  (defun yas-string-reverse (str)
+    "Reverse a string STR manually to be compatible with emacs versions < 25."
+    (apply #'string
+           (reverse
+            (string-to-list str))))
+
+  (defun yas-trimmed-comment-start ()
+    "This function returns `comment-start' trimmed by whitespaces."
+    (yas-s-trim comment-start))
+
+  (defun yas-trimmed-comment-end ()
+    "This function returns `comment-end' trimmed by whitespaces if `comment-end' is not empty.
+  Otherwise the reversed output of function `yas-trimmed-comment-start' is returned."
+    (if (eq (length comment-end) 0)
+        (yas-string-reverse (yas-trimmed-comment-start))
+      (yas-s-trim comment-end)))
+#+END_EXAMPLE
+
+Now we can define our functions. The first inserts a single-line comment.
+#+NAME single-line_comment_for_ALL_programming_modes
+#+BEGIN_EXAMPLE
+  # -*- mode: snippet -*-
+  # contributor: sh-ow <sh-ow@users.noreply.github.com>
+  # name: comment
+  # key: co
+  # --
+  ${1:$(yas-trimmed-comment-start)} ${1:comment}${1:$(unless (eq (length comment-end) 0) (concat " " (yas-trimmed-comment-end)))}$0
+#+END_EXAMPLE
+
+How about a snippet to comment out lines in *all* programming languages?
+#+NAME line
+#+BEGIN_EXAMPLE
+  # -*- mode: snippet -*-
+  # contributor: sh-ow <sh-ow@users.noreply.github.com>
+  # name: commentline
+  # key: col
+  # --
+  ${1:$(yas-trimmed-comment-start)} ${1:comment} ${1:$(let* ((str "")
+                                                 (curr (current-column))
+                                                 (start (yas-trimmed-comment-start))
+                                                 (lastcom (substring start -1))
+                                                 (end (yas-trimmed-comment-end)))
+                                               (while (< (length str) (- 79 (+ curr (length end))))
+                                                      (setq str (concat str lastcom)))
+                                             (concat str end))}$0
+#+END_EXAMPLE
+
+Not complex enough for you? Here's a multiline comment generator that works in
+*all* programming languages...and auto wraps lines!!!
+#+NAME block_comment_for_*prog-mode*___so_for_ALL_programming_modes
+#+BEGIN_EXAMPLE emacs-lisp
+  # -*- mode: snippet -*-
+  # contributor: sh-ow <sh-ow@users.noreply.github.com>
+  # name: commentblock
+  # key: cob
+  # --
+  ${1:$(let* ((col (current-column))
+             (str "")
+             (lastcom (substring (yas-trimmed-comment-start) -1))
+             (start (yas-trimmed-comment-start))
+             (end (yas-trimmed-comment-end))
+             (over (- (+ (string-width yas-text) (length start) (length end) col) 77)))
+           (while (< (length str) (+ (- 79 (length start) (length end) col) (if (> over 0) over 0)))
+                  (setq str (concat str lastcom)))
+         (concat start str end))}
+  ${1:$(let* ((col (current-column))
+             (str "")
+             (start (yas-trimmed-comment-start))
+             (end (yas-trimmed-comment-end)))
+           (while (< (length str) (ffloor (/ (- 78.0 (+ col (length start) (string-width yas-text) (length end))) 2.0)))
+                  (setq str (concat str " ")))
+          (concat start str))} ${1:comment} ${1:$(let* ((col (current-column))
+                                                       (str "")
+                                                       (start (yas-trimmed-comment-start))
+                                                       (end (yas-trimmed-comment-end)))
+                                                     (while (< (length str) (- 79.0 (if (eq (mod (string-width yas-text) 2) 1) (- col 1) col) (length end)))
+                                                            (setq str (concat str " ")))
+                                                   (concat str end))}
+  ${1:$(let* ((col (current-column))
+             (str "")
+             (lastcom (substring (yas-trimmed-comment-start) -1))
+             (start (yas-trimmed-comment-start))
+             (end (yas-trimmed-comment-end))
+             (over (- (+ (string-width yas-text) (length start) (length end) col) 77)))
+           (while (< (length str) (+ (- 79 (length start) (length end) col) (if (> over 0) over 0)))
+                  (setq str (concat str lastcom)))
+         (concat start str end))}$0
+#+END_EXAMPLE
 ** ws-butler                                          :Whitespace:ws_butler:
 Automatically remove trailing whitespace on save, but only on lines that you've
 made other changes to. This is amazingly useful when committing to a repo.
@@ -2745,7 +2910,7 @@ made other changes to. This is amazingly useful when committing to a repo.
 ** DISABLED Packages
 Here is a list of packages that I used to load globally but whose
 functionality has been replaced by something else.
-*** (DISABLED) Auto-YASnippet: Create Temporary YASnippets
+*** Auto-YASnippet: Create Temporary YASnippets
 Create a temporary snippet for reproducing similar code repeatedly in
 a file. To get an idea of how to use this, the following example is
 provided by the package.
