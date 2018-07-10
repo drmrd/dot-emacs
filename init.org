@@ -3123,18 +3123,18 @@ pull. [Tab] is also a nice key.
           (setq magit-repository-directories '(("~/workspace" . 2)))
 
     :config ;; Disable magit-auto-revert-mode
-            ;; Enable pushing to origin HEAD:refs/for/develop (for use with Gerrit)
-            ;; by hitting 'R' in magit's push popup.
-            (magit-define-popup-action 'magit-push-popup
-              ?R "refspecs to origin HEAD:refs/for/develop"
-              '(lambda () (interactive)
-                 (magit-push-refspecs "origin" "HEAD:refs/for/develop" nil)))
         (setq magit-restore-window-configuration t) ; that's the default actually
         (setq magit-status-buffer-switch-function
               (lambda (buffer) ; there might already be an Emacs function which does this
                 (pop-to-buffer buffer)
                 (delete-other-windows)))
                 (magit-auto-revert-mode -1)
+        ;; Enable pushing to origin HEAD:refs/for/develop (for use with Gerrit)
+        ;; by hitting 'R' in magit's push popup.
+        (magit-define-popup-action 'magit-push-popup
+          ?R "refspecs to origin HEAD:refs/for/master"
+          '(lambda () (interactive)
+             (magit-push-refspecs "origin" "HEAD:refs/for/master" nil)))
         ;; Prevent the built-in VC package from doing work in the background by
         ;; disabling it in Git repositories.
         (setq vc-handled-backends (delq 'Git vc-handled-backends))
