@@ -47,6 +47,30 @@ minimal configuration for these is provided in my [[file:~/.emacs.d/.emacs][.ema
 For now the org-agenda-files list simply contains ~/org, but it can
 readily be modified to a list of subdirectories, files, etc. if
 necessary.
+
+#+SRC_NAME set_drmrd/org-directory
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (defcustom drmrd/org-directory
+    (expand-file-name "org/"
+                      (if (boundp 'user-home-directory)
+                          user-home-directory
+                        "~"))
+    "The default directory in which Org files should be stored (and loaded).
+
+  This will always be stored as an absolute path and is intended to provide a
+  quick and dirty way to override system defaults and get Org mode working in
+  any environment.  See `drmrd/org-file-to-path' for an example of it in use."
+    :type '(directory)
+    :group 'drmrd
+    :link '(function-link drmrd/org-file-to-path)
+    :version "25.1")
+#+END_SRC
+
+#+SRC_NAME drmrd/org-file-to-path_defun
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (defun drmrd/org-file-to-path (relative-org-file-name)
+    "Get an absolute path to an Org file given a relative file name."
+    (concat drmrd/org-directory relative-org-file-name))
 #+END_SRC
 * Task Management (TODO Keywords, Tags, etc.)
 ** Settings for TODOs
