@@ -1734,21 +1734,18 @@ about this on StackExchange at some point.
 #+END_SRC
 ** Backup Settings                                                 :Backups:
 #+BEGIN_SRC emacs-lisp
-  ; Store all backup files created by Emacs in the same directory
+  ;; Store all backup files created by Emacs in the same directory
   (setq backup-directory-alist '(("." . "~/.backups_emacs")))
 
-  ; Make Emacs create backups by copying files. If this leads to a
-  ; performance hit, see the other available backup methods (or just
-  ; comment out this line), as described in the documentation of the
-  ; make-backup-files variable.
+  ;; Make Emacs create backups by copying files. If this leads to a performance
+  ;; hit, see the other available backup methods (or just comment out this line),
+  ;; as described in the documentation of the make-backup-files variable.
   (setq backup-by-copying t)
-
 
   (setq delete-old-versions t
         kept-new-versions   6
         kept-old-versions   2
-        version-control     t) ; Use version numbers in backup file
-                               ; names
+        version-control     t) ; Use version numbers in backup file names
 #+END_SRC
 ** (DISABLED) Force Files to Open in Read Only Mode
 This is a bit of an experiment to see if I like defaulting to this
