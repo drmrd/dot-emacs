@@ -134,10 +134,9 @@
         (setenv "MD"   "/Users/dan/workspace/merged_draft")
         (setenv "DISS" "/Users/dan/workspace/merged_draft")
         (setenv "ORG"  "/Users/dan/org")
-
-        (org-babel-load-file (expand-file-name
-                              (concat drmrd/secrets-directory
-                                      "environment_variables.org")))
+        (setenv "SECRETS" (expand-file-name drmrd/secrets-directory))
+        (org-babel-load-file (concat drmrd/secrets-directory
+                                     "environment_variables.org"))
 
         (add-to-list 'helm-sources-using-default-as-input 'helm-source-man-pages)
 
