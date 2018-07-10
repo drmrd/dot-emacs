@@ -2714,7 +2714,11 @@ made other changes to. This is amazingly useful when committing to a repo.
     :config (ws-butler-global-mode))
 #+END_SRC
 ** TODO Color-identifiers-mode (Unique display colors for unique variables)
-** TODO Visible-Mark: Make the Current Mark Visible
+** Visible-Mark: Make the Current Mark Visible
+#+SRC_NAME enable_visible-mark-mode_globally
+#+BEGIN_SRC emacs-lisp
+  (global-visible-mark-mode 1)
+#+END_SRC
 ** DISABLED Packages
 Here is a list of packages that I used to load globally but whose
 functionality has been replaced by something else.
@@ -3106,7 +3110,7 @@ An actively developed and feature-full email client in Emacs. See the wonderful
 *** TODO Fail gracefully on systems without mu(4e) installed
 ** Visible Mark Mode                       :Mark:Regions:Navigation:Appearance:UI:
 Make the current mark visible in each buffer.
-#+SRC_NAME load_visible-mark-mode
+#+SRC_NAME visible-mark-mode_use-package
 #+BEGIN_SRC emacs-lisp
   (use-package visible-mark :ensure t
     :config (visible-mark-mode))
