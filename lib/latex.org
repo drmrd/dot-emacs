@@ -586,6 +586,73 @@ is bound to =C-c /=.
 *** TODO Create a RefTeX mode hydra, possibly bound to =C-c r=
 There are so many amazing RefTeX mode commands I forget about that it's probably
 worth collecting them somewhere.
+** Support for NewIndexableMathObject & the macros it generates
+#+SRC_NAME latex_NewIndexableMathObject_support
+#+BEGIN_SRC emacs-lisp
+  ;; % \NewIndexableMathObject{#1=ObjectName}{#2=Expansion}%
+  ;; %                        {#3=IndexParent}{#4=SortKey}%
+  ;; %                        {#5=IndexPrefix}{#6=IndexSuffix}
+  ;; %
+  ;; % Defines
+  ;; %
+  ;; %     1. A macro with name <ObjectName> and expansion <Expansion>.
+  ;; %     2. A macro with name <ObjectName>SortKey and expansion <SortKey> for use
+  ;; %        in calls to indexing macros. (This should be the string used by the
+  ;; %        index to find the right lexicographic place for this object's entry in
+  ;; %        the index.
+  ;; %     3. A macro with name mention<ObjectName> that should be called at any
+  ;; %        point in the text where this object is discussed/referenced that you'd
+  ;; %        like included in the index.
+  ;; %
+  ;; % The <IndexParent> is the parent (or ancestors) of this object in the index.
+  ;; % The <IndexPrefix> and <IndexSuffix> are math expressions (with or without
+  ;; % dollar signs) that should be prepended and appended to <Expansion> in the
+  ;; % index entry for the object. (For example, if you defined an object with
+  ;; % expansion C_c^\infty, you might want to set <IndexSuffix> equal to (G).)
+  ;; \newcommand{\NewIndexableMathObject}[6]{%
+  ;;     \expandafter\newcommand\csname #1\endcsname{#2}
+  ;;     \expandafter\newcommand\csname #1SortKey\endcsname{#4}
+  ;;     \def\temp{#3}\ifx\temp\empty
+  ;;         \def\indexParentString{\temp!}%
+  ;;     \else
+  ;;         \def\indexParentString{}%
+  ;;     \fi
+  ;;     \expandafter\newcommand\csname mention#1\endcsname{\expandafter\index{\indexParentString{}#4@\expandafter\ensuremath{#5\csname #1\endcsname#6}}}%
+  ;; }
+
+  ;; (defvar drmrd/LaTeX/macro-pattern/NewIndexableMathObject
+  ;;   '("\\\\NewIndexableMathObject{\\([a-zA-Z]+\\)}" (1 2) TeX-auto-multi)
+  ;;   "A regex matching \NewIndexableMathObject definitions.")
+
+  ;; (defvar TeX-auto-multi nil
+  ;;   "Temporary for parsing \\newmacro definitions.")
+
+  ;; (defun TeX-macro-cleanup ()
+  ;;   "Move symbols from `TeX-auto-multi' to `TeX-auto-symbol'."
+  ;;   (mapcar (lambda (list)
+  ;; 	    (mapcar (lambda (symbol)
+  ;; 		      (setq TeX-auto-symbol
+  ;; 			    (cons symbol TeX-auto-symbol)))
+  ;; 		    list))
+  ;; 	  TeX-auto-multi))
+
+  ;; (defun TeX-macro-prepare ()
+  ;;   "Clear `Tex-auto-multi' before use."
+  ;;   (setq TeX-auto-multi nil))
+
+  ;; (add-hook 'TeX-auto-prepare-hook 'TeX-macro-prepare)
+  ;; (add-hook 'TeX-auto-cleanup-hook 'TeX-macro-cleanup)
+
+  ;; (TeX-add-style-hook
+  ;;  "macro"
+  ;;  (lambda ()
+  ;;    (TeX-auto-add-regexp TeX-newmacro-regexp)
+  ;;    (TeX-add-symbols '("newmacro"
+  ;; 		      TeX-arg-macro
+  ;; 		      (TeX-arg-macro "Capitalized macro: \\")
+  ;; 		      t
+  ;; 		      "BibTeX entry: "
+  ;; 		      nil))))
 #+END_SRC
 * Custom Functions
 ** TODO Forward/Backward Token/Mode/Environment Boundary Functions
