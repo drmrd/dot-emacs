@@ -2771,7 +2771,7 @@ to do a git pull. [Tab] is also a nice key.
                  (magit-push-refspecs "origin" "HEAD:refs/for/develop" nil)))
     :bind ("C-x g" . magit-status))
 #+END_SRC
-** TODO (DISABLED) mu4e
+** mu4e
 An actively developed and feature-full email client in Emacs. See the wonderful
 [[http://www.djcbsoftware.nl/code/mu/mu4e/index.html#SEC_Contents][manual]] for all your basic installation and configuration needs.
 
