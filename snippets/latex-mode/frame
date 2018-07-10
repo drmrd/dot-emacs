@@ -3,6 +3,6 @@
 # key: frame
 # group: environments
 # --
-\begin{frame}{$1}
+\begin{$1frame}{$2}
     $0
 \end{$1frame}
