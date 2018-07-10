@@ -3117,6 +3117,11 @@ pull. [Tab] is also a nice key.
           ;; when SSH connections exist providing access to them. (Care needs to
           ;; be taken to ensure that repos are only listed from machines I own,
           ;; though.)
+
+          ;; Inform Magit where to look for repositories on this system, for use
+          ;; with the `magit-list-repositories' function.
+          (setq magit-repository-directories '(("~/workspace" . 2)))
+
     :config ;; Disable magit-auto-revert-mode
             ;; Enable pushing to origin HEAD:refs/for/develop (for use with Gerrit)
             ;; by hitting 'R' in magit's push popup.
