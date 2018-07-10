@@ -1980,10 +1980,10 @@ future.
 #+SRC_NAME: def_drmrd/load-library
 #+BEGIN_SRC emacs-lisp
   (defun drmrd/load-library (name &optional directory)
-    "Load the library `NAME' in the default library. Here `NAME' can be any
+    "Load the library NAME in the default library. Here NAME can be any
     file name or relative path to a file, but it should be relative to the default
     library directory specified in the `drmrd/lib-directory' variable, unless an
-    alternative directory `DIRECTORY' is given as a second argument. This function
+    alternative directory DIRECTORY is given as a second argument. This function
     can not be called interactively."
     (org-babel-load-file (expand-file-name name (or directory
                                                     drmrd/lib-directory))))
