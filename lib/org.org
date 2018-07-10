@@ -117,11 +117,13 @@ By default the value is =((sequence "TODO" "DONE"))=
 #+SRC_NAME redef_org-todo-keywords
 #+BEGIN_SRC emacs-lisp
   ; Courtesy of http://doc.norang.ca/org-mode.html#TasksAndStates
-  (setq org-todo-keywords
-        (quote ((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d)")
-                (sequence "WAITING(w@/!)" "HOLD(h@/!)" "|" "CANCELLED(c@/!)" "PHONE" "MEETING"))))
+  (setq-default org-todo-keywords
+        (quote ((sequence "TODO(t)" "|" "DONE(d)")
+                (sequence "WAITING(w@/!)" "HOLD(h@/!)" "|" "CANCELLED(c@/!)")
+                (sequence "PHONE")
+                (sequence "MEETING"))))
 
-  (setq org-todo-keyword-faces
+  (setq-default org-todo-keyword-faces
         (quote (("TODO" :foreground "red" :weight bold)
                 ("NEXT" :foreground "blue" :weight bold)
                 ("DONE" :foreground "forest green" :weight bold)
@@ -131,7 +133,7 @@ By default the value is =((sequence "TODO" "DONE"))=
                 ("MEETING" :foreground "forest green" :weight bold)
                 ("PHONE" :foreground "forest green" :weight bold))))
 
-  ;(setq org-todo-keywords
+  ;(setq-default org-todo-keywords
   ;  '((sequence "TODO(t)" "MAYBE(m)" "STARTED(s)" "WAITING(w)" "|" "DONE(d)" "CANCELED(c)")))
 #+END_SRC
 *** Toggle timestamps and/or notes when TODOs are toggled between =TODO= and =DONE=
@@ -145,14 +147,14 @@ to =note=, the timestamp is inserted and the user is prompted for
 input to insert onto an additional line in the format specified by the
 [[help:org-log-note-headings][org-log-note-headings]] variable.
 #+BEGIN_SRC emacs-lisp
-  (setq org-log-done 'time)
+  (setq-default org-log-done 'time)
 #+END_SRC
 
 * Org Link                                              :Hyperlinks:org_link:
 ** Custom Hyperlinks
 #+SRCNAME org_custom_hyperlink_names
 #+BEGIN_SRC emacs-lisp
-  (setq org-link-abbrev-alist
+  (setq-default org-link-abbrev-alist
         '(("google" . "http://www.google.com/search?q=")
           ("map"    . "http://maps.google.com/maps?q=")
           ("wiki"   . "https://en.wikipedia.org/wiki/")
@@ -207,9 +209,9 @@ to a question on Emacs.SE and @holocronweaver's comment in response.
   (require 'appt)
   (appt-activate t)
 
-  (setq appt-message-warning-time 30) ; Show notification 5 minutes before event
-  (setq appt-display-interval appt-message-warning-time) ; Disable multiple reminders
-  (setq appt-display-mode-line nil)
+  (setq-default appt-message-warning-time 30) ; Show notification 5 minutes before event
+  (setq-default appt-display-interval appt-message-warning-time) ; Disable multiple reminders
+  (setq-default appt-display-mode-line nil)
 
   ; Use appointment data from org-mode
   (defun my-org-agenda-to-appt ()
@@ -237,10 +239,10 @@ to a question on Emacs.SE and @holocronweaver's comment in response.
   (advice-add 'org-agenda-quit :after #'my-org-agenda-to-appt)
 
   ; Display appointments as a window manager notification
-  (setq appt-disp-window-function 'my-appt-display)
-  (setq appt-delete-window-function (lambda () t))
+  (setq-default appt-disp-window-function 'my-appt-display)
+  (setq-default appt-delete-window-function (lambda () t))
 
-  (setq my-appt-notification-app (expand-file-name "~/.emacs.d/lib/appt-notification.sh"))
+  (setq-default my-appt-notification-app (expand-file-name "~/.emacs.d/lib/appt-notification.sh"))
 
   (defun my-appt-display (min-to-app new-time msg)
     (if (atom min-to-app)
@@ -263,7 +265,7 @@ the given task.
 #+END_SRC
 ** Set Default Notes File
 #+BEGIN_SRC emacs-lisp
-  (setq org-default-notes-file "~/org/refile.org")
+  (setq-default org-default-notes-file "~/org/refile.org")
 #+END_SRC
 ** Templates                                                     :Templates:
 *** Overview
@@ -349,8 +351,8 @@ buffer to beneath other top level headers in the same buffer. We can
 change this by configuring [[help:org-refile-targets][org-refile-targets]] appropriately.
 #+SRC_NAME custom_org-refile-targets_setup
 #+BEGIN_SRC emacs-lisp
-    (setq org-refile-targets
-          '((org-agenda-files . (:maxlevel . 2))))
+    (setq-default org-refile-targets
+          '((org-agenda-files . (:maxlevel . 1))))
 #+END_SRC
 * Org Habit                                                          :Habits:
 #+SRC_NAME setup_org-habit
@@ -369,7 +371,7 @@ the usual =org-meta-return= function bound to M-Return with
 =smart-org-meta-return-dwim=, which sets =org-blank-before-new-entry=
 to =nil= contextually.
 #+BEGIN_SRC emacs-lisp :tangle no
-  (setq org-blank-before-new-entry
+  (setq-default org-blank-before-new-entry
         '((heading . always)
           (plain-list-item . nil)))
 
@@ -404,7 +406,7 @@ might take some tweaking to figure out in which of these contexts I
 want which behavior, but here's a start.
 #+BEGIN_SRC emacs-lisp
     ;;; Determine when M-Return can split lines
-    (setq org-M-RET-may-split-line
+    (setq-default org-M-RET-may-split-line
       '((default  . t)
         (headline . nil)
         (item     . nil)
@@ -415,7 +417,7 @@ want which behavior, but here's a start.
   ;; Have org try to prevent editing of invisible regions (e.g., folded
   ;; sections). Refer to the variable's docstring for all of its
   ;; possible settings (there are five in total).
-  (setq org-catch-invisible-edits 'smart)
+  (setq-default org-catch-invisible-edits 'smart)
 #+END_SRC
 * Org Babel: Set Default Header Arguments
 The global defaults for how code-blocks are evaluated in org-mode are
@@ -423,7 +425,7 @@ stored in *=org-babel-default-header-args=*. Change the default
 setting for code-block evaluation, so that the results of evaluation
 are not displayed in a new element.
 #+BEGIN_SRC emacs-lisp
-  (setq org-babel-default-header-args
+  (setq-default org-babel-default-header-args
     (cons '(:results . "silent")
           (assq-delete-all :results org-babel-default-header-args)))
 #+END_SRC
