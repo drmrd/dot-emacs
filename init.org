@@ -2333,7 +2333,17 @@ letter to the end of a tag. (For example FIXMEEEE has higher priority
 than FIXME.)
 
 #+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package button-lock
+    :ensure t
+    :config
+      (global-button-lock-mode 1))
+
+  (use-package wiki-nav
+    :config
+      (global-wiki-nav-mode 1))
+
   (use-package fixmee
+    :after wiki-nav
     :init
       (require 'button-lock)
     :config
