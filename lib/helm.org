@@ -34,8 +34,9 @@
         ;; (use-package helm-filesets :ensure t)
         ;; (use-package helm-firefox :ensure t)
         (use-package helm-flx :ensure t
+          :defer t
           :init (setq helm-flx-for-helm-locate t)
-                (helm-flx-mode))
+          :config (helm-flx-mode))
         (use-package helm-flycheck :ensure t)
         ;; (use-package helm-flymake :ensure t)
         ;; (use-package helm-flyspell :ensure t)
