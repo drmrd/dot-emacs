@@ -462,7 +462,7 @@ accordingly.
   ;;; Switch to another org buffer with "C-c b"
   ;;;
   ;;;     Switches to the org buffer with a given name.
-  (global-set-key "\C-cb" 'org-iswitchb)
+  ; (global-set-key "\C-cb" 'org-iswitchb)
 #+END_SRC
 
 * Create Custom Easy Templates
