@@ -1359,6 +1359,60 @@ programmatically.
 #+BEGIN_SRC emacs-lisp
   (use-package frame-cmds :ensure t)
 #+END_SRC
+** TRAMP                             :TRAMP:SSH:Tunneling:Remote_Connection:
+#+SRC_NAME tramp_use-package
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package tramp
+    :config
+    (progn
+      (defun drmrd/make-sudo-tramp-file-name (name)
+        "Return a Tramp file string for opening NAME as root.
+  If NAME is itself a Tramp file name (as should be the case for
+  remote files), the method component of the corresponding Tramp
+  file name object is simply replaced by 'sudo'. (Here by a 'Tramp
+  file name object', we mean a Lisp object of the form output by
+  `tramp-dissect-file-name'.)  Otherwise (for local files), this
+  method prepends the string '/sudo:root@localhost:' to NAME."
+        (if (file-remote-p name)
+            (let* ((exploded-name (tramp-dissect-file-name name))
+                   (old-method (aref exploded-name 0))
+                   (old-user (aref exploded-name 1))
+                   (old-host (aref exploded-name 2))
+                   (old-localname (aref exploded-name 3))
+                   (new-hop (format "ssh:%s@%s|" old-user old-host)))
+              (tramp-make-tramp-file-name "sudo"
+                                          ;; TODO: (2017-05-23) Should this be root or nil?
+                                          "root"
+                                          old-host
+                                          old-localname
+                                          new-hop))
+          (concat "/sudo:root@localhost:" name)))
+
+      (defun drmrd/sudo-find-alternate-file (name &optional point)
+        "Find an alternate file as root.
+  Open file FILE in a new buffer, editing it as root, switch to the new
+  buffer, move to the point POINT, then kill the old buffer. Compare with
+  `find-alternate-file'. If POINT is not provided, the point will remain
+  at the beginning of the new buffer."
+        ;; MAYBE: (2017-05-22) Make interactive like `find-alternate-file'?
+        (find-alternate-file (drmrd/make-sudo-tramp-file-name name))
+        (when point (goto-char point)))
+
+      (defun drmrd/edit-as-root ()
+        "Edit the current file (or file on this line in dired) as root.
+  When in a buffer visitng a file, this command works like
+  `find-alternate-file' but reopens the current file as root and
+  preserves the point's current position in the file."
+        (interactive)
+        (let* ((dired-p (equal major-mode 'dired-mode))
+               (file (if dired-p (dired-get-file-for-visit) (buffer-file-name)))
+               (position (unless dired-p (point))))
+          ;; MAYBE: (2017-05-22) Determine reasonable (find-file?) behavior for
+          ;;                     a non-dired buffer not visiting a file.
+          (when (not (or dired-p file))
+            (user-error "%s" "This buffer isn't visiting a file or directory"))
+          (drmrd/sudo-find-alternate-file file position)))))
+#+END_SRC
 * Search                                                             :Search:
 ** Enable Scrolling in isearch               :isearch:Highlighting:Scrolling:
 This allows you to scroll with your mouse in a buffer with an active =isearch=,
