@@ -1314,8 +1314,19 @@ much easier in Emacs. See the documentation for complete details, but
 the ace-window command will be bound to M-p here.
 #+BEGIN_SRC emacs-lisp
   (use-package ace-window
-    :bind ("M-p" . ace-window)
-    :bind ("M-P" . ace-window)) ; To use when M-p is overridden
+    :config
+    (progn
+      (defalias 'aw 'ace-window)
+      (defalias 'transpose-windows 'ace-swap-window)
+      (defun ace-window-last ()
+        "Change focus to the last window."
+        (interactive)
+        (aw-switch-to-window (aw--pop-window))))
+
+    :bind (("s-p" . aw)
+           ("s-P" . aw) ; To use when M-p is overridden
+           ("M-p" . ace-window-last)
+           ("M-P" . ace-window-last)))
 #+END_SRC
 *** TODO Find a way to use S-M-p to alternate between the two most recently used windows
 This behavior doesn't seem to be cooked into ace-window by default,
