@@ -1928,11 +1928,13 @@ future.
   ;; Change the color of the modeline based on flycheck's current status
   (use-package flycheck-color-mode-line
       :ensure t
+      :after flycheck
       :config (add-hook 'flycheck-mode-hook 'flycheck-color-mode-line-mode))
 
   ;; Display a tooltip at the cursor position when on a flycheck error
   (use-package flycheck-pos-tip
       :ensure t
+      :after flycheck
       :if window-system
       :config (add-hook 'flycheck-mode-hook 'flycheck-pos-tip-mode))
 
@@ -1940,6 +1942,7 @@ future.
   ;; meaningful emoji and warning/error counts
   (use-package flycheck-status-emoji
       :ensure t
+      :after flycheck
       :init (set-fontset-font t nil "Symbola")
       :config (add-hook 'flycheck-mode-hook 'flycheck-status-emoji-mode))
 
@@ -1950,7 +1953,9 @@ future.
   ;; Note: This is not a minor mode. Call `flycheck-pkg-config' interactively to
   ;; lookup (with completion) the correct path to add to
   ;; `flycheck-clang-include-path' by library name.
-  (use-package flycheck-pkg-config :ensure t)
+  (use-package flycheck-pkg-config
+    :ensure t
+    :after flycheck)
 #+END_SRC
 ** STARTED Projectile: PROJECT Interaction Library for Emacs :ProjectManagement:projectile:
 #+SRC_NAME load_projectile
@@ -2101,8 +2106,8 @@ and nlinum modes in a particular mode, not globally.
          ; Remove the auto-detect-wrap function from the
          ; text-mode-hook if on Mac OS X (in case you're running
          ; Aquamacs).
-         (if (eq system-type 'darwin)
-             (remove-hook 'text-mode-hook 'auto-detect-wrap)))
+         (when (eq system-type 'darwin)
+           (remove-hook 'text-mode-hook 'auto-detect-wrap)))
 #+END_SRC
 ** kill-aquamacs-autoface-mode: Disable aquamacs-autoface-mode (use as a hook)
 #+BEGIN_SRC emacs-lisp
