@@ -1963,17 +1963,6 @@ future.
   (use-package projectile :ensure t
     :config (projectile-global-mode))
 #+END_SRC
-** STARTED org-projectile: Manage TODOs associated with a projectile project :ProjectManagement:OrgProjectile:TaskManagement:
-#+SRC_NAME: org-projectile-setup
-#+BEGIN_SRC emacs-lisp
-  (use-package org-projectile
-    :bind (("C-c n p" . org-projectile:project-todo-completing-read))
-    :config
-      (progn (setq org-projectile:projects-file "/home/dan/org/projects.org")
-             (setq org-agenda-files (append org-agenda-files (org-projectile:todo-files)))
-             (add-to-list 'org-capture-templates (org-projectile:project-todo-entry "p")))
-    :ensure t)
-#+END_SRC
 
 * Utility Functions                                               :Functions:
 ** drmrd/load-library
