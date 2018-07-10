@@ -2122,17 +2122,6 @@ is especially useful when working with regular expressions.
                         (kill-new (buffer-substring (point-min) (point-max))))
       (message "Regexp copied to kill-ring")))
 #+END_SRC
-** nolinums: Disable Line Numbers
-Use (add-hook 'foo-mode-hook 'nolinums) to disable line numbering in
-foo-mode
-#+BEGIN_SRC emacs-lisp
-  (defun nolinums ()
-         (global-linum-mode 0)
-         (global-nlinum-mode 0))
-#+END_SRC
-*** TODO Update this to not kill global modes
-This is a very old function that should be updated to just kill linum
-and nlinum modes in a particular mode, not globally.
 ** kill-auto-fill-mode: Disable auto-fill-mode (use as a hook)
 #+BEGIN_SRC emacs-lisp
   (defun kill-auto-fill-mode ()
