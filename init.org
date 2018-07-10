@@ -3119,7 +3119,7 @@ Make the current mark visible in each buffer.
 Highlight all changes made to the current buffer since a recent command. Great
 for keeping track of what you're saving in an unobtrusive way. Depending on your
 theme it can be a super subtle but great quality of life improvement.
-#+SRC_NAME load_volatile-highlights-mode
+#+SRC_NAME volatile-highlights-mode_use-package
 #+BEGIN_SRC emacs-lisp
   (use-package volatile-highlights
     :config (volatile-highlights-mode)
