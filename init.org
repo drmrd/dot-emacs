@@ -609,8 +609,8 @@ changes).
     :version "25.1")
 #+END_SRC
 ** Enable Debugging/Detailed Timestamps
-Enable debugging while loading configuration files. This is disabled
-later in the config file.
+Enable debugging while loading configuration files. This is disabled later in
+the config file after initialization has finished.
 
 #+BEGIN_SRC emacs-lisp
   (setq debug-on-error t)
@@ -655,25 +655,23 @@ etc. are eating up the most startup time.
                 (newline))
             (insert (drmrd/debug/message-time-prefix))))))
 #+END_SRC
-** Load Package Manager and Package-Loader  :use_package:package_management:
-*** Configure =package=
-The following code loads =package= for package management, sets the
-default package repositories, and then initializes =package=.
+** Load Package Manager and Package-Loader :package_management:use_package:quelpa:
+*** +Configure =package=+
++The following code loads =package= for package management, sets the+
++default package repositories, and then initializes =package=.+
 
-Load Package, load all default packages, and link to all standard
-package repositories.
++Load Package, load all default packages, and link to all standard+
++package repositories.+
 
-We first ensure that the Package package for package management
-(that's a mouthful!) has been loaded. Then we call package-initialize,
-which loads all packages specified in the variable
-package-load-list. After loading the default packages, we redefine the
-package-archives list to include ELPA, GNU, MELPA, and Marmalade.
++We first ensure that the Package package for package management+
++(that's a mouthful!) has been loaded. Then we call package-initialize,+
++which loads all packages specified in the variable+
++package-load-list. After loading the default packages, we redefine the+
++package-archives list to include ELPA, GNU, MELPA, and Marmalade.+
 
-*Update:* I now do all of the above in the .emacs (or Preferences.el
- in the case of Aquamacs) file instead, so that I can initialize
- =package= before calling =org= for the first time. This ensures that
- the up-to-date version of =org= from ELPA is used instead of the
- built-in version.
+*Update:* I now do all of the above in [[file:.emacs][~.emacs~]] instead, so that I can
+initialize =package= before calling =org= for the first time. This ensures that
+an up-to-date version of =org= from ELPA is loaded instead of the built-in one.
 *** Bootstrap =use-package=
 Next, we ensure that =use-package= is installed on our system.
 
@@ -683,7 +681,7 @@ putting the following code at the start of our config, which uses
 =eval-when-compile= to load =use-package= only when necessary, further
 reducing load time.
 
-#+SRC_NAME use-package--init
+#+SRC_NAME use-package_bootstrap
 #+BEGIN_SRC emacs-lisp
   ;; Install `use-package' (if not already done)
   (unless (package-installed-p 'use-package)
@@ -699,14 +697,81 @@ reducing load time.
   (require 'bind-key)
 #+END_SRC
 
-We also ensure that all packages loaded through =use-package= are
-automatically installed on the current system.
+We also ensure that all packages we ~use~ through ~use-package~ are downloaded
+and installed by default when no local version is present.
 
-#+SRC_NAME use-package--config
+#+SRC_NAME use-package_configuration
 #+BEGIN_SRC emacs-lisp
   ;; Install packages from a repo that we attempt to load but are not
   ;; present on the system.
   (setq use-package-always-ensure t)
+#+END_SRC
+*** Bootstrap ~quelpa~, the 'package' manager for source repositories
+[[https://github.com/quelpa/quelpa][~quelpa~]] is a fantastic solution to the problem of installing Emacs list
+libraries from GitHub, EmacsWiki, and other sources that aren't provided the
+conventional package structure required for (or at least aren't mirrored in)
+ELPA, MELPA, etc. Instead, ~quelpa~ clones source repositories and wraps the
+source code in the necessary package syntax automatically. That way the
+installed source code is not only available to the user but also recognized by
+Emacs as providing features, etc.
+
+~quelpa~ can also be used to install other Emacs packages straight
+from source, regardless of whether or not they're packages. For instance,
+~(quelpa 'magit)~ will "will fetch the magit source code from GitHub, build a
+package in the ELPA format, and install it". It can also be called interactively
+to install packages from MELPA recipes and their dependencies.
+
+The package ships with a bootstrapper and encourages allowing it to upgrade
+itself. The following code is their recommended install and auto-upgrade
+logic:
+
+#+SRC_NAME quelpa_bootstrap
+#+BEGIN_SRC emacs-lisp
+  (ignore-errors
+    (if (require 'quelpa nil t)
+        (quelpa-self-upgrade)
+      (with-temp-buffer
+        (url-insert-file-contents "https://raw.github.com/quelpa/quelpa/master/bootstrap.el")
+        (eval-buffer))))
+#+END_SRC
+
+As you can probably guess, replacing the ~if~ with an ~unless~ and removing the
+~(quelpa-self-upgrade)~ call leaves you with just the bootstrapper (if you don't
+trust its self-upgrading functionality). Also, we call ~ignore-errors~ to avoid
+an error being signalled by ~url-insert-file-contents~ when working offline.
+
+We also install ~quelpa-use-package~, which adds a ~:quelpa~ keyword to
+~use-package~, which enables ~use-package~ to install from source, as well.
+
+#+SRC_NAME quelpa-use-package_quelpa_install
+#+BEGIN_SRC emacs-lisp
+  (quelpa
+   '(quelpa-use-package
+     :fetcher github
+     :repo "quelpa/quelpa-use-package"))
+  (require 'quelpa-use-package)
+#+END_SRC
+
+See the [[https://github.com/quelpa/quelpa-use-package][~quelpa-use-package~ repo]] for usage examples and more.
+
+The following macro is [[https://github.com/jwiegley/use-package/issues/471#issuecomment-308503507][due to joewreschnig]] on GitHub and makes using the
+~:quelpa~ keyword with GitHub projects a bit more readable. Note that I've
+swapped the order of the keyword and the ~body~ form found in the original
+version, since conditional keywords in the ~body~ won't work as expected unless
+they occur prior to the ~quelpa~ line.
+
+#+SRC_NAME use-github-package_defmacro
+#+BEGIN_SRC emacs-lisp
+  (defmacro use-github-package (name repo &rest body)
+    "Fetch package NAME from GitHub repository REPO, and use it.
+
+  Any forms appropriate for `use-package' may be passed in BODY."
+    (declare (indent 2))
+    (quelpa-use-package-activate-advice)
+    `(use-package ,name
+       ,@body
+       :quelpa (,name :repo ,repo :fetcher github))
+    (quelpa-use-package-deactivate-advice))
 #+END_SRC
 * Appearance & UI                                             :Appearance:UI:
 ** Clean Up GUI Elements                                 :Toolbar:Scrollbar:
@@ -896,7 +961,8 @@ Emacs24's built-in custom themes.
 Now we load our current favorite theme. This changes regularly.
 #+SRC_NAME load_a_theme
 #+BEGIN_SRC emacs-lisp
-  (load-theme 'spacemacs-dark t)
+  (message "DRMRD Debug: Loading theme")
+  (load-theme 'sanityinc-tomorrow-day t)
 #+END_SRC
 **** (Obsolete) Using color-theme to load a theme
 (I've kept these notes here for reference, in case I'm stranded on a
@@ -936,17 +1002,38 @@ seem to use it while loading multiple frames. This is only an issue on my
 laptop, not at the office, so I'm now testing to see if it's some kind of timing
 issue.
 
-#+SRC_NAME setup_nlinum-mode
+#+SRC_NAME nlinum-mode_use-package
 #+BEGIN_SRC emacs-lisp
-  (use-package nlinum :ensure t)
+  (use-package nlinum :ensure t
+    :config ;; (add-hook 'prog-mode-hook (lambda () (nlinum-mode t)))
+    (if (< emacs-major-version 25)
+        (progn
+          (message "emacs version < 25, will not use nlinum globally,
+        using workaround")
+          ;; nlinum workaround
+          (defun initialize-nlinum (&optional frame)
+            (require 'nlinum)
+            (add-hook 'prog-mode-hook 'nlinum-mode))
+          (when (daemonp)
+            (add-hook 'window-setup-hook 'initialize-nlinum)
+            (defadvice make-frame (around toggle-nlinum-mode compile activate)
+              (nlinum-mode -1) ad-do-it (nlinum-mode 1))))
+      (progn
+        (message "emacs version >= 25, will use nlinum globally")
+        (require 'nlinum)
+        (global-nlinum-mode 1)
+        ;; specify line number format
+        (unless window-system
+          (setq nlinum-format "%d "))))
+    :bind (("C-c t l" . nlinum-mode)))
 
-  (defun initialize-nlinum (&optional frame)
-         (require 'nlinum)
-         (add-hook 'prog-mode-hook 'nlinum-mode))
+    ;; (defun initialize-nlinum (&optional frame)
+    ;;        (require 'nlinum)
+    ;;        (add-hook 'prog-mode-hook 'nlinum-mode))
 
-  (add-hook 'window-setup-hook 'initialize-nlinum)
-  (defadvice make-frame (around toggle-nlinum-mode compile activate)
-             (nlinum-mode -1) ad-do-it (nlinum-mode 1))
+    ;; (add-hook 'window-setup-hook 'initialize-nlinum)
+    ;; (defadvice make-frame (around toggle-nlinum-mode compile activate)
+    ;;            (nlinum-mode -1) ad-do-it (nlinum-mode 1))
 #+END_SRC
 ** Highlight the Current Line                      :hlline:LineHighlighting:
 Highlights the current line in every buffer by default
@@ -954,7 +1041,7 @@ Highlights the current line in every buffer by default
   (global-hl-line-mode 1); Highlight current line in buffer
 #+END_SRC
 ** Set Default Frame Dimensions                                   :FrameSize:
-#+SRCNAME set_default_frame_dimensions
+#+SRC_NAME set_default_frame_dimensions
 #+BEGIN_SRC emacs-lisp
   (add-to-list 'default-frame-alist '(width  . 90))
   (add-to-list 'default-frame-alist '(height . 50))
@@ -963,12 +1050,23 @@ Highlights the current line in every buffer by default
 Displays a minimalist indicator in the fringe (side margin) of changes made to
 the current file since the last commit. After seeing this in Sublime Text and
 IntelliJ IDEA I'm hooked. It's amazingly useful without getting in the way.
-#+SRC_NAME enable_git-gutter-fringe
+
+=git-gutter-fringe= is based on its sibling mode =git-gutter=, which instead
+displays diff information in the gutter of each line
+buffers. Both are developed by syohex on GitHub:
+
+  - [[github:syohex/emacs-git-gutter][git-gutter]]
+  - [[github:syohex/emacs-git-gutter-fringe][git-gutter-fringe]]
+
+#+SRC_NAME git-gutter-fringe_use-package
 #+BEGIN_SRC emacs-lisp
   (use-package git-gutter-fringe
       ;; Move fringe to the right margin
       :init (setq git-gutter-fr:side 'right-fringe)
-      :config (global-git-gutter-mode t)
+      :config
+      (progn
+        (global-git-gutter-mode t)
+        (git-gutter:linum-setup))
       :ensure t
       :diminish t)
 #+END_SRC
@@ -981,11 +1079,12 @@ code. We load it in all programming modes by default.
 #+BEGIN_SRC emacs-lisp
   (use-package rainbow-delimiters
     :ensure t
-    :init (dolist (hook '(prog-mode-hook tex-mode-hook latex-mode-hook
-                                         TeX-mode-hook LaTeX-mode-hook))
-            (add-hook hook #'rainbow-delimiters-mode)))
+    :init
+    (progn
+      (cl-dolist (mode-hook '(prog-mode-hook tex-mode-hook latex-mode-hook
+                                             TeX-mode-hook LaTeX-mode-hook))
+        (add-hook mode-hook #'rainbow-delimiters-mode))))
 #+END_SRC
-
 ** Visual Error Sounds (Visual Alarm Bell)
 Among Emacs's most celebrated, modern features is the obnoxious audible bell it
 plays at every error. This informs you of your own egregious errors, triggering
@@ -1007,7 +1106,7 @@ error notifications altogether, like I've done below.
 #+END_SRC
 * Navigation & Window Management                                 :Navigation:
 ** ace-jump: Quickly move around in a buffer      :ace_jump:BufferNavigation:
-#+SRC_NAME load_ace-jump
+#+SRC_NAME ace-jump_use-package
 #+BEGIN_SRC emacs-lisp
   (use-package ace-jump-mode
     :ensure t
@@ -1018,10 +1117,10 @@ Enable Ido Mode for a much improved buffer and file switching/finding
 experience. Configuring Ido Mode, based on the settings in [[http://xgarrido.github.io/emacs-starter-kit/starter-kit-ido.html][xgarrido's
 Emacs Starter Kit]].
 *** Enable Ido Mode
-#+srcname: enable-ido-mode
-#+begin_src emacs-lisp
+#+SRC_NAME: enable-ido-mode
+#+BEGIN_SRC emacs-lisp
   (ido-mode t)
-#+end_src
+#+END_SRC
 *** Basic Configuration
 Next, we change some basic settings to make our lives easier. The
 following table describes each setting. Note that, for Boolean
@@ -1045,8 +1144,6 @@ the behavior being the opposite if nil (unless otherwise specified).
 |                       |                                  | 'never                     |
 | use-virtual-buffers   |                                  | Boolean                    |
 |                       |                                  |                            |
-| handle-duplicate      | ??? (...obsolete?)               | ???                        |
-| -virtual-buffers      |                                  |                            |
 | default-buffer-method | Determines where/how the         | selected-window            |
 |                       | selected buffer is opened        | other-window               |
 |                       |                                  | display                    |
@@ -1068,7 +1165,7 @@ the behavior being the opposite if nil (unless otherwise specified).
 | recently-closed buffers after you exit and re-open Emacs.                                |
 |------------------------------------------------------------------------------------------|
 
-#+SRCNAME: ido-mode-basic-config
+#+SRC_NAME: ido-mode-basic-config
 #+BEGIN_SRC emacs-lisp
   (setq ido-everywhere            t
         ido-enable-prefix         nil
@@ -1077,8 +1174,6 @@ the behavior being the opposite if nil (unless otherwise specified).
         ido-use-filename-at-point t
         ido-max-prospects         10
         ido-create-new-buffer     'always
-        ;; ido-use-virtual-buffers   t
-        ;; ido-handle-duplicate-virtual-buffers 2
         ido-default-buffer-method 'selected-window
         ido-default-file-method   'selected-window)
 #+END_SRC
@@ -1088,7 +1183,7 @@ Since we will configure Ido Mode to [[*Order%20Results%20Vertically][order resul
 rather than horizontally, we will also make the up and down arrow keys
 move up and down the list of results for easy browsing.
 
-#+SRCNAME: ido-mode-custom-keybindings
+#+SRC_NAME: ido-mode-custom-keybindings
 #+BEGIN_SRC emacs-lisp
   (defun ido-my-keys ()
     (define-key ido-completion-map (kbd "<up>")   'ido-prev-match)
@@ -1099,17 +1194,17 @@ move up and down the list of results for easy browsing.
 
 *** Order File Extensions
 Set the order in which Ido displays files based on their extensions.
-#+srcname: ido-mode-extension-order
+#+SRC_NAME: ido-mode-extension-order
 #+BEGIN_SRC emacs-lisp
-  (setq ido-file-extensions-order     '(".tex" ".org" ".log" ".cc"
-                                        ".h" ".sh" ".el" ".png"))
+  (setq ido-file-extensions-order '(".tex" ".org" ".log" ".cc"
+                                    ".h" ".sh" ".el" ".png"))
 #+END_SRC
 
 *** Set Ignored File Extensions and Buffers
 The following settings tell Ido Mode to ignore various types of files
 and buffers that we never actually look up/attempt to switch to.
 
-#+SRCNAME: ido-mode-ignored-extensions-and-buffers
+#+SRC_NAME: ido-mode-ignored-extensions-and-buffers
 #+BEGIN_SRC emacs-lisp
   (setq completion-ignored-extensions '(".o" ".elc" "~" ".bin" ".bak"
                                         ".obj" ".map" ".a" ".so"
@@ -1138,7 +1233,7 @@ which makes it difficult to search with several words that you know
 occur in the file name. This snippet changes this behavior to be more
 intuitive.
 
-#+SRCNAME: ido-mode-enable-spaces
+#+SRC_NAME: ido-mode-enable-spaces
 #+BEGIN_SRC emacs-lisp
   (add-hook 'ido-make-file-list-hook
             (lambda ()
@@ -1150,7 +1245,7 @@ By default Ido Mode displays results in a multi-line horizontal list,
 which is, frankly, difficult to read at times. This code makes Ido
 list results in a vertical list instead.
 
-#+SRCNAME: ido-mode-list-results-vertically
+#+SRC_NAME: ido-mode-list-results-vertically
 #+BEGIN_SRC emacs-lisp
   (setq ido-decorations (quote ("\n-> "   ""      ; The "brackets" around the
                                                   ; entire prospect list
@@ -1186,7 +1281,7 @@ Replace the usual M-x keybinding with an equivalent that also list all
 completions of the partial command name you've typed in much the same
 way Ido Mode does for buffers and files.
 
-#+SRCNAME: configure-smex
+#+SRC_NAME: configure-smex
 #+BEGIN_SRC emacs-lisp
   (use-package smex
     :bind
@@ -1195,42 +1290,23 @@ way Ido Mode does for buffers and files.
 #+END_SRC
 
 ** Recentf (Track Recent Files, Load via C-x C-r)   :recentf:FileNavigation:
-#+SRCNAME load-and-configure-recentf
+#+SRC_NAME load-and-configure-recentf
 #+BEGIN_SRC emacs-lisp
   (use-package recentf
     :init
       (setq recentf-max-menu-items 50)
     :config
-      (recentf-mode 1)
+      (recentf-mode)
       (add-to-list 'recentf-exclude "ido.last")
     :bind
       ("C-x C-r" . recentf-open-files))
 #+END_SRC
 
-** Bookmarks                            :bookmarks:Bookmarks:FileNavigation:
-Bookmarks are supported by default in recent versions of Emacs, but
-there are possible enhancement packages, notably =bookmarks+=, that we
-should consider using.
-*** Keybindings
-All of the following keybindings are defaults.
-
-|------------+-----------------------+---------------------------------|
-| Keybinding | Command Name          | Description                     |
-|------------+-----------------------+---------------------------------|
-| C-x r m    | =bookmark-set=        | Create a new bookmark to the    |
-|            |                       | current location in a file      |
-|            |                       | buffer and prompt the user for  |
-|            |                       | its name.                       |
-|------------+-----------------------+---------------------------------|
-| C-x r b    | =bookmark-jump=       | Prompt the user for the name of |
-|            |                       | another bookmark and open it in |
-|            |                       | this buffer.                    |
-|------------+-----------------------+---------------------------------|
-| C-x r l    | =bookmark-bmenu-list= | Display a list of existing      |
-|            |                       | bookmarks in a buffer entitled  |
-|            |                       | *Bookmark List*.                |
-|------------+-----------------------+---------------------------------|
-
+** Bookmarks+                           :bookmarks+:Bookmarks:FileNavigation:
+#+SRC_NAME bookmark+_use-package
+#+BEGIN_SRC emacs-lisp
+  (use-package bookmark+ :ensure t)
+#+END_SRC
 ** TODO Dired+: Extensions to Dired               :diredplus:FileNavigation:
 ** ace-window: Easy Window Navigation with M-p :acewindow:WindowNavigation:Frames:Windows:
 The ace-window package makes switching between more than two windows
@@ -1238,8 +1314,19 @@ much easier in Emacs. See the documentation for complete details, but
 the ace-window command will be bound to M-p here.
 #+BEGIN_SRC emacs-lisp
   (use-package ace-window
-    :bind ("M-p" . ace-window)
-    :bind ("M-P" . ace-window)) ; To use when M-p is overridden
+    :config
+    (progn
+      (defalias 'aw 'ace-window)
+      (defalias 'transpose-windows 'ace-swap-window)
+      (defun ace-window-last ()
+        "Change focus to the last window."
+        (interactive)
+        (aw-switch-to-window (aw--pop-window))))
+
+    :bind (("s-p" . aw)
+           ("s-P" . aw) ; To use when M-p is overridden
+           ("M-p" . ace-window-last)
+           ("M-P" . ace-window-last)))
 #+END_SRC
 *** TODO Find a way to use S-M-p to alternate between the two most recently used windows
 This behavior doesn't seem to be cooked into ace-window by default,
@@ -1272,33 +1359,278 @@ programmatically.
 #+BEGIN_SRC emacs-lisp
   (use-package frame-cmds :ensure t)
 #+END_SRC
+** TRAMP                             :TRAMP:SSH:Tunneling:Remote_Connection:
+#+SRC_NAME tramp_use-package
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package tramp
+    :config
+    (progn
+      (defun drmrd/make-sudo-tramp-file-name (name)
+        "Return a Tramp file string for opening NAME as root.
+  If NAME is itself a Tramp file name (as should be the case for
+  remote files), the method component of the corresponding Tramp
+  file name object is simply replaced by 'sudo'. (Here by a 'Tramp
+  file name object', we mean a Lisp object of the form output by
+  `tramp-dissect-file-name'.)  Otherwise (for local files), this
+  method prepends the string '/sudo:root@localhost:' to NAME."
+        (if (file-remote-p name)
+            (let* ((exploded-name (tramp-dissect-file-name name))
+                   (old-method (aref exploded-name 0))
+                   (old-user (aref exploded-name 1))
+                   (old-host (aref exploded-name 2))
+                   (old-localname (aref exploded-name 3))
+                   (new-hop (format "ssh:%s@%s|" old-user old-host)))
+              (tramp-make-tramp-file-name "sudo"
+                                          ;; TODO: (2017-05-23) Should this be root or nil?
+                                          "root"
+                                          old-host
+                                          old-localname
+                                          new-hop))
+          (concat "/sudo:root@localhost:" name)))
+
+      (defun drmrd/sudo-find-alternate-file (name &optional point)
+        "Find an alternate file as root.
+  Open file FILE in a new buffer, editing it as root, switch to the new
+  buffer, move to the point POINT, then kill the old buffer. Compare with
+  `find-alternate-file'. If POINT is not provided, the point will remain
+  at the beginning of the new buffer."
+        ;; MAYBE: (2017-05-22) Make interactive like `find-alternate-file'?
+        (find-alternate-file (drmrd/make-sudo-tramp-file-name name))
+        (when point (goto-char point)))
+
+      (defun drmrd/edit-as-root ()
+        "Edit the current file (or file on this line in dired) as root.
+  When in a buffer visitng a file, this command works like
+  `find-alternate-file' but reopens the current file as root and
+  preserves the point's current position in the file."
+        (interactive)
+        (let* ((dired-p (equal major-mode 'dired-mode))
+               (file (if dired-p (dired-get-file-for-visit) (buffer-file-name)))
+               (position (unless dired-p (point))))
+          ;; MAYBE: (2017-05-22) Determine reasonable (find-file?) behavior for
+          ;;                     a non-dired buffer not visiting a file.
+          (when (not (or dired-p file))
+            (user-error "%s" "This buffer isn't visiting a file or directory"))
+          (drmrd/sudo-find-alternate-file file position)))))
+#+END_SRC
+** Window Splitting
+Most modes will use the function [[help:split-window-preferred-function][split-window-preferred-function]] points to
+splitting the current window.  This function is set to [[help:split-window-sensibly][split-window-sensibly]] by
+default, which is biased towards splitting the window "vertically", which in
+Emacs means splitting the window into two windows one on top of the other (/not/
+split them along a vertical line).  This behavior is mostly controlled (for
+~split-window-sensible~ at least) by the variables [[help:split-width-threshold][split-width-threshold]] and
+[[help:split-height-threshold][split-height-threshold]], and we lower the former to increase the likelihood of
+windows splitting horizontally.
+
+#+SRC_NAME window-splitting
+#+BEGIN_SRC emacs-lisp :tangle no
+  (setq split-width-threshold 1)
+  (setq split-height-threshold 1200)
+
+  (defun my-split-window-sensibly (&optional window)
+      "Replacement `split-window-sensibly' function which prefers horizontal splits"
+      (interactive)
+      (let ((window (or window (selected-window))))
+          (or (and (window-splittable-p window t)
+                   (with-selected-window window
+                       (split-window-right)))
+              (and (window-splittable-p window)
+                   (with-selected-window window
+                       (split-window-below))))))
+
+  (setq split-window-preferred-function #'my-split-window-sensibly)
+
+
+
+  ;; (setq pop-up-windows t)
+
+  (defun my-display-buffer-function (buf not-this-window)
+    (if (and (not pop-up-frames)
+             (one-window-p)
+             (or not-this-window
+                 (not (eq (window-buffer (selected-window)) buf)))
+             (> (frame-width) 162))
+        (split-window-horizontally))
+    ;; Note: Some modules sets `pop-up-windows' to t before calling
+    ;; `display-buffer' -- Why, oh, why!
+    (let ((display-buffer-function nil)
+          (pop-up-windows nil))
+      (display-buffer buf not-this-window)))
+
+  (setq display-buffer-function 'my-display-buffer-function)
+#+END_SRC
+
+Finer-grained control over window splitting can be accomplished by changing the
+value of ~split-window-preferred-function~ to a custom function.
+
+*** Matrix transpose split windows
+#+SRC_NAME
+#+BEGIN_SRC emacs-lisp
+  (require 'windmove)
+
+  (defun transpose-window-split ()
+    "Move the next window to the right if it is below or vice versa.
+
+  In other words, if the selected and next window are in a horizontal split
+  change it to a vertical split, and do the opposite otherwise."
+    (interactive)
+    (let ((done))
+      (dolist (dirs '((right . down) (down . right)))
+        (unless done
+          (let* ((win (selected-window))
+                 (nextdir (car dirs))
+                 (neighbour-dir (cdr dirs))
+                 (next-win (windmove-find-other-window nextdir win))
+                 (neighbour1 (windmove-find-other-window neighbour-dir win))
+                 (neighbour2 (when next-win
+                               (with-selected-window next-win
+                                 (windmove-find-other-window neighbour-dir next-win)))))
+            (setq done (and (eq neighbour1 neighbour2)
+                            (not (eq (minibuffer-window) next-win))))
+            (if done
+                (let* ((other-buf (window-buffer next-win)))
+                  (delete-window next-win)
+                  (if (eq nextdir 'right)
+                      (split-window-vertically)
+                    (split-window-horizontally))
+                  (set-window-buffer (windmove-find-other-window neighbour-dir) other-buf))))))))
+
+
+  (defun transpose-window-split-dwim ()
+    "Move the next window to the right if it is below or vice versa.
+
+  In other words, if the selected and next window are in a horizontal split
+  change it to a vertical split, and do the opposite otherwise. If the selected
+  window is the last window in the frame, transpose it and the previous window
+  instead."
+    (interactive)
+    (let* ((at-last-window (eq (next-window) (frame-first-window)))
+           (this-window (if at-last-window (previous-window) (selected-window)))
+           (other-window (if at-last-window (selected-window) (next-window)))
+           (other-window-buffer (window-buffer other-window))
+           (direction (let ((window-right-of-this (windmove-find-other-window
+                                                   'right this-window)))
+                        (if (eq other-window window-right-of-this)
+                            'right 'down)))
+           (split-fn (if (eq direction 'right)
+                         'split-window-vertically
+                       'split-window-horizontally)))
+      (unless (eq this-window other-window)
+        (with-selected-window this-window
+          (delete-window other-window)
+          (funcall split-fn)
+          (set-window-buffer this-window this-window-buffer)
+          (set-window-buffer (windmove-find-other-window direction)
+                             other-window-buffer)))))
+
+  (global-set-key (kbd "C-x |") 'transpose-window-split)
+  (global-set-key (kbd "C-x C-|") 'transpose-window-split)
+#+END_SRC
 * Search                                                             :Search:
-** Enable Scrolling in isearch               :isearch:Highlighting:Scrolling:
+** Enable scrolling in isearch               :isearch:Highlighting:Scrolling:
 This allows you to scroll with your mouse in a buffer with an active =isearch=,
 preserving highlighting and the location of the current match.
 #+SRC_NAME enable_scrolling_in_isearch
 #+BEGIN_SRC emacs-lisp
   (setq isearch-allow-scroll t)
 #+END_SRC
-* Global Settings
-** Personal Information
-*** Email Address
+** Swap roles of C-s and C-M-s, C-r and C-M-r (i.e., regex search by default) :RegEx:Keybindings:
+I search via regular expressions frequently, so it only makes sense to make this
+the default search method.
+#+SRC_NAME prefer_searching_via_regex
 #+BEGIN_SRC emacs-lisp
-  (setq user-mail-address "contact@drmrd.xyz")
+  (bind-key "C-s" 'isearch-forward-regexp)
+  (bind-key "C-M-s" 'isearch-forward)
+
+  (bind-key "C-r" 'isearch-backward-regexp)
+  (bind-key "C-M-r" 'isearch-backward)
 #+END_SRC
-*** Paradox GitHub Token
+** Proximity search (=NEAR= & =AROUND= search operators) :ProximitySearch:AROUND:
+Many library/prose-oriented search tools (including Google) make it straight
+forward to identify occurrences of two or more phrases in close proximity to one
+another. In Google's case, for instance, you can write
+
+#+SRC_NAME AROUND_operator
+#+BEGIN_EXAMPLE
+  foo AROUND(20) bar
+#+END_EXAMPLE
+
+to find webpages containing =foo= and =bar= within 20 words of one another.
+
+The same functionality can be approximated in isearch, swoop, etc. using regular
+expressions like
+
+#+SRC_NAME AROUND_regex
+#+BEGIN_EXAMPLE
+  \<foo\>\W\(\w+\W+\)\{,20\}\<bar\>\|\<bar\>\W\(\w+\W+\)\{,20\}\<foo\>
+#+END_EXAMPLE
+
+but this isn't exactly convenient to type out in the middle of another task. So
+we provide a couple functions for it!
+
+#+SRC_NAME proximity_search_functions
 #+BEGIN_SRC emacs-lisp
-  ;; Retrieve the Paradox Package Manager's GitHub Token
-  ;;
-  ;; Loads a file containing a single instruction, which sets the GitHub token for
-  ;; Paradox.  Do not store that file in a public repo.
+  (defun proximity-search ()
+    "Find all occurrences of two words at most a given number of words apart."
+    ;; TODO: Update to support arbitrary numbers of words. That algorithm is much
+    ;; more interesting!
+    (interactive)
+    (let ((word1 (read-string "First word:"))
+          (word2 (read-string "Second word:"))
+          (word-distance (read-number "Distance:" 1)))
+      (occur (concat "\\<"
+                     word1 "\\>\\(\\W\\<\\w+\\>\\)\\{,"
+                     (number-to-string word-distance) "\\}\\W+\\<" word2 "\\>\\|\\<"
+                     word2 "\\>\\(\\W+\\<\\w+\\>\\)\\{,"
+                     (number-to-string word-distance) "\\}\\W+\\<" word1 "\\>"))))
+
+  (defalias 'proximity-word-search 'proximity-search)
+  (defalias 'near-search 'proximity-search)
+  (defalias 'near-word-search 'proximity-search)
+#+END_SRC
+
+Reference: https://www.emacswiki.org/emacs/SearchNear
+* General Settings
+** Personal Information                                           :Personal:
+*** Name & Email Address                           :Name:Email:ContactInfo:
+If the full name you provided to your current operating system (/e.g./, as part
+of creating your user account) differs from the one you'd like Emacs (and most
+of its packages) to use when personalizing contents for you, set the
+=user-full-name= variable to whatever you'd prefer to see. I do this for
+consistency and to ensure that everything is consistent on shared computers.
+
+#+SRC_NAME: set_name_and_email_address_variables
+#+BEGIN_SRC emacs-lisp
+  (setq user-full-name "Dan Moore")
+  (setq user-mail-address "hello@danielmoore.xyz")
+
+  ;; For ChangeLogs...
+  (setq add-log-full-name "Daniel R. Moore")
+  (setq add-log-mailing-address "changes@danielmoore.xyz")
+#+END_SRC
+*** Paradox GitHub Token                                   :GitHub:Secrets:
+One of the cooler features of the [[help:paradox-menu-mode][Paradox package manager]] is its ability to star
+and unstar GitHub repositories for packages as you browse. Enabling this
+requires providing Paradox an access token for your GitHub account, the setup
+process for which you're guided through after initially installing the
+package. (You can also refer to the documentation of the [[help:paradox-github-token][paradox-github-token]]
+(the variable wherein the token is stored) for more information.
+
+The following code loads a file containing a single instruction, which sets
+the =paradox-github-token= to the token value. I store it in my =secure=
+subdirectory, which is not a part of this repository to avoid sharing it with
+the world. You should always avoid storing access tokens in a public place.
+#+BEGIN_SRC emacs-lisp
   (org-babel-load-file
       (expand-file-name "~/.emacs.d/secure/paradox-github-token.org"))
 #+END_SRC
 ** Default Keybinding Replacements                              :Keybindings:
 #+BEGIN_SRC emacs-lisp
-  (global-set-key (kbd "M-/") 'hippie-expand)
-  (global-set-key (kbd "M-z") 'zap-up-to-char)
+  (bind-key "M-/" 'hippie-expand)
+  (bind-key "M-S-z" 'zap-up-to-char)
+
+  (bind-key "M-!" 'eshell-command)
 
   (setq select-enable-clipboard             t
         select-enable-primary               t
@@ -1336,44 +1668,25 @@ comment in the scratch buffer.
     :init (setq fortune-cookie-cowsay-enable nil)
     :config (fortune-cookie-mode))
 #+END_SRC
-** Change Where Customizations are Stored
+** Change Where Customizations are Stored                   :Customizations:
 By default, Emacs adds settings set via the customizations menu to the
 end of the .emacs file.
-#+SRCNAME set_customizations_file
+#+SRC_NAME set_customizations_file
 #+BEGIN_SRC emacs-lisp
   (setq custom-file "~/.emacs.d/customizations.el")
   (load custom-file)
 #+END_SRC
-** Load Other Config Files
-We now add several directories to the load-path. The directory
-~/workspace/elisp is a git repository containing some older
-configuration file, which I should probably just incorporate into this
-file and/or other org files in .emacs.d. The second directory is
-~/.emacs.d itself, which I thought was loaded by default but
-apparently not in all Emacs versions (or at least not in Aquamacs it
-seems).
 
-#+srcname: custom-load-paths
-#+begin_src emacs-lisp :tangle no
-  (add-to-list 'load-path "~/.emacs.d/lib")
-#+end_src
-
-*** Update: Disabled in favor of org-babel-load-file calls
-To avoid accidentally loading old tangled files (or other unwanted
-behavior), we are no longer including ~/.emacs.d/lib in our load
-path. Instead, libraries that we wish to load from here will be
-explicitly tangled and loaded via =org-babel-load-file= in this config
-file (and the files it loads).
 ** Load Third-Party Elisp not Managed by *Package*
 #+BEGIN_SRC emacs-lisp
   (add-to-list 'load-path "~/elisp")
 #+END_SRC
-** Bind Settings Files to Registers
+** Bind Settings Files to Registers                            :Keybindings:
 Bind init.org, .emacs.d/lib/latex.org, and Preferences.el to the
 registers "e", "l", and "p" (resp.) so that they can be opened easily with
 "C-x r j <register>".
 
-#+SRCNAME set-config-registers
+#+SRC_NAME set-config-registers
 #+BEGIN_SRC emacs-lisp
   (set-register ?e '(file . "~/.emacs.d/init.org"))
   (set-register ?h '(file . "~/.emacs.d/lib/helm.org"))
@@ -1382,10 +1695,6 @@ registers "e", "l", and "p" (resp.) so that they can be opened easily with
   (set-register ?o '(file . "~/.emacs.d/lib/org.org"))
   (set-register ?L '(file . "~/.emacs.d/lib/"))
   (set-register ?W '(file . "~/workspace/"))
-
-  ;; Also set a register for Preferences.el if on a Mac
-  (if (eq system-type 'darwin)
-    (set-register ?p (cons 'file "~/Library/Preferences/Aquamacs Emacs/Preferences.el")))
 #+END_SRC
 
 *** DONE Determine how to evaluate this file without reloading Aquamacs
@@ -1425,21 +1734,18 @@ about this on StackExchange at some point.
 #+END_SRC
 ** Backup Settings                                                 :Backups:
 #+BEGIN_SRC emacs-lisp
-  ; Store all backup files created by Emacs in the same directory
+  ;; Store all backup files created by Emacs in the same directory
   (setq backup-directory-alist '(("." . "~/.backups_emacs")))
 
-  ; Make Emacs create backups by copying files. If this leads to a
-  ; performance hit, see the other available backup methods (or just
-  ; comment out this line), as described in the documentation of the
-  ; make-backup-files variable.
+  ;; Make Emacs create backups by copying files. If this leads to a performance
+  ;; hit, see the other available backup methods (or just comment out this line),
+  ;; as described in the documentation of the make-backup-files variable.
   (setq backup-by-copying t)
-
 
   (setq delete-old-versions t
         kept-new-versions   6
         kept-old-versions   2
-        version-control     t) ; Use version numbers in backup file
-                               ; names
+        version-control     t) ; Use version numbers in backup file names
 #+END_SRC
 ** (DISABLED) Force Files to Open in Read Only Mode
 This is a bit of an experiment to see if I like defaulting to this
@@ -1468,20 +1774,35 @@ file variable when needed.
 
   ;; Make y and n suffice for answers to yes or no questions
   (fset 'yes-or-no-p 'y-or-n-p)
+
+  ;; MAYBE: (2017-06-04) Create a custom predicate function that's more
+  ;;                     fine-grained.
+
+  ;; Make Emacs confirm when you kill it.  If you've ever fat fingered C-x C-[...]
+  ;; commands as C-x C-w [...], you know why this is here.
+  (setq confirm-kill-emacs 'y-or-n-p)
 #+END_SRC
-** Compilation Behavior                              :Keybindings:Compiling:
-The following is brough to us by bpalmer and zigler on the
-[[https://www.emacswiki.org/emacs/UsingMakefileFromParentDirectory][EmacsWiki]]. It adds a =get-nearest-compilation-file= function that
-searches parent directories for a Makefile (or any file with name in
-=compilation-filenames=) to use during compilation and binds the new
-function to F5.
 ** Enable "Advanced" Commands
 Here I'm reinstating a number of incredibly useful commands to their rightful
 keybindings that are disabled by default in Emacs to avoid confusing newcomers.
 #+SRC_NAME re-enable_advanced_commands
 #+BEGIN_SRC emacs-lisp
-  (put 'narrow-to-region 'disabled nil)
+  (cl-dolist (disabled-function '(dired-find-alternate-file
+                                  downcase-region
+                                  erase-buffer
+                                  Info-edit
+                                  narrow-to-page
+                                  narrow-to-region
+                                  scroll-left
+                                  set-goal-column
+                                  upcase-region))
+    (put disabled-function 'disabled nil))
 #+END_SRC
+** Compilation Behavior                               :Keybindings:Compiling:
+The following is brought to us by bpalmer and zigler on the [[https://www.emacswiki.org/emacs/UsingMakefileFromParentDirectory][EmacsWiki]]. It adds a
+=get-nearest-compilation-file= function that searches parent directories for a
+Makefile (or any file with name in =compilation-filenames=) to use during
+compilation and binds the new function to F5.
 #+BEGIN_SRC emacs-lisp
   (setq compilation-filenames '("Makefile"))
 
@@ -1492,7 +1813,7 @@ keybindings that are disabled by default in Emacs to avoid confusing newcomers.
           (nearest-compilation-file 'nil))
       (while (and (not (string= dir parent-dir))
                   (not nearest-compilation-file))
-        (dolist (filename compilation-filenames)
+        (cl-dolist (filename compilation-filenames)
           (setq file-path (concat dir filename))
           (when (file-readable-p file-path)
             (setq nearest-compilation-file file-path)))
@@ -1500,9 +1821,12 @@ keybindings that are disabled by default in Emacs to avoid confusing newcomers.
               parent-dir (file-name-directory (directory-file-name parent-dir))))
       nearest-compilation-file))
 
-  ;; bind compiling with get-nearest-compilation-file to f5
-  (global-set-key [f5] (lambda () (interactive) (compile (format
-             "make -f %s" (get-nearest-compilation-file)))))
+  ;; Bind compiling with get-nearest-compilation-file to F5.
+  (global-set-key
+   [f5]
+   (lambda ()
+     (interactive)
+     (compile (format "make -f %s" (get-nearest-compilation-file)))))
 #+END_SRC
 ** Indentation & Whitespace Settings
 This deserves its own section, since it is always the part of text
@@ -1604,11 +1928,13 @@ future.
   ;; Change the color of the modeline based on flycheck's current status
   (use-package flycheck-color-mode-line
       :ensure t
+      :after flycheck
       :config (add-hook 'flycheck-mode-hook 'flycheck-color-mode-line-mode))
 
   ;; Display a tooltip at the cursor position when on a flycheck error
   (use-package flycheck-pos-tip
       :ensure t
+      :after flycheck
       :if window-system
       :config (add-hook 'flycheck-mode-hook 'flycheck-pos-tip-mode))
 
@@ -1616,6 +1942,7 @@ future.
   ;; meaningful emoji and warning/error counts
   (use-package flycheck-status-emoji
       :ensure t
+      :after flycheck
       :init (set-fontset-font t nil "Symbola")
       :config (add-hook 'flycheck-mode-hook 'flycheck-status-emoji-mode))
 
@@ -1626,7 +1953,9 @@ future.
   ;; Note: This is not a minor mode. Call `flycheck-pkg-config' interactively to
   ;; lookup (with completion) the correct path to add to
   ;; `flycheck-clang-include-path' by library name.
-  (use-package flycheck-pkg-config :ensure t)
+  (use-package flycheck-pkg-config
+    :ensure t
+    :after flycheck)
 #+END_SRC
 ** STARTED Projectile: PROJECT Interaction Library for Emacs :ProjectManagement:projectile:
 #+SRC_NAME load_projectile
@@ -1634,30 +1963,54 @@ future.
   (use-package projectile :ensure t
     :config (projectile-global-mode))
 #+END_SRC
-** STARTED org-projectile: Manage TODOs associated with a projectile project :ProjectManagement:OrgProjectile:TaskManagement:
-#+SRC_NAME: org-projectile-setup
-#+BEGIN_SRC emacs-lisp
-  (use-package org-projectile
-    :bind (("C-c n p" . org-projectile:project-todo-completing-read))
-    :config
-      (progn (setq org-projectile:projects-file "/home/dan/org/projects.org")
-             (setq org-agenda-files (append org-agenda-files (org-projectile:todo-files)))
-             (add-to-list 'org-capture-templates (org-projectile:project-todo-entry "p")))
-    :ensure t)
-#+END_SRC
 
 * Utility Functions                                               :Functions:
 ** drmrd/load-library
 #+SRC_NAME: def_drmrd/load-library
 #+BEGIN_SRC emacs-lisp
   (defun drmrd/load-library (name &optional directory)
-    "Load the library `NAME' in the default library. Here `NAME' can be any
+    "Load the library NAME in the default library. Here NAME can be any
     file name or relative path to a file, but it should be relative to the default
     library directory specified in the `drmrd/lib-directory' variable, unless an
-    alternative directory `DIRECTORY' is given as a second argument. This function
+    alternative directory DIRECTORY is given as a second argument. This function
     can not be called interactively."
     (org-babel-load-file (expand-file-name name (or directory
                                                     drmrd/lib-directory))))
+#+END_SRC
+** TODO Testing things exist                          :drmrd_shell_commandp:
+This needs to be fixed and DRYed up
+#+SRC_NAME drmrd/shell-commandp_defun :tangle no
+#+BEGIN_SRC emacs-lisp
+  (defun drmrd/shell-commandp (command &optional test-command-and-failure-check)
+    "Determine whether a shell COMMAND is known to the default shell.
+
+  No attempt is made to ensure COMMAND isn't an alias.  It uses the current user's
+  default or whatever shell is pointed to by `shell-file-name'.  It tries to
+  intelligently choose between using a 'type' or 'whence' built-in for testing
+  based on the current shell, but its choice can be overridden and an explicit
+  test command to pass COMMAND into (as a suffix) and a function to test the
+  output can be set by providing the optional TEST-COMMAND-AND-FAILURE-CHECK
+  parameter."
+    (let* '((shell-name (file-name-nondirectory shell-file-name))
+            (test-command
+             (or test-command-and-failure-check
+                 (cond ((or (string-equal shell-name "zsh")
+                            (string-equal shell-name "ksh"))
+                        (cons "whence -w "
+                              (lambda (output)
+                                (string-equal output (concat command ": none")))))
+                       ((or (string-equal shell-name "sh")
+                            (string-equal shell-name "bash")
+                            (string-equal shell-name "fish"))
+                        (cons "type -t "
+                              (lambda (output)
+                                (eq (length output) 0))))
+                       (t (error "Unknown shell '%s'" shell-name)))))
+            (test-output (substring
+                          (shell-command-to-string
+                           (concat (car test-command-and-failure-check) command))
+                          0 -1)))
+      (funcall (cdr test-command-and-failure-check) test-output)))
 #+END_SRC
 ** insert-to-last-eol
 #+BEGIN_SRC emacs-lisp
@@ -1758,18 +2111,7 @@ is especially useful when working with regular expressions.
                         (kill-new (buffer-substring (point-min) (point-max))))
       (message "Regexp copied to kill-ring")))
 #+END_SRC
-** nolinums: Disable Line Numbers
-Use (add-hook 'foo-mode-hook 'nolinums) to disable line numbering in
-foo-mode
-#+BEGIN_SRC emacs-lisp
-  (defun nolinums ()
-         (global-linum-mode 0)
-         (global-nlinum-mode 0))
-#+END_SRC
-*** TODO Update this to not kill global modes
-This is a very old function that should be updated to just kill linum
-and nlinum modes in a particular mode, not globally.
-** kill-auto-fill-mode: Disable auto-fill-mode (use as a hook)
+** kill-auto-fill-mode: Disable auto-fill-mode (use as a hook) :Aquamacs:macOS:
 #+BEGIN_SRC emacs-lisp
   (defun kill-auto-fill-mode ()
          "Disables auto-fill-mode when used as a hook"
@@ -1777,10 +2119,10 @@ and nlinum modes in a particular mode, not globally.
          ; Remove the auto-detect-wrap function from the
          ; text-mode-hook if on Mac OS X (in case you're running
          ; Aquamacs).
-         (if (eq system-type 'darwin)
-             (remove-hook 'text-mode-hook 'auto-detect-wrap)))
+         (when (eq system-type 'darwin)
+           (remove-hook 'text-mode-hook 'auto-detect-wrap)))
 #+END_SRC
-** kill-aquamacs-autoface-mode: Disable aquamacs-autoface-mode (use as a hook)
+** kill-aquamacs-autoface-mode: Disable aquamacs-autoface-mode (use as a hook) :Aquamacs:macOS:
 #+BEGIN_SRC emacs-lisp
   (defun kill-aquamacs-autoface-mode ()
     "Disables Aquamacs's built-in `aquamacs-autoface-mode' when used as a hook."
@@ -1790,7 +2132,7 @@ and nlinum modes in a particular mode, not globally.
 #+END_SRC
 ** org-babel-reload-file: org-babel-load-file but defaulting to the current file
 #+BEGIN_SRC emacs-lisp
-  (defun org-babel-reload-file (FILE &optional COMPILE)
+  (defun org-babel-reload-file (file &optional compile)
     "Tangle and load a specified file, with the current buffer's file as
     default.
 
@@ -1807,7 +2149,7 @@ and nlinum modes in a particular mode, not globally.
                                             (if buffer
                                                 (format " [Default: %s]" buffer))))
                        (list (read-file-name prompt nil (if buffer buffer)))))
-    (org-babel-load-file FILE COMPILE))
+    (org-babel-load-file file compile))
 #+END_SRC
 
 *** DONE Finish implementing this function
@@ -1899,27 +2241,34 @@ say about them.
            (shell-command "uuidgen" t))
 #+END_SRC
 *** TODO Throw an error if not on Linux
-* TODO Programming Languages                                           :Lang:
+* Programming Languages                                                :Lang:
+** Ansible                                                         :Ansible:
+#+SRC_NAME configure_ansible_packages
+#+BEGIN_SRC emacs-lisp
+  (use-package ansible :ensure t)
+  (use-package ansible-vault :ensure t)
+#+END_SRC
+** JSON                                                               :JSON:
+#+SRC_NAME json-mode_use-package
+#+BEGIN_SRC emacs-lisp
+  (use-package json-mode :ensure t)
+#+END_SRC
 ** TODO Jenkins                                                    :Jenkins:
 *** TODO Consider using this Jenkins plugin for monitoring /within/ Emacs
 See [[https://github.com/rmuslimov/jenkins.el][this GitHub repo]].
-** Java
+** Java                                                     :Java:meghanada:
 #+SRC_NAME meghanada_use-package
 #+BEGIN_SRC emacs-lisp
-  (use-package meghanada :ensure t
-    :config
-      (add-hook 'java-mode-hook
-                (lambda ()
-                  ;; meghanada-mode on
-                  (meghanada-mode t)
-                  (add-hook 'before-save-hook 'meghanada-code-beautify-before-save)))
-      (add-hook 'groovy-mode-hook
-                (lambda ()
-                  ;; meghanada-mode on
-                  (meghanada-mode t)
-                  (add-hook 'before-save-hook 'meghanada-code-beautify-before-save))))
+  ;; (use-package meghanada :ensure t
+  ;;   :config
+  ;;     (add-hook 'java-mode-hook
+  ;;               (lambda ()
+  ;;                 ;; meghanada-mode on
+  ;;                 (meghanada-mode)
+  ;;                 (add-hook 'before-save-hook
+  ;;                           'meghanada-code-beautify-before-save))))
 #+END_SRC
-** Groovy & Gradle                                      :Groovy:Gradle:Lang:
+** Groovy & Gradle                                 :Groovy:Gradle:meghanada:
 #+SRC_NAME groovy_setup
 #+BEGIN_SRC emacs-lisp
   (use-package groovy-mode
@@ -1928,17 +2277,22 @@ See [[https://github.com/rmuslimov/jenkins.el][this GitHub repo]].
     :init (add-hook 'groovy-mode-hook
                     (lambda ()
                       (c-set-offset 'label 4)))
+          ;; (add-hook 'groovy-mode-hook
+          ;;           (lambda ()
+          ;;             ;; meghanada-mode on
+          ;;             (meghanada-mode)
+          ;;             (add-hook 'before-save-hook
+          ;;                       'meghanada-code-beautify-before-save)))
     :mode ("\\(Jenkinsfile\\|\\.\\(groovy\\|gradle\\)\\)$" . groovy-mode))
 #+END_SRC
 ** TODO Spock                                                        :Spock:
-** Grails                                                           :Grails:
-#+SRC_NAME grails_setup
+** Grails                                                :Grails:Projectile:
+#+SRC_NAME grails-projectile-mode_use-package
 #+BEGIN_SRC emacs-lisp
   (use-package grails-projectile-mode
-    :init      (grails-projectile-global-mode t)
     :diminish  grails-projectile-mode)
 #+END_SRC
-** XML                                                            :XML:Lang:
+** XML                                                                 :XML:
 We can use the built-in =nxml-mode= for viewing XML files, so we can configure
 XML mode without use-package
 #+SRC_NAME nxml-mode_setup
@@ -1959,25 +2313,40 @@ XML mode without use-package
 ** TODO Maven                                                   :Maven:Java:
 See [[https://github.com/Fuco1/.emacs.d/blob/master/files/vendor.el][this init file]] for a /comprehensive/ configuration of =malabar-mode= (a mode
 for Java that boasts [[https://www.emacswiki.org/emacs/MalabarMode]["tight integration with Maven"]].
-** Shell                                                        :Shell:Lang:
-The only shell scripts I use that Emacs doesn't handle well by default are the
-occasional batch files (for Windows).
-#+SRC_NAME batch-mode_setup
+** Shell                                                             :Shell:
+The only shell scripts I use that Emacs doesn't handle well by default are
+Windows batch files (although I can't remember the last time I was on Windows
+long enough to edit one of those) and Fish scripts. We also need to make
+[[help:shell-script-mode][shell-script-mode]] (a.k.a. [[help:sh-mode][sh-mode]] (not a.k.a. [[help:shell-mode][shell-mode]] (confusingly))) aware
+that =.zsh= files are a thing
+
+#+SRC_NAME batch-mode_use-package
 #+BEGIN_SRC emacs-lisp
-  (use-package batch-mode
-    :ensure    batch-mode
-    :mode      ("\\.\\(bat\\)$" . batch-mode))
+  (use-package batch-mode :ensure    t
+    :mode ("\\.\\(bat\\)$" . batch-mode))
+#+END_SRC
+
+#+SRC_NAME fish-mode_use-package
+#+BEGIN_SRC  emacs-lisp
+  (use-package fish-mode :ensure t
+    :mode ("\\.\\(fish\\)$" . fish-mode))
+#+END_SRC
+
+#+SRC_NAME sh-mode_config
+#+BEGIN_SRC emacs-lisp
+  (setq-default sh-learn-basic-offset 'good-guess
+                sh-indentation        4)
 #+END_SRC
 ** TODO Cucumber                                 :Cucumber:IntegrationTests:
 ** Ruby, Rake, RBENV, Rspec
 #+SRC_NAME setup_ruby_packages
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (use-package rake :ensure t)
   (use-package rbenv :ensure t)
   (use-package rspec-mode :ensure t
     :config (add-hook 'dired-mode-hook 'rspec-dired-mode))
   (use-package web-mode :ensure t)
-  (use-package robe :ensure t)
+  ;; (use-package robe :ensure t)
 #+END_SRC
 ** CoffeeScript
 #+SRC_NAME setup_coffeescript_packages
@@ -1990,9 +2359,60 @@ occasional batch files (for Windows).
   (use-package apiwrap :ensure t)
 #+END_SRC
 *** TODO Determine if this deserves its own top-level header (or is better placed elsewhere)
+** Dockerfiles                                           :Docker:Dockerfile:
+#+SRC_NAME dockerfile-mode_use-package
+#+BEGIN_SRC emacs-lisp
+  (use-package dockerfile-mode :ensure t)
+#+END_SRC
+** Terraform                                           :Terraform:Hashicorp:
+#+SRC_NAME terraform-mode_use-package
+#+BEGIN_SRC emacs-lisp
+  (use-package hcl-mode :ensure t)
+  (use-package terraform-mode :ensure t)
+#+END_SRC
+** Jinja2                                :Jinja2:Python:TemplatingLanguages:
+#+SRC_NAME jinja2-mode_use-package
+#+BEGIN_SRC emacs-lisp
+  (use-package jinja2-mode :ensure t)
+#+END_SRC
+** Clojure                                                   :Clojure:CIDER:
+#+SRC_NAME clojure-mode_use-package
+#+BEGIN_SRC emacs-lisp
+  (use-package clojure-mode :ensure t)
+  (use-package cider :ensure t)
+#+END_SRC
+** Scala                                                      :Scala:ENSIME:
+The /de facto/ standard for working with Scala in Emacs is through the ENSIME
+(ENhanced Scala Interaction Mode for Emacs ) package.
+#+SRC_NAME scala_ensime_use-package
+#+BEGIN_SRC emacs-lisp
+  (use-package ensime :ensure t :pin melpa-stable)
+#+END_SRC
 * Misc. Packages                                                   :Packages:
 The following list comprises all of the packages that (a) are loaded by default
 in most major modes and (b) don't fit elsewhere in this configuration (yet).
+** discover                                                       :discover:
+A relatively new kid on the block for learning some of Emacs's more obscure
+switches through Magit-style context menus. See the [[obscurehttps://www.masteringemacs.org/article/discoverel-discover-emacs-context-menus][Mastering Emacs]] article for
+more information. It's currently enabled for registers (=C-x r=), dired mode
+(=?=), and isearch (=M-s=).
+#+SRC_NAME discover_use-package
+#+BEGIN_SRC emacs-lisp :tangle no
+  (use-package discover :init (global-discover-mode 1))
+#+END_SRC
+** fasd                                              :emacs_fasd:find_files:
+#+SRC_NAME fasd_use-package
+#+BEGIN_SRC emacs-lisp
+  (use-package fasd :ensure t
+    ;; TODO: (2017-11-19) ":if (shell-command-p "fasd")"
+    ;;                    or ":if (package-installed-p \"fasd\")"
+    :config (global-fasd-mode 1)
+    :bind ("C-x C-/" . fasd-find-file))
+
+  (use-github-package helm-fasd "madper/helm-fasd"
+      :bind (("C-x /" . helm-fasd)
+             ("C-c h F" . helm-fasd)))
+#+END_SRC
 ** fixmee                                :fixmee:TaskManagement:Navigation:
 A package for displaying and navigating TODOs, FIXMEs, etc. throughout a
 project. Works great with =projectile=, too! Use the =C-x f= keybinding to load
@@ -2003,12 +2423,129 @@ priority-based navigation) is increased by adding more of the last
 letter to the end of a tag. (For example FIXMEEEE has higher priority
 than FIXME.)
 
-Note that
 #+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package button-lock
+    :ensure t
+    :config
+      (global-button-lock-mode 1))
+
+  (use-package wiki-nav
+    :config
+      (global-wiki-nav-mode 1))
+
   (use-package fixmee
+    :after wiki-nav
     :init
       (require 'button-lock)
+
+      (defun drmrd/car-or-self-safe (object)
+        "Return the car of OBJECT if it has one and OBJECT otherwise.  This
+  functionality should be considered complementary to the `car-safe' function."
+        (if (consp object) (car object) object))
+
+      (defun drmrd/coerce-to-string (object)
+        "Attempt to convert OBJECT to a string.  For the time being, this function
+  will convert any character, string, or symbol to a string with no guarantee of
+  success when OBJECT is of another form."
+        (cond ((symbolp object) (symbol-name object))
+              (t (coerce object 'string))))
+
+      (defun drmrd/regexp-matching-char-case-insensitively (char)
+        "Convert the character CHAR to a regular expression in string form that
+  matches one occurrence of CHAR case insensitively.  For example, if CHAR is the
+  lowercase letter 'a', then the output of this function is the string \"[aA]\".
+  If CHAR is not a character with lowercase and uppercase forms recognized by
+  `downcase' and `upcase', this simply returns CHAR as a string."
+        (unless (characterp char)
+          (error "The provided argument is not a character: %s" char))
+        (let* ((char-as-string (string char))
+               (lowercase-char (downcase char-as-string))
+               (uppercase-char (upcase char-as-string)))
+          (if (equal lowercase-char uppercase-char)
+              char-as-string
+            (concat "[" lowercase-char uppercase-char "]"))))
+
+      (defun drmrd/words-to-fixmees (&rest tags)
+        "Convert a list of words indicating comment flags to a format
+  `fixmee-mode' understands.  The TAGS should consist of strings, symbols (to be
+  converted to strings), and pairs of the form (STRING-OR-SYMBOL
+  CASE-SENSITIVE-P), where STRING-OR-SYMBOL is either a string or a symbol to be
+  recognized by fixmee as a fixmee flag and CASE-SENSITIVE-P indicates whether or
+  not STRING-OR-SYMBOL should be considered case-sensitive.
+
+  This function does not check whether or not its arguments can be converted into
+  valid tags for fixmee comments.  Please read the help page for
+  `fixmee-notice-regexp' to see which strings are permissible."
+
+        (let* ((fixmee-tag-spec (first tags))
+               (fixmee-tag (drmrd/coerce-to-string
+                            (drmrd/car-or-self-safe fixmee-tag-spec)))
+               (case-sensitive-p (cdr-safe fixmee-tag-spec))
+               (fixmee-string
+                (concatenate
+                 'string
+                 (if case-sensitive-p
+                     fixmee-tag
+                   (apply #'concat (mapcar #'drmrd/regexp-matching-char-case-insensitively
+                                           (coerce fixmee-tag 'list))))
+                 "+"))
+               (remaining-tags (rest tags)))
+          (if remaining-tags
+              (concatenate 'string
+                           fixmee-string
+                           "\\|"
+                           (apply #'drmrd/words-to-fixmees remaining-tags))
+            fixmee-string)))
+
+      (defcustom drmrd/fixmee-keywords '("todo" "maybe" "started" "fixme" "citeme"
+                                         (XXX case-sensitive))
+        "The keywords that indicate tasks to be highlighted in `fixmee-mode'.
+
+  Case-insensitive keyword <keyword> should be given as either a string or symbol
+  while a case-sensitive <keyword> should be provided as a cons cell
+  (<keyword> case-sensitive). See the documentation and value of
+  `fixmee-notice-regexp' to get a better idea how these are passed into
+  `fixmee-mode'.
+
+  Elisp-escaped regular expression strings might work here, too, so long as they
+  do not include (numbered) matching groups. At this time, however, they are not
+  officially supported."
+      :tag "List of Fixmee Keywords"
+      :type '(repeat sexp)
+      :link '(variable-link fixmee-notice-regexp)
+      :group 'drmrd)
+
+      ;; TODO: (2017-06-11) See what, if any, of the junk in this regexp can be
+      ;;                    removed.
+      ;; TODO: (2017-06-11) After cleaning up this regexp, make it aware of dates
+      ;;                    & trailing tags.
+      (setq-default fixmee-notice-regexp
+            (concat ; "[∵∴⇔⇝←→<>↓↑v\^[:space:]]*"
+                    "\\("
+                      "@@@+"
+                    "\\|"
+                      "\\_<"  ; ← '\_<' == Beginning of a "symbol"
+                      "\\(?:" ; The keyword in the fixmee notice (except @@@[…])
+                        (apply #'drmrd/words-to-fixmees
+                               drmrd/fixmee-keywords)
+                      "\\)"
+                    "\\)"
+                    "\\(?:" ; Patterns that can end a fixmee notice
+                      "[/:?!.[:space:]\\n]+"
+                    "\\|"
+                      "-+\\(?:\\s-\\|[\n]\\)"
+                    "\\|"
+                      "\\_>" ; ← '\_>' == End of a "symbol"
+                    "\\)"))
+
+      (setq fixmee-cache-refresh-interval 5)
+
     :config
+      (set-face-attribute 'fixmee-notice-face nil
+                          :background "white"
+                          :foreground "red"
+                          :weight 'bold)
+
       (global-fixmee-mode 1))
 #+END_SRC
 *** TODO Come up with a good replacement for the fixmee-goto-next-by-position keybinding
@@ -2041,6 +2578,27 @@ problems encountered between GnuTLS and Emacs.
 #+BEGIN_SRC emacs-lisp
   (setq gnutls-log-level 1)
 #+END_SRC
+** guide-key                                :learning:guide_key:keybindings:
+[[https://github.com/kai2nenobu/guide-key][guide-key mode]] displays Magit-like popup menus displaying all suffixes bound to
+commands after a given key prefix has been pressed. This is great for learning
+new keybindings.
+#+SRC_NAME guide-key_use-package_and_config
+#+BEGIN_SRC emacs-lisp
+  (defun drmrd/guide-key/hook-for-org-mode ()
+    (guide-key/add-local-guide-key-sequence "C-c")
+    (guide-key/add-local-guide-key-sequence "C-c C-x")
+    (guide-key/add-local-highlight-command-regexp "org-"))
+
+  (use-package guide-key
+    :config (setq guide-key/guide-key-sequence '("C-x r" "C-x 4")
+                  guide-key/recursive-key-sequence-flag t
+                  guide-key/highlight-command-regexp
+                  '(("rectangle" . "hot pink")
+                    ("register"  . "light green")
+                    ("bookmark"  . "cyan")))
+            (add-hook 'org-mode-hook 'drmrd/guide-key/hook-for-org-mode)
+    :init (guide-key-mode 1))
+#+END_SRC
 ** hydra                                       :hydra:Keybindings:Libraries:
 Groups of keybindings/registers on steroids
 
@@ -2062,6 +2620,56 @@ current usage counts.
       :config (keyfreq-mode 1)
               (keyfreq-autosave-mode 1))
 #+END_SRC
+** math-symbol-list                          :Editing:InputMethods:Math:TeX:
+This is really cool but hard to categorize.  I've taken the code in
+[[https://emacs.stackexchange.com/a/3404/8643][this Emacs.SE answer]] with some slight modifications.  It enables a new =math=
+input method similar to the =TeX= input method =C-\= but with basically every
+math-related unicode symbol bound to something.  The actual symbols aren't
+associated to their familiar LaTeX macro names at times, but whenever you're
+bothered by that, you can just add the macro name to the =quail-define-rules=
+command below with the appropriate Unicode code-point.  On the other hand,
+they're consistently named, with, for instance, the negation of a relation
+=\foo= usually bound to =\nfoo=. The bound code-points are also conveniently all
+contained in the symbol table in the =ac-math= package.
+
+We're also playing around with a modified form of Clark Grubb's excellent
+[[https://github.com/clarkgrubb/latex-input][latex-input]] project, which we've named the "LaTeX" input source and store in its
+own library file.
+
+#+SRC_NAME math-symbol-list_use-package
+#+BEGIN_SRC emacs-lisp
+  (use-package math-symbol-lists :ensure t
+    :config
+    (progn
+      (use-package ac-math :ensure t)
+      (quail-define-package "math" "UTF-8" "Ω" t)
+      (quail-define-rules ; whatever extra rules you want to define...
+       ("\\from"    #X2190)
+       ("\\to"      #X2192)
+       ("\\lhd"     #X22B2)
+       ("\\rhd"     #X22B3)
+       ("\\unlhd"   #X22B4)
+       ("\\unrhd"   #X22B5)
+       ("\\CC"      #X2102)
+       ("\\NN"      #X2115)
+       ("\\PP"      #X2119)
+       ("\\QQ"      #X211A)
+       ("\\RR"      #X211D)
+       ("\\ZZ"      #X2124)
+       ("\\impliedby" #X21D0)
+       ("\\implies" #X21D2)
+       ("\\iff"     #X21D4)
+       ("\\notimpliedby" #X21CD)
+       ("\\notimply" #X21CF)
+       ("\\notiff"     #X21CE))
+      (mapc (lambda (x)
+              (if (cddr x)
+                  (quail-defrule (cadr x) (car (cddr x)))))
+            (append math-symbol-list-basic math-symbol-list-extended))
+      (drmrd/load-library "LaTeX-input-method.org")))
+#+END_SRC
+
+*** TODO Support superscripts, subscripts, etc.
 ** paradox                                                  :paradox:PkgMgmt:
 An updated package manager with better support for GitHub metadata. See the
 documentation. Run it by calling M-x paradox-list-packages.  Note that the
@@ -2087,7 +2695,7 @@ different styles of regular expressions (see the documentation), but
 has been configured here to use the one that's probably the most
 natural to me (and involves the fewest number of excess backslashes).
 
-#+SRCNAME enable-re-builder
+#+SRC_NAME enable-re-builder
 #+BEGIN_SRC emacs-lisp
   (use-package re-builder
       :init (setq reb-re-syntax 'string))
@@ -2117,7 +2725,7 @@ tree, naturally), change branches, etc.
     :diminish undo-tree-mode
     :init     (global-undo-tree-mode))
 #+END_SRC
-** yasnippet                               :yasnippet:Completion:Templating:
+** TODO yasnippet                          :yasnippet:Completion:Templating:
 Yet Another Snippet is a templating package for Emacs, enabling rapid template
 creation and reuse. Snippets for use in =foo-mode= should be store in the
 =~/.emacs.d/snippets/foo-mode= directory to ensure they're loaded
@@ -2149,6 +2757,171 @@ automatically.
 =yasnippet= is fantastic for creating simple text replacement templates
 (possibly involving variables), but it lacks certain killer pieces of
 functionality that I'd love to see. For instance, in LaTeX modes,
+*** TODO Dive deeper into advanced yasnippeting
+Take a look at the following example snippets that are in the package's snippet
+repo.
+#+NAME simple_matching_and_entered_string_analysis
+#+BEGIN_EXAMPLE
+  (${1:name} :initarg :${1:$(yas/substr yas-text "[^: ]*")}
+             :initform (error ":${1:$(yas/substr yas-text "[^: ]*")} must be specified")
+             ;; :accessor ${1:$(yas/substr yas-text "[^: ]*")}
+             :reader ${1:$(yas/substr yas-text "[^: ]*")}-changed
+
+#+END_EXAMPLE
+
+#+NAME reflection
+#+BEGIN_EXAMPLE
+  \${${2:n}:${4:\$(${5:reflection-fn})}\}$0
+#+END_EXAMPLE
+
+Here's a little example illustrating transformations. Note that the first dollar
+sign in the pair can be replaced with any non-empty string (possibly with a few
+character limitations I'm unaware of). Something is needed there for the
+interpreter to be able to distinguish between "mirrors" and "transformations".
+
+#+NAME transformation
+#+BEGIN_EXAMPLE
+  # name: alternator
+  # contributor: Daniel Moore
+  # key: alternator
+  # --
+  ${1:$$(apply #'string (reverse (string-to-list yas-text)))}$0
+#+END_EXAMPLE
+
+Here's a clever hack (that's since been replaced with something better in the
+current version of this snippet). The following allows you to selectively delete
+the =\label{...}= in a LaTeX environment without escaping from the snippet.
+#+BEGIN_EXAMPLE
+  # -*- mode: snippet; require-final-newline: nil -*-
+  # name: begin
+  # key: begin
+  # group: environments
+  # contributor: Daniel Moore
+  # --
+  \begin{$1}${2:
+      \label{${3:<label here>}}}
+      $0
+  \end{$1}
+#+END_EXAMPLE
+
+Or how about comment snippets that work in all programming language modes
+without any additional configuration? The following several snippets can be
+defined for =prog-mode= to enable this functionality. First, one defines some
+functions in a =.yas-setup= file in the =prog-mode= snippets directory.
+
+#+NAME yas-setup_file_example
+#+BEGIN_EXAMPLE emacs-lisp
+  (require 'yasnippet)
+
+  (defun yas-with-comment (str)
+    (format "%s%s%s" comment-start str comment-end))
+
+  ;; whitespace removing functions from Magnar Sveen ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (defun yas-s-trim-left (s)
+    "Remove whitespace at the beginning of S."
+    (if (string-match "\\`[ \t\n\r]+" s)
+        (replace-match "" t t s)
+      s))
+
+  (defun yas-s-trim-right (s)
+    "Remove whitespace at the end of S."
+    (if (string-match "[ \t\n\r]+\\'" s)
+        (replace-match "" t t s)
+      s))
+
+  (defun yas-s-trim (s)
+    "Remove whitespace at the beginning and end of S."
+    (yas-s-trim-left (yas-s-trim-right s)))
+
+
+  (defun yas-string-reverse (str)
+    "Reverse a string STR manually to be compatible with emacs versions < 25."
+    (apply #'string
+           (reverse
+            (string-to-list str))))
+
+  (defun yas-trimmed-comment-start ()
+    "This function returns `comment-start' trimmed by whitespaces."
+    (yas-s-trim comment-start))
+
+  (defun yas-trimmed-comment-end ()
+    "This function returns `comment-end' trimmed by whitespaces if `comment-end' is not empty.
+  Otherwise the reversed output of function `yas-trimmed-comment-start' is returned."
+    (if (eq (length comment-end) 0)
+        (yas-string-reverse (yas-trimmed-comment-start))
+      (yas-s-trim comment-end)))
+#+END_EXAMPLE
+
+Now we can define our functions. The first inserts a single-line comment.
+#+NAME single-line_comment_for_ALL_programming_modes
+#+BEGIN_EXAMPLE
+  # -*- mode: snippet -*-
+  # contributor: sh-ow <sh-ow@users.noreply.github.com>
+  # name: comment
+  # key: co
+  # --
+  ${1:$(yas-trimmed-comment-start)} ${1:comment}${1:$(unless (eq (length comment-end) 0) (concat " " (yas-trimmed-comment-end)))}$0
+#+END_EXAMPLE
+
+How about a snippet to comment out lines in *all* programming languages?
+#+NAME line
+#+BEGIN_EXAMPLE
+  # -*- mode: snippet -*-
+  # contributor: sh-ow <sh-ow@users.noreply.github.com>
+  # name: commentline
+  # key: col
+  # --
+  ${1:$(yas-trimmed-comment-start)} ${1:comment} ${1:$(let* ((str "")
+                                                 (curr (current-column))
+                                                 (start (yas-trimmed-comment-start))
+                                                 (lastcom (substring start -1))
+                                                 (end (yas-trimmed-comment-end)))
+                                               (while (< (length str) (- 79 (+ curr (length end))))
+                                                      (setq str (concat str lastcom)))
+                                             (concat str end))}$0
+#+END_EXAMPLE
+
+Not complex enough for you? Here's a multiline comment generator that works in
+*all* programming languages...and auto wraps lines!!!
+#+NAME block_comment_for_*prog-mode*___so_for_ALL_programming_modes
+#+BEGIN_EXAMPLE emacs-lisp
+  # -*- mode: snippet -*-
+  # contributor: sh-ow <sh-ow@users.noreply.github.com>
+  # name: commentblock
+  # key: cob
+  # --
+  ${1:$(let* ((col (current-column))
+             (str "")
+             (lastcom (substring (yas-trimmed-comment-start) -1))
+             (start (yas-trimmed-comment-start))
+             (end (yas-trimmed-comment-end))
+             (over (- (+ (string-width yas-text) (length start) (length end) col) 77)))
+           (while (< (length str) (+ (- 79 (length start) (length end) col) (if (> over 0) over 0)))
+                  (setq str (concat str lastcom)))
+         (concat start str end))}
+  ${1:$(let* ((col (current-column))
+             (str "")
+             (start (yas-trimmed-comment-start))
+             (end (yas-trimmed-comment-end)))
+           (while (< (length str) (ffloor (/ (- 78.0 (+ col (length start) (string-width yas-text) (length end))) 2.0)))
+                  (setq str (concat str " ")))
+          (concat start str))} ${1:comment} ${1:$(let* ((col (current-column))
+                                                       (str "")
+                                                       (start (yas-trimmed-comment-start))
+                                                       (end (yas-trimmed-comment-end)))
+                                                     (while (< (length str) (- 79.0 (if (eq (mod (string-width yas-text) 2) 1) (- col 1) col) (length end)))
+                                                            (setq str (concat str " ")))
+                                                   (concat str end))}
+  ${1:$(let* ((col (current-column))
+             (str "")
+             (lastcom (substring (yas-trimmed-comment-start) -1))
+             (start (yas-trimmed-comment-start))
+             (end (yas-trimmed-comment-end))
+             (over (- (+ (string-width yas-text) (length start) (length end) col) 77)))
+           (while (< (length str) (+ (- 79 (length start) (length end) col) (if (> over 0) over 0)))
+                  (setq str (concat str lastcom)))
+         (concat start str end))}$0
+#+END_EXAMPLE
 ** ws-butler                                          :Whitespace:ws_butler:
 Automatically remove trailing whitespace on save, but only on lines that you've
 made other changes to. This is amazingly useful when committing to a repo.
@@ -2158,12 +2931,15 @@ made other changes to. This is amazingly useful when committing to a repo.
     :config (ws-butler-global-mode))
 #+END_SRC
 ** TODO Color-identifiers-mode (Unique display colors for unique variables)
-** TODO Origami: A Multi-Language Folding Mode
-** TODO Visible-Mark: Make the Current Mark Visible
+** Visible-Mark: Make the Current Mark Visible
+#+SRC_NAME enable_visible-mark-mode_globally
+#+BEGIN_SRC emacs-lisp
+  (global-visible-mark-mode 1)
+#+END_SRC
 ** DISABLED Packages
 Here is a list of packages that I used to load globally but whose
 functionality has been replaced by something else.
-*** (DISABLED) Auto-YASnippet: Create Temporary YASnippets
+*** Auto-YASnippet: Create Temporary YASnippets
 Create a temporary snippet for reproducing similar code repeatedly in
 a file. To get an idea of how to use this, the following example is
 provided by the package.
@@ -2192,8 +2968,8 @@ provided by the package.
 #+BEGIN_SRC emacs-lisp :tangle no
   (use-package auto-yasnippet
     :bind
-      ("H-w" . aya-create)
-      ("H-y" . aya-expand))
+      (("H-w" . aya-create)
+       ("H-y" . aya-expand)))
 #+END_SRC
 **** *Update (2016-05-04):* Disable auto-yasnippet
 I've disabled this package since I have yet to actually use
@@ -2307,6 +3083,96 @@ OS X/macOS (=darwin= systems).
             (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
             (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this))
 #+END_SRC
+** which-key                                         :which_key:Keybindings:
+~which-key~ displays all possible completions of an incomplete key prefix in a
+popup window. Our configuration is based on (if not taken /verbatim/ from)
+[[https://github.com/kaushalmodi/.emacs.d/blob/master/setup-files/setup-which-key.el][kaushalmodi's .emacs.d repo]].
+
+#+SRC_NAME which-key_use-package
+#+BEGIN_SRC emacs-lisp
+  (use-package which-key
+    :defer 10
+    :config
+    (progn
+      (setq which-key-popup-type 'side-window) ;Default
+      ;; (setq which-key-popup-type 'minibuffer)
+
+      (setq which-key-compute-remaps t) ;Show correct descriptions for remapped keys
+
+      (setq which-key-allow-multiple-replacements t) ;Default = nil
+
+      (setq which-key-replacement-alist
+            '(
+              ;; Replacements for how part or whole of FUNCTION is replaced when
+              ;; which-key displays
+              ;;   KEY → FUNCTION
+              ;; Eg: After "d" in `calc', display "6 → calc-hex-radix" as "6 → 🖩hex-radix"
+              ((nil . "Prefix Command")           . (nil . "prefix"))
+              ((nil . "which-key-show-next-page") . (nil . "wk next pg"))
+              ((nil . "\\`calc-")                  . (nil . "")) ;Hide "calc-" prefixes when listing M-x calc keys
+              ((nil . "\\`artist-select-op-")      . (nil . "")) ;Make artist-mode function names less verbose
+              ((nil . "\\`artist-select-")         . (nil . "sel-"))
+              ((nil . "\\`artist-toggle-")         . (nil . "toggle-"))
+              ((nil . "modi/")                    . (nil . "m/")) ;The car is intentionally not "\\`modi/" to cover cases like `hydra-toggle/modi/..'.
+              ((nil . "\\`hydra-\\(.+\\)/body\\'")      . (nil . "h/\\1"))
+              ((nil . "\\`org-babel-")             . (nil . "ob/"))
+              ;; Replacements for how KEY is replaced when which-key displays
+              ;;   KEY → FUNCTION
+              ;; Eg: After "C-c", display "right → winner-redo" as "⇨ → winner-redo"
+              (("<\\(.*\\)-?left>"   . nil)         . ("\\1⇦" . nil))
+              (("<\\(.*\\)-?right>"  . nil)         . ("\\1⇨" . nil))
+              (("<\\(.*\\)-?up>"     . nil)         . ("\\1⇧" . nil))
+              (("<\\(.*\\)-?down>"   . nil)         . ("\\1⇩" . nil))
+              (("<\\(.*\\)-?return>" . nil)         . ("\\1⏎" . nil))
+              (("RET" . nil)                      . ("⏎" . nil))
+              (("<\\(.*\\)-?delete>" . nil)         . ("\\1⮽" . nil)) ;Delete key
+              (("DEL"  . nil)                     . ("BS" . nil)) ;Backspace key
+              (("<\\(.*\\)-?backspace>" . nil)      . ("\\1BS" . nil)) ;Backspace key
+              (("<\\(.*\\)-?tab>"   . nil)          . ("\\1TAB" . nil))
+              (("SPC"   . nil)                    . ("⼐" . nil))
+              (("<\\(.*\\)-?next>"   . nil)         . ("\\1PgDn" . nil))
+              (("<\\(.*\\)-?prior>"  . nil)         . ("\\1PgUp" . nil))
+              ))
+      ;; Use cool unicode characters if available
+      (with-eval-after-load 'setup-font-check
+        (when font-symbola-p
+          (add-to-list 'which-key-replacement-alist '((nil . "\\`calc-") . (nil . "🖩")))
+          (add-to-list 'which-key-replacement-alist '((nil . "\\`engine/search-") . (nil . "🔎 "))))) ;engine-mode
+
+      ;; Change what string to display for a given *complete* key binding
+      ;; Eg: After "C-x", display "8 → +unicode" instead of "8 → +prefix"
+      (which-key-add-key-based-replacements
+        "C-x 8"   "unicode"
+        "C-x a"   "abbrev/expand"
+        "C-x r"   "rectangle/register/bookmark"
+        "C-x v"   "version control"
+        "C-c /"   "engine-mode-map"
+        "C-c C-v" "org-babel"
+        "C-x 8 0" "ZWS")
+
+      ;; Highlight certain commands
+      (defface modi/which-key-highlight-2-face
+        '((t . (:inherit which-key-command-description-face :foreground "indian red")))
+        "Another face for highlighting commands in `which-key'.")
+
+      (defface modi/which-key-highlight-3-face
+        '((t . (:inherit which-key-command-description-face :foreground "DarkOrange3")))
+        "Another face for highlighting commands in `which-key'.")
+
+      (setq which-key-highlighted-command-list
+            '(("\\`hydra-" . which-key-group-description-face)
+              ;; Highlight using the `modi/which-key-highlight-2-face'
+              ("\\`modi/" . modi/which-key-highlight-2-face)
+              ;; Highlight using the `modi/which-key-highlight-3-face'
+              ("\\`bookmark-" . modi/which-key-highlight-3-face)
+              ("\\`counsel-" . modi/which-key-highlight-3-face)
+              ;; Highlight using the default `which-key-highlighted-command-face'
+              "\\`describe-"
+              "\\(rectangle-\\)\\|\\(-rectangle\\)"
+              "\\`org-"))
+
+      (which-key-mode 1)))
+#+END_SRC
 * Performance Settings
 The following settings improve the performance of Emacs in various
 ways, typically by permitting it to assume our computer wasn't built
@@ -2332,6 +3198,29 @@ just wrap this command in a version check.
 #+BEGIN_SRC emacs-lisp
   ;;;; Major Mode Customizations
 #+END_SRC
+** Dired Mode: Directory Browsing/Editing      :Dired:DirectoryTreeBrowsing:
+*** Wdired Mode                                                    :Wdired:
+One of the killer features in Emacs that I originally stumbled on accidentally
+is Dired's "writable" mode. If you press ~C-x C-q~ (or whatever your
+~toggle-read-only~ keybinding is set to) while in dired mode (like I did as a
+joke), you'll discover that it does /exactly what you'd expect/; you'll be able
+to rename files in the current directory by just editing their names in the
+dired buffer, delete files by completely deleting their names, and even move
+files by adding relative/abolute paths to their names. Best of all, ~wdired~
+only performs these changes after you "commit" them with ~C-c C-c~ (or by
+hitting ~C-x C-q~ again and confirming), and you can revert your proposed
+changes at any time by typing ~C-c C-k~. It also works flawlessly on remote
+system with ~tramp~, and it's up there with [[help:dired-do-query-replace-regexp][~dired-do-query-replace-regexp~]] as
+one of my all-time favorite sysadmin workflow features within ~dired~.
+
+~wdired~ is baked into ~dired~ by default, with all of those features
+standard. The following takes this a step further by allowing you to edit the
+only remaining part of the ~dired~ buffer that makes sense to edit in ~wdired~
+mode: file permissions!
+#+SRC_NAME wdired_config
+#+BEGIN_SRC emacs-lisp
+  (setq wdired-allow-to-change-permissions t)
+#+END_SRC
 ** CC Mode: Editing in C-like languages             :CCmode:C:Cpp:Java:Perl:
 *** Code Style and Indentation                      :Indentation:CodeStyle:
 #+SRC_NAME CC-mode
@@ -2356,7 +3245,7 @@ just wrap this command in a version check.
   (c-set-offset 'case-label '+)
 #+END_SRC
 ** Info Mode: Adding custom sections to =*info*=
-#+SRCNAME info-mode-custom-directories
+#+SRC_NAME info-mode-custom-directories
 #+BEGIN_SRC emacs-lisp
   ;; Add `[.emacs.d/]info/' to the Info-mode directory list, a custom
   ;; directory containing documentation that we'd like to add to
@@ -2365,7 +3254,8 @@ just wrap this command in a version check.
                (expand-file-name "./info/" user-emacs-directory))
 #+END_SRC
 *** TODO Create custom info files for modes that don't supply them (and personal notes)
-** Use Terminals Within Emacs
+** Use Terminals within Emacs                                       :Eshell:
+Use [[help:eshell][eshell]]!
 ** eww: Internet browser integrated into Emacs              :eww:Keybindings:
 Beginning in v24.4, Emacs comes equipped with an internet browser =eww= that
 supports basic HTML and CSS. Our config was inspired by [[https://github.com/dakrone/eos/blob/master/eos-web.org][dakrone's]].
@@ -2408,24 +3298,25 @@ First we replace the usual email command bound to "C-x m" with
            ("U" . eww-lnum-universal)))
 #+END_SRC
 *** Usage Notes
-- =eww= will only run on versions of Emacs compiled with libxml2. (In
-  fact, you can tell whether or not your emacsen are running libxml2
-  by trying to use =eww= to access a website; it should complain about
-  it almost immediately.) It also appears that the version of Emacs
-  attainable through =apt-get= (at least on Linux Mint, between
-  early-2015 and mid-2016) was not compiled with libxml2.
+- =eww= will only run on versions of Emacs compiled with libxml2. (In fact, you
+  can tell whether or not your emacsen are running libxml2 by trying to use
+  =eww= to access a website; it should complain about it almost immediately.) It
+  also appears that the version of Emacs attainable through =apt-get= (at least
+  on Linux Mint, between early-2015 and mid-2016) was not compiled with libxml2.
+*** Future Projects
+**** TODO Get =C-x m= to handle other link types (including org-links) appropriately
 ** TODO Change Log Mode
-[[help:change-log-mode][=change-log-mode=]] is enabled by default for files case-insensitively
-entitled =CHANGELOG=. While I'm sure this is a wonderful mode for
-certain changelogs, it defaults to 8 spaces of indentation in the body.
+[[help:change-log-mode][=change-log-mode=]] is enabled by default for files case-insensitively entitled
+=CHANGELOG=. While I'm sure this is a wonderful mode for certain changelogs, it
+defaults to 8 spaces of indentation in the body.
 ** Emacs-Lisp Mode
-We use the built-in emacs-lisp-mode for editing .el files, but with a
-couple quality of life tweaks incorporated.
+We use the built-in emacs-lisp-mode for editing .el files, but with a couple
+quality of life tweaks incorporated.
 *** Fix electric-indent-mode when in Emacs-Lisp mode
-The following code addresses an oddity in the interaction between
-Electric Indent Mode and Emacs-Lisp Mode. Without it, hitting return
-on a line beginning with a semi-colon in an elisp file will result in
-that line being indented by 40-ish characters.
+The following code addresses an oddity in the interaction between Electric
+Indent Mode and Emacs-Lisp Mode. Without it, hitting return on a line beginning
+with a semi-colon in an elisp file will result in that line being indented by
+40-ish characters.
 
 See the following if similar issues arise in other modes:
     http://emacs.stackexchange.com/q/3322
@@ -2445,78 +3336,130 @@ replacing =ido= and =smex= for finding files and commands to controlling Spotify
 from within Emacs. This is my second attempt to switch to =helm= from =ido=, and
 I think I'll stick with it this time around.
 
-#+SRC_NAME load_helm_library
+#+SRC_NAME load-helm-library
 #+BEGIN_SRC emacs-lisp
   (org-babel-load-file (expand-file-name "~/.emacs.d/lib/helm.org"))
 #+END_SRC
 ** (La)TeX Mode
 Next we load the file ~/.emacs.d/lib/latex.org, which contains and/or
 dynamically loads all of our custom LaTeX settings.
-#+SRCNAME load-latex-config
+
+#+SRC_NAME load-latex-config
 #+BEGIN_SRC emacs-lisp
   ;;; (La)TeX Mode
   ;;;
-  ;;;     Loads our configuration library for LaTeX-related major modes
-  ;;;     and AUCTeX. Naturally it is primarily focused on `TeX-mode'
-  ;;;     and `LaTeX-mode', but it also includes settings and hooks for,
-  ;;;     e.g., `outline-minor-mode', the `outline-magic' package, and
-  ;;;     (depending on my mood) `preview-latex'.
+  ;;;     Loads our configuration library for LaTeX-related major modes and
+  ;;;     AUCTeX. Naturally it is primarily focused on `TeX-mode' and
+  ;;;     `LaTeX-mode', but it also includes settings and hooks for, e.g.,
+  ;;;     `outline-minor-mode', the `outline-magic' package, and (depending on my
+  ;;;     mood) `preview-latex'.
   (org-babel-load-file (expand-file-name "~/.emacs.d/lib/latex.org"))
 #+END_SRC
 ** Org Mode
-Our Org mode configuration has been slowly but surely growing to a
-size where it now deserves its own config library.
-#+SRCNAME load-org-config
+Our Org mode configuration has been slowly but surely growing to a size where it
+now deserves its own config library.
+
+#+SRC_NAME load-org-config
 #+BEGIN_SRC emacs-lisp
   ;;; Org-Mode
   ;;;
-  ;;;     Loads our Org-mode config library. This includes customization
-  ;;;     for all official and community `org-*' modes/packages (e.g.,
-  ;;;     both `org-agenda', `org-babel', and `org-pomodoro'), in
-  ;;;     addition to general org tweaks.
+  ;;;     Loads our Org-mode config library. This includes customization for all
+  ;;;     official and community `org-*' modes/packages (e.g., both `org-agenda',
+  ;;;     `org-babel', and `org-pomodoro'), in addition to general org tweaks.
   (org-babel-load-file (expand-file-name "~/.emacs.d/lib/org.org"))
 #+END_SRC
-** Magit                                          :magit:Git:VersionControl:
-[[info:magit#Top][Magit]] is a Git porcelain (aka frontend) for Emacs. We load Magit and
-bind C-x g to the magit-status function (really the only command
-you'll ever invoke).
+** Magit                                          :Magit:Git:VersionControl:
+[[info:magit#Top][Magit]] is a Git porcelain (aka frontend) for Emacs. We load Magit and bind C-x g
+to the magit-status function (really the only command you'll ever invoke).
 
-Use "s" to stage a file, "c c" to start a commit, "C-c C-c" to finish
-a commit, "b b" to switch branches, "P P" to do a git push, and "F F"
-to do a git pull. [Tab] is also a nice key.
+Use "s" to stage a file, "c c" to start a commit, "C-c C-c" to finish a commit,
+"b b" to switch branches, "P P" to do a git push, and "F F" to do a git
+pull. [Tab] is also a nice key.
 
-#+SRCNAME load-and-configure-magit
+#+SRC_NAME magit_use-package
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package magit
     :init (remove-hook 'find-file-hook 'vc-find-file-hook)
           ;; Hide magit's work in progress mode lighters.
-          (delight '((magit-wip-after-save-mode nil)
-                     (magit-wip-after-apply-mode nil)
-                     (magit-wip-before-change-mode nil)))
+          (delight '((magit-wip-after-save-mode nil nil)
+                     (magit-wip-after-apply-mode nil nil)
+                     (magit-wip-before-change-mode nil nil)))
+          (setq magit-wip-after-save-local-mode nil
+                magit-wip-after-apply-mode-lighter nil
+                magit-wip-before-change-mode-lighter nil)
           ;; Make magit highlight actual changes in lines in a brighter color
           ;; than the rest of the current hunk. Set to 'all to do this in all
           ;; hunks instead (or nil to disable this).
           (setq magit-diff-refine-hunk t)
-          ;; Enable commit style convention checking with recommended defaults
+          ;; Enable commit style convention checking with recommended defaults.
           (setq git-commit-style-convention-checks '(non-empty-second-line
                                                      overlong-summary-line)
-                git-commit-summary-max-length 52
+                git-commit-summary-max-length 50
                 git-commit-fill-column 72)
+
+  ;;         ;; TODO: This function needs to be fixed to work with the most
+  ;;         ;;       recent magit versions
+  ;;         ;; TODO: (2017-06-03) Adjust this experimental function as needed.
+  ;;         (defun drmrd/magit/change-section-visibility-defaults(section)
+  ;;           "Tweak which sections are collapsed by default in magit buffers.
+  ;;
+  ;; Use this function by adding it to `magit-section-set-visibility-hook'."
+  ;;           (let ((section-type (magit-section-type section))
+  ;;                 (section-value (magit-section-value section)))
+  ;;             (when (or (and (memq section-type '(unpulled unpushed))
+  ;;                            (string-match-p "@{upstream}" section-value))
+  ;;                       (and (eq section-type 'stashes)
+  ;;                            (string-match-p "refs/stash" section-value)))
+  ;;               'hide)))
+  ;;
+  ;;         (add-hook 'magit-section-set-visibility-hook
+  ;;                   'drmrd/magit/change-section-visibility-defaults)
+
+          ;; TODO: (2017-05-29) Create a drmrd/git-repository-locations custom
+          ;; variable that uses some kind of drmrd/setq-list-with-secrets function
+          ;; to generate a list of local and remote repos. This should somehow
+          ;; (using another custom function) conditionally include TRAMP repos
+          ;; like those in
+          ;;
+          ;;     /ssh:drmrd-remote-user@drmrd-remote-host:/drmrd/remote/repos
+          ;;
+          ;; when SSH connections exist providing access to them. (Care needs to
+          ;; be taken to ensure that repos are only listed from machines I own,
+          ;; though.)
+
+          ;; Inform Magit where to look for repositories on this system, for use
+          ;; with the `magit-list-repositories' function.
+          (setq magit-repository-directories '(("~/workspace" . 2)))
+
     :config ;; Disable magit-auto-revert-mode
-            (magit-auto-revert-mode -1)
-            ;; Enable all of magit's WIP modes
-            (magit-wip-after-save-mode)
-            (magit-wip-after-apply-mode)
-            (magit-wip-before-change-mode)
-            ;; Enable pushing to origin HEAD:refs/for/develop (for use with Gerrit)
-            ;; by hitting 'R' in magit's push popup.
-            (magit-define-popup-action 'magit-push-popup
-              ?R "refspecs to origin HEAD:refs/for/develop"
-              '(lambda () (interactive)
-                 (magit-push-refspecs "origin" "HEAD:refs/for/develop" nil)))
+        (setq magit-restore-window-configuration t) ; that's the default actually
+        (setq magit-status-buffer-switch-function
+              (lambda (buffer) ; there might already be an Emacs function which does this
+                (pop-to-buffer buffer)
+                (delete-other-windows)))
+                (magit-auto-revert-mode -1)
+        ;; Enable pushing to origin HEAD:refs/for/develop (for use with Gerrit)
+        ;; by hitting 'R' in magit's push popup.
+        (magit-define-popup-action 'magit-push-popup
+          ?R "refspecs to origin HEAD:refs/for/master"
+          '(lambda () (interactive)
+             (magit-push-refspecs "origin" "HEAD:refs/for/master" nil)))
+        ;; Prevent the built-in VC package from doing work in the background by
+        ;; disabling it in Git repositories.
+        (setq vc-handled-backends (delq 'Git vc-handled-backends))
     :bind ("C-x g" . magit-status))
 #+END_SRC
-** TODO (DISABLED) mu4e
+
+We also install the ~magit-gh-pulls~ magit extension for managing and creating
+GitHub pull requests.
+
+#+SRC_NAME magit-gh-pulls_use-package
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package magithub :ensure t
+    :after magit
+    :config (magithub-feature-autoinject t))
+#+END_SRC
+** mu4e
 An actively developed and feature-full email client in Emacs. See the wonderful
 [[http://www.djcbsoftware.nl/code/mu/mu4e/index.html#SEC_Contents][manual]] for all your basic installation and configuration needs.
 
@@ -2527,7 +3470,7 @@ An actively developed and feature-full email client in Emacs. See the wonderful
 *** TODO Fail gracefully on systems without mu(4e) installed
 ** Visible Mark Mode                       :Mark:Regions:Navigation:Appearance:UI:
 Make the current mark visible in each buffer.
-#+SRC_NAME load_visible-mark-mode
+#+SRC_NAME visible-mark-mode_use-package
 #+BEGIN_SRC emacs-lisp
   (use-package visible-mark :ensure t
     :config (visible-mark-mode))
@@ -2536,7 +3479,7 @@ Make the current mark visible in each buffer.
 Highlight all changes made to the current buffer since a recent command. Great
 for keeping track of what you're saving in an unobtrusive way. Depending on your
 theme it can be a super subtle but great quality of life improvement.
-#+SRC_NAME load_volatile-highlights-mode
+#+SRC_NAME volatile-highlights-mode_use-package
 #+BEGIN_SRC emacs-lisp
   (use-package volatile-highlights
     :config (volatile-highlights-mode)
@@ -2550,7 +3493,23 @@ theme it can be a super subtle but great quality of life improvement.
     ; (setq server-socket-dir (expand-file-name "server" user-emacs-directory))
     (server-start))
 #+END_SRC
-** TODO Move server stuff back to .bashrc
+
+The following hack from [[https://lists.gnu.org/archive/html/help-gnu-emacs/2010-04/msg00151.html][Jim Burton]] uses a terminal-compatible theme for terminal
+frames while using a fancier theme in GUI frames. Using fancy themes with a
+daemonized Emacs will lead to init errors without something like this in place.
+
+Setting ~color-theme-is-global~ to ~nil~ makes the hook only affect the current
+frame (not all frames at once).
+#+SRC_NAME set_color_theme_differently_in_terminal_frames
+#+BEGIN_SRC emacs-lisp :tangle no
+  (setq color-theme-is-global nil)
+  (add-hook 'after-make-frame-functions
+            '(lambda (f)
+               (with-selected-frame f
+                 (if (window-system f)
+                     (color-theme-gray30)
+                   (color-theme-emacs-nw)))))
+#+END_SRC
 ** HOLD Move server stuff back to .profile
 - State "HOLD"       from "TODO"       [2017-05-13 Sat 18:06] \\
   No longer sure if the =emacs --daemon= approach (and its ilk) are better than

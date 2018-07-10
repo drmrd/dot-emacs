@@ -24,59 +24,54 @@ is just a good fool-proof way to address the problem without too big a
 cost to the structure of my config files.) Some org libraries must be
 loaded prior to tangling [[file:~/.emacs.d/init.org][init.org]] (org-crypt, for instance), and so a
 minimal configuration for these is provided in my [[file:~/.emacs.d/.emacs][.emacs]] file.
-
-* Keybindings                                                   :Keybindings:
+* General Settings & Keybindings                                :Keybindings:
 ** Navigation                                                   :Navigation:
+#+SRC_NAME org-mode/general-settings/navigation
+#+BEGIN_SRC emacs-lisp :tangle yes
+  ; (when (boundp 'spacemacs-version) "yes")
+  (setq org-special-ctrl-a/e t)
+#+END_SRC
+
 ** Editing                                                         :Editing:
-#+SRC_NAME org-mode_keybindings_navigation
+
+#+SRC_NAME org-mode/general-settings/editing
 #+BEGIN_SRC emacs-lisp
+  (setq org-M-RET-may-split-line '((headline) (item) (default . t)))
+
   (define-key org-mode-map (kbd "C-M-<enter>") 'org-insert-subheading)
   (define-key org-mode-map (kbd "C-M-S-<enter>") 'org-insert-todo-subheading)
 #+END_SRC
+
+** TODO Move other generic keybindings here
 * Configure Default Directory, Agenda Directory, and Notes File
 For now the org-agenda-files list simply contains ~/org, but it can
 readily be modified to a list of subdirectories, files, etc. if
 necessary.
-#+BEGIN_SRC emacs-lisp
-  (setq org-directory "~/org")
+
+#+SRC_NAME set_drmrd/org-directory
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (defcustom drmrd/org-directory
+    (expand-file-name "org/"
+                      (if (boundp 'user-home-directory)
+                          user-home-directory
+                        "~"))
+    "The default directory in which Org files should be stored (and loaded).
+
+  This will always be stored as an absolute path and is intended to provide a
+  quick and dirty way to override system defaults and get Org mode working in
+  any environment.  See `drmrd/org-file-to-path' for an example of it in use."
+    :type '(directory)
+    :group 'drmrd
+    :link '(function-link drmrd/org-file-to-path)
+    :version "25.1")
 #+END_SRC
-* Hyperlinks
-** Custom Hyperlinks
-#+SRCNAME org_custom_hyperlink_names
-#+BEGIN_SRC emacs-lisp
-  ;;; Create custom hyperlink prefixes for org-mode. For any prefix
-  ;;; `foo' defined in this list, writing (in any org file)
-  ;;;     [[foo:suffix][description]]
-  ;;; will display a link in org with text `description' and pointing to
-  ;;; the expansion of `foo' in this list, with the following
-  ;;; replacement rules:
-  ;;;
-  ;;;     - If the expansion text is a string without any of the
-  ;;;       items listed in the next three bullets as substrings, simply
-  ;;;       insert the contatenation of this replacement string and
-  ;;;       `suffix'.
-  ;;;     - "%s" is replaced by `suffix'
-  ;;;     - "%h" is replaced by `suffix' converted into a url-encoded
-  ;;;            string using the `url-hexify-string' function
-  ;;;     - "%(some-function)" is replaced by the output of
-  ;;;            `some-function'. It is assumed that `some-function'
-  ;;;            takes a single argument (which will be `suffix' here)
-  ;;;            as input and outputs a string.
-  ;;;     - The expansion of `foo' can also be a function (instead of a
-  ;;;       string), which is assumed to be of the same form (in terms
-  ;;;       of inputs and outputs) as `some-function' in the previous
-  ;;;       bullet.
-  ;;;
-  ;;; See the description of this variable for more info.
-  (setq org-link-abbrev-alist
-        '(("google" . "http://www.google.com/search?q=")
-          ("map"    . "http://maps.google.com/maps?q=%s")
-          ("wiki"   . "https://en.wikipedia.org/wiki/%s")))
+
+#+SRC_NAME drmrd/org-file-to-path_defun
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (defun drmrd/org-file-to-path (relative-org-file-name)
+    "Get an absolute path to an Org file given a relative file name."
+    (concat drmrd/org-directory relative-org-file-name))
 #+END_SRC
-*** TODO Test these further and improve with %(some-function) calls
-For instance, check to see if I need to change the "wiki" linkkey's
-expansion to either %h or something like %(drmrd/spaces-to-underlines)
-to ensure that Wikipedia links are working as expected.
 * Task Management (TODO Keywords, Tags, etc.)
 ** Settings for TODOs
 *** Set the TODO keywords
@@ -107,21 +102,23 @@ By default the value is =((sequence "TODO" "DONE"))=
 #+SRC_NAME redef_org-todo-keywords
 #+BEGIN_SRC emacs-lisp
   ; Courtesy of http://doc.norang.ca/org-mode.html#TasksAndStates
-  (setq org-todo-keywords
-        (quote ((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d)")
-                (sequence "WAITING(w@/!)" "HOLD(h@/!)" "|" "CANCELLED(c@/!)" "PHONE" "MEETING"))))
+  (setq-default org-todo-keywords
+        (quote ((sequence "TODO(t)" "|" "DONE(d)")
+                (sequence "WAITING(w@/!)" "HOLD(h@/!)" "|" "CANCELLED(c@/!)")
+                (sequence "PHONE")
+                (sequence "MEETING"))))
 
-  (setq org-todo-keyword-faces
+  (setq-default org-todo-keyword-faces
         (quote (("TODO" :foreground "red" :weight bold)
                 ("NEXT" :foreground "blue" :weight bold)
                 ("DONE" :foreground "forest green" :weight bold)
                 ("WAITING" :foreground "orange" :weight bold)
-                ("HOLD" :foreground "magenta" :weight bold)
-                ("CANCELLED" :foreground "forest green" :weight bold)
+                ("HOLD" :foreground "gray" :weight bold)
+                ("CANCELLED" :foreground "gray" :weight bold)
                 ("MEETING" :foreground "forest green" :weight bold)
                 ("PHONE" :foreground "forest green" :weight bold))))
 
-  ;(setq org-todo-keywords
+  ;(setq-default org-todo-keywords
   ;  '((sequence "TODO(t)" "MAYBE(m)" "STARTED(s)" "WAITING(w)" "|" "DONE(d)" "CANCELED(c)")))
 #+END_SRC
 *** Toggle timestamps and/or notes when TODOs are toggled between =TODO= and =DONE=
@@ -135,52 +132,96 @@ to =note=, the timestamp is inserted and the user is prompted for
 input to insert onto an additional line in the format specified by the
 [[help:org-log-note-headings][org-log-note-headings]] variable.
 #+BEGIN_SRC emacs-lisp
-  (setq org-log-done 'time)
+  (setq-default org-log-done 'time)
 #+END_SRC
-
+* Diary
+While not technically an Org feature, I use the Emacs diary almost exclusively
+with Org mode, so it makes some sense to configure it here.
+#+SRC_NAME diary_settings
+#+BEGIN_SRC emacs-lisp
+  (setq diary-file (expand-file-name "~/org/diary"))
+#+END_SRC
 * Org Link                                              :Hyperlinks:org_link:
 ** Custom Hyperlinks
 #+SRCNAME org_custom_hyperlink_names
 #+BEGIN_SRC emacs-lisp
-  (setq org-link-abbrev-alist
+  ;;; Create custom hyperlink prefixes for org-mode. For any prefix
+  ;;; `foo' defined in this list, writing (in any org file)
+  ;;;     [[foo:suffix][description]]
+  ;;; will display a link in org with text `description' and pointing to
+  ;;; the expansion of `foo' in this list, with the following
+  ;;; replacement rules:
+  ;;;
+  ;;;     - If the expansion text is a string without any of the
+  ;;;       items listed in the next three bullets as substrings, simply
+  ;;;       insert the contatenation of this replacement string and
+  ;;;       `suffix'.
+  ;;;     - "%s" is replaced by `suffix'
+  ;;;     - "%h" is replaced by `suffix' converted into a url-encoded
+  ;;;            string using the `url-hexify-string' function
+  ;;;     - "%(some-function)" is replaced by the output of
+  ;;;            `some-function'. It is assumed that `some-function'
+  ;;;            takes a single argument (which will be `suffix' here)
+  ;;;            as input and outputs a string.
+  ;;;     - The expansion of `foo' can also be a function (instead of a
+  ;;;       string), which is assumed to be of the same form (in terms
+  ;;;       of inputs and outputs) as `some-function' in the previous
+  ;;;       bullet.
+  ;;;
+  ;;; See the description of this variable for more info.
+  (setq-default org-link-abbrev-alist
         '(("google" . "http://www.google.com/search?q=")
           ("map"    . "http://maps.google.com/maps?q=")
           ("wiki"   . "https://en.wikipedia.org/wiki/")
           ("github" . "https://github.com/")))
 #+END_SRC
+*** TODO Test these further and improve with %(some-function) calls
+For instance, check to see if I need to change the "wiki" linkkey's
+expansion to either %h or something like %(drmrd/spaces-to-underlines)
+to ensure that Wikipedia links are working as expected.
+** PDF Support                                            :PDFs:org_pdfview:
+The following package allows links to lines in PDF files to be opened in
+~pdf-view~ mode instead of an external viewer.
+
+#+SRC_NAME org-pdfview_use-package
+#+BEGIN_SRC emacs-lisp
+  (use-package org-pdfview :ensure t)
+#+END_SRC
 * Org Agenda
 ** Set Agenda & Note Files
-#+BEGIN_SRC emacs-lisp
-  (setq org-agenda-files '("~/org/refile.org"
-                           "~/org/calendar.org"
-                           "~/org/habits.org"
-                           "~/org/tasks.org"
-                           ;"~/org/dissertating.org"
-                           ))
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (require 'org-agenda)
+  (setq org-agenda-files
+        (mapcar 'drmrd/org-file-to-path
+                '("calendar.org"
+                  "habits.org"
+                  "tasks.org"
+                  "dissertating.org"
+                  )))
 
   (setq org-agenda-include-diary      t
         org-agenda-timegrid-use-ampm  t
         org-agenda-span               'day
   )
 
-  ; The next setting and function are courtesy of:
-  ;     http://dept.stat.lsa.umich.edu/~jerrick/org_agenda_calendar.html
-  (add-hook 'org-finalize-agenda-hook
-            (lambda ()
-              (save-excursion
-                ; TODO: Customize color-org-header so that it doesn't color everything in the line, effectively making habit graphs useless.
-                (color-org-header "Habits:"     "gold")
-                )))
+  ;; ; The next setting and function are courtesy of:
+  ;; ;     http://dept.stat.lsa.umich.edu/~jerrick/org_agenda_calendar.html
+  ;; (add-hook 'org-finalize-agenda-hook
+  ;;           (lambda ()
+  ;;             (save-excursion
+  ;;               ; TODO: Customize color-org-header so that it doesn't color everything in the line, effectively making habit graphs useless.
+  ;;               (color-org-header "Habits:"     "gold")
+  ;;               )))
 
-  (defun color-org-header (tag col)
-    "Color agenda items with category TAG (including trailing
-  colon) with color COL."
-    (interactive)
-    ;(goto-char (point-min))
-    ;(while (re-search-forward tag nil t)
-    ;  (add-text-properties (match-beginning 0) (point-at-eol)
-    ;                       `(face (:foreground ,col))))
-  )
+  ;; (defun color-org-header (tag col)
+  ;;   "Color agenda items with category TAG (including trailing
+  ;; colon) with color COL."
+  ;;   (interactive)
+  ;;   ;(goto-char (point-min))
+  ;;   ;(while (re-search-forward tag nil t)
+  ;;   ;  (add-text-properties (match-beginning 0) (point-at-eol)
+  ;;   ;                       `(face (:foreground ,col))))
+  ;; )
 #+END_SRC
 ** Connect to =appt=                          :appt:Reminders:Notifications:
 Improve org-agenda-to-appt so that it reliably sends appointments to =appt=,
@@ -193,13 +234,13 @@ via =apt-get=.
 
 This code is a modified form of that posted by user @scaramouche in [[http://emacs.stackexchange.com/a/5821/8643][this answer]]
 to a question on Emacs.SE and @holocronweaver's comment in response.
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (require 'appt)
   (appt-activate t)
 
-  (setq appt-message-warning-time 30) ; Show notification 5 minutes before event
-  (setq appt-display-interval appt-message-warning-time) ; Disable multiple reminders
-  (setq appt-display-mode-line nil)
+  (setq-default appt-message-warning-time 30) ; Show notification 5 minutes before event
+  (setq-default appt-display-interval appt-message-warning-time) ; Disable multiple reminders
+  (setq-default appt-display-mode-line nil)
 
   ; Use appointment data from org-mode
   (defun my-org-agenda-to-appt ()
@@ -227,16 +268,35 @@ to a question on Emacs.SE and @holocronweaver's comment in response.
   (advice-add 'org-agenda-quit :after #'my-org-agenda-to-appt)
 
   ; Display appointments as a window manager notification
-  (setq appt-disp-window-function 'my-appt-display)
-  (setq appt-delete-window-function (lambda () t))
+  (setq-default appt-disp-window-function 'my-appt-display)
+  (setq-default appt-delete-window-function (lambda () t))
 
-  (setq my-appt-notification-app (expand-file-name "~/.emacs.d/lib/appt-notification.sh"))
+  (setq-default my-appt-notification-app (expand-file-name "~/.emacs.d/lib/appt-notification.sh"))
 
   (defun my-appt-display (min-to-app new-time msg)
     (if (atom min-to-app)
       (call-process my-appt-notification-app nil nil nil min-to-app msg)
     (dolist (i (number-sequence 0 (1- (length min-to-app))))
       (call-process my-appt-notification-app nil nil nil (nth i min-to-app) (nth i msg)))))
+#+END_SRC
+* Org Present
+Present Org files as slideshows.
+#+SRC_NAME org-present_use-package
+#+BEGIN_SRC emacs-lisp :tangle no
+; (unless (boundp 'spacemacs-version) "yes")
+    (use-package org-present
+      :config (add-hook 'org-present-mode-hook
+                        (lambda ()
+                          (org-present-big)
+                          (org-display-inline-images)
+                          (org-present-hide-cursor)
+                          (org-present-read-only)))
+              (add-hook 'org-present-mode-quit-hook
+                        (lambda ()
+                          (org-present-small)
+                          (org-remove-inline-images)
+                          (org-present-show-cursor)
+                          (org-present-read-write))))
 #+END_SRC
 * Org Capture
 Now we bind [[help:org-capture][org-capture]] mode globally to =C-c c=. This and the capture templates
@@ -248,12 +308,13 @@ but these should suffice for now.)  A task may be started with the "C-c C-c"
 command in this mode, which will make org-capture start monitoring time spent on
 the given task.
 
+#+SRC_NAME keybinding_global_org-capture
 #+BEGIN_SRC emacs-lisp
   (global-set-key (kbd "C-c c") 'org-capture)
 #+END_SRC
 ** Set Default Notes File
 #+BEGIN_SRC emacs-lisp
-  (setq org-default-notes-file "~/org/refile.org")
+  (setq-default org-default-notes-file "~/org/refile.org")
 #+END_SRC
 ** Templates                                                     :Templates:
 *** Overview
@@ -275,47 +336,81 @@ which require (and can only contain) the key and description entries.)
 #+SRC_NAME set_org-capture-templates
 #+BEGIN_SRC emacs-lisp
   (setq org-capture-templates
-        '(("d" "Dissertating-related templates")
+        `(("a" "Got an Ansible-related defect? Shove that SOB in here!" entry
+           (file+olp ,(drmrd/org-file-to-path "ansible.org") "PR Opportunities")
+           "** %^{Short Summary}\n%^{Description (optional)}\n"
+           :prepend t :immediate-finish nil :kill-buffer t)
+
+          ("b" "Bits")
+          ("be" "Dan's Roadside Emporium Ideas" entry
+           (file ,(drmrd/org-file-to-path "refile.org"))
+           ,(s-concat "* %^{Roadside Emporium Idea} %^g:DansRoadsideEmporium:Bits:\n"
+                      "%^{Description (optional)}\n")
+           :prepend t :kill-buffer t)
+
+          ("d" "Dissertating-related templates")
+          ("da" "acknowledgments" entry
+           (file+olp ,(drmrd/org-file-to-path "dissertating.org") "Refile")
+           ,(s-concat "* Acknowledgment for %^{Name to Acknowledge} :Acknowledgments:\n"
+                      "%^{Message}\n")
+           :prepend t :immediate-finish nil :kill-buffer t)
           ("dc" "citation needed" entry
-                (file+olp "~/org/dissertating.org" "Refile")
-                "* TODO Citation Needed: [[%l][%^{(Short) Cite Link Name|Here}]] :CITEME:\nCreated: %u\n%^{Comments|}\n"
-                :prepend t :immediate-finish nil :kill-buffer t)
+           (file+olp ,(drmrd/org-file-to-path "dissertating.org") "Refile")
+           ,(s-concat "* TODO Citation Needed: [[%l][%^{(Short) Cite Link Name|Here}]] :CITEME:\n"
+                      "Created: %u\n%^{Comments|}\n")
+           :prepend t :immediate-finish nil :kill-buffer t)
           ("dn" "note" entry
-                (file+olp "~/org/dissertating.org" "Refile")
-                "* TODO %u %^{Note Headline} %^g:NOTE:\n%^{Description (optional)}\n"
-                :prepend t :kill-buffer t)
+           (file+olp ,(drmrd/org-file-to-path "dissertating.org") "Refile")
+           ,(s-concat "* %^{Note Headline} %^g:NOTE:\n"
+                      "%^{Description (optional)}\n")
+           :prepend t :kill-buffer t)
           ("dq" "quickref" entry
-                (file+olp "~/org/dissertating.org" "QuickRefs")
-                "** %^{Result Description}\n:PROPERTIES:\n:Citation: %^{BibTeX Key}\n:Result: %^{Result}\n:END:"
-                :kill-buffer t)
+           (file+olp ,(drmrd/org-file-to-path "dissertating.org") "QuickRefs")
+           ,(s-concat "** %^{Result Description}\n"
+                      ":PROPERTIES:\n"
+                      ":Citation: %^{BibTeX Key}\n"
+                      ":Result: %^{Result}\n"
+                      ":END:")
+           :kill-buffer t)
           ("dt" "task" entry
-                (file "~/org/dissertating.org" "Refile")
-                "* TODO [[%l][Link]] %^{Task Headline} %^g\n%^{Description (optional)}\n"
-                :prepend t :kill-buffer t)
+           (file+olp ,(drmrd/org-file-to-path "dissertating.org") "Refile")
+           ,(s-concat "* TODO [[%l][Link]] %^{Task Headline} %^g\n"
+                      "%^{Description (optional)}\n")
+           :prepend t :kill-buffer t)
+
           ("t" "General task and note templates")
           ("tm" "maybe" entry
-                (file "~/org/refile.org")
-                "* MAYBE [[%l][Link]] %^{Task Headline} %^g\n%^{Description (optional)}\n"
-                :prepend t :kill-buffer t)
+           (file ,(drmrd/org-file-to-path "refile.org"))
+           "* MAYBE [[%l][Link]] %^{Task Headline} %^g\n%^{Description (optional)}\n"
+           :prepend t :kill-buffer t)
           ("tt" "todo" entry
-                (file "~/org/refile.org")
-                "* TODO [[%l][Link]] %^{Task Headline} %^g\n%^{Description (optional)}\n"
-                :prepend t :kill-buffer t)
+           (file ,(drmrd/org-file-to-path "refile.org"))
+           "* TODO [[%l][Link]] %^{Task Headline} %^g\n%^{Description (optional)}\n"
+           :prepend t :kill-buffer t)
+
           ("n" "Learn something new? Jot it down here!")
           ("nn" "anything and everything" entry
-                (file "~/org/refile.org")
-                "* TODO %u %^{Note Headline} %^g:NOTE:\n%^{Description (optional)}\n"
-                :prepend t :immediate-finish nil :kill-buffer t)
+           (file ,(drmrd/org-file-to-path "refile.org"))
+           "* %u %^{Note Headline} %^g:NOTE:\n%^{Description (optional)}\n"
+           :prepend t :immediate-finish nil :kill-buffer t)
+
           ("e" "event" entry
-               (file+olp "~/org/calendar.org" "Default")
-               "* %^{Brief description} %^g\nSCHEDULED: %t\n%i\n%a")
+           (file+olp ,(drmrd/org-file-to-path "calendar.org") "Default")
+           "* %^{Brief description} %^g\nSCHEDULED: %t\n%i\n%a")
+
           ("H" "habit" entry
-               (file+olp "~/org/habits.org" "Default")
-               "** TODO %^{Brief habit description} %^g\nSCHEDULED: %(format-time-string \"%<<%Y-%m-%d %a .+1d/3d>>\")\n:PROPERTIES:\n:STYLE: habit\n:END:")
+           (file+olp ,(drmrd/org-file-to-path "habits.org") "Default")
+           "** TODO %^{Brief habit description} %^g\nSCHEDULED: %(format-time-string \"%<<%Y-%m-%d %a .+1d/3d>>\")\n:PROPERTIES:\n:STYLE: habit\n:END:")
+
           ("h" "heart" table-line
-               (file+olp "~/org/health.org" "Blood Pressure & Heart Rate")
-               "| %T | %^{Systolic (Upper #)} | %^{Diastolic (Lower #)} | %^{Pulse (beats / min)} | %^{Comments} |"
-               :immediate-finish t :kill-buffer t)
+           (file+olp ,(drmrd/org-file-to-path "health.org") "Blood Pressure & Heart Rate")
+           "| %T | %^{Systolic (Upper #)} | %^{Diastolic (Lower #)} | %^{Pulse (beats / min)} | %^{Comments} |"
+           :immediate-finish t :kill-buffer t)
+
+          ("b" "org protocol default capture" entry
+           (file+datetree ,(drmrd/org-file-to-path "notes.org"))
+           "* %^{Title}\n\n  Source: %u, %c\n\n  %i"
+           :empty-lines 1)
           ))
 #+END_SRC
 ** Remove empty logbook entries when capturing                     :Logbook:
@@ -332,6 +427,32 @@ which occur when we spend less than a minute capturing something.
 
   (add-hook 'org-clock-out-hook 'bh/remove-empty-drawer-on-clock-out 'append)
 #+END_SRC
+* Org Protocol
+#+SRC_NAME configure_org-protocol
+#+BEGIN_SRC emacs-lisp
+  (setq-default org-protocol-default-template-key "b")
+  (require 'org-protocol)
+#+END_SRC
+
+#+BEGIN_EXAMPLE emacs-lisp
+  (setq-default org-capture-templates
+        '(("b" "Default template"
+           entry
+           (file+headline "~/org/capture.org" "Notes")
+           "* %^{Title}\n\n  Source: %u, %c\n\n  %i"
+           :empty-lines 1)
+          ;; ... more templates here ...
+          ))
+  ;; `b' makes this one the default template used for "org-protocol://capture://"
+  ;;     URLs (configurable via the `org-protocol-default-template-key' variable
+  ;; `entry' makes it a regular entry with a headline
+  ;; `file+headline' files the note in file "~/org/capture.org" as child of the
+  ;;                 headline "Notes"
+  ;; `%c' will be replaced by an Org-link pointing to the location of the page you
+  ;;      have been visiting when clicking on the link. The page title will be the
+  ;;      link's description.
+  ;; `%i' will be replaced by the selected text in your browser window if any.
+#+END_EXAMPLE
 * Org Refile
 ** Setting up refile targets
 By default, org-refile only supports refiling trees in the current
@@ -339,16 +460,34 @@ buffer to beneath other top level headers in the same buffer. We can
 change this by configuring [[help:org-refile-targets][org-refile-targets]] appropriately.
 #+SRC_NAME custom_org-refile-targets_setup
 #+BEGIN_SRC emacs-lisp
-    (setq org-refile-targets
-          '((org-agenda-files . (:maxlevel . 2))))
+    (setq-default org-refile-targets
+          '((org-agenda-files . (:maxlevel . 1))))
 #+END_SRC
 * Org Habit                                                          :Habits:
 #+SRC_NAME setup_org-habit
 #+BEGIN_SRC emacs-lisp
   (require 'org-habit)
 #+END_SRC
+* (Org) HabitRPG
+#+SRC_NAME habitrpg_use-package
+#+BEGIN_SRC emacs-lisp :tangle no
+; (unless (boundp 'spacemacs-version) "yes")
+  (use-github-package habitrpg "ryjm/habitrpg.el"
+    :config
+    (progn (load-file (concat (expand-file-name drmrd/secrets-directory "habitrpg.el")))
+
+           (setq-default hrpg-repeat-interval 900)
+           (add-hook 'org-clock-in-hook 'habitrpg-clock-in)
+           (add-hook 'org-clock-out-hook 'habitrpg-clock-out)
+
+           (add-to-list 'hrpg-bad-tags-list '("wasting_time" . "10 minutes")))
+    :bind (("<f9> a" . habitrpg-status)
+           ("C-c C-x h" . habitrpg-add)))
+#+END_SRC
 * Org Pomodoro                       :org_pomodoro:GTD:TaskMgmt:Productivity:
-#+BEGIN_SRC emacs-lisp
+#+SRC_NAME org-pomodoro_use-package
+#+BEGIN_SRC emacs-lisp :tangle no
+; (unless (boundp 'spacemacs-version) "yes")
   (use-package org-pomodoro)
 #+END_SRC
 * M-Return Settings
@@ -359,7 +498,7 @@ the usual =org-meta-return= function bound to M-Return with
 =smart-org-meta-return-dwim=, which sets =org-blank-before-new-entry=
 to =nil= contextually.
 #+BEGIN_SRC emacs-lisp :tangle no
-  (setq org-blank-before-new-entry
+  (setq-default org-blank-before-new-entry
         '((heading . always)
           (plain-list-item . nil)))
 
@@ -394,7 +533,7 @@ might take some tweaking to figure out in which of these contexts I
 want which behavior, but here's a start.
 #+BEGIN_SRC emacs-lisp
     ;;; Determine when M-Return can split lines
-    (setq org-M-RET-may-split-line
+    (setq-default org-M-RET-may-split-line
       '((default  . t)
         (headline . nil)
         (item     . nil)
@@ -405,30 +544,56 @@ want which behavior, but here's a start.
   ;; Have org try to prevent editing of invisible regions (e.g., folded
   ;; sections). Refer to the variable's docstring for all of its
   ;; possible settings (there are five in total).
-  (setq org-catch-invisible-edits 'smart)
+  (setq-default org-catch-invisible-edits 'smart)
 #+END_SRC
 * Org Babel: Set Default Header Arguments
+** Set default header arguments
 The global defaults for how code-blocks are evaluated in org-mode are
 stored in *=org-babel-default-header-args=*. Change the default
 setting for code-block evaluation, so that the results of evaluation
 are not displayed in a new element.
 #+BEGIN_SRC emacs-lisp
-  (setq org-babel-default-header-args
+  (setq-default org-babel-default-header-args
     (cons '(:results . "silent")
           (assq-delete-all :results org-babel-default-header-args)))
+#+END_SRC
+** Load extra languages
+#+BEGIN_SRC emacs-lisp
+  (with-eval-after-load 'org
+    ; (setq geiser-default-implementation 'mit)
+    (org-babel-do-load-languages
+     'org-babel-load-languages
+     '((scheme . t)
+       (python . t))))
 #+END_SRC
 * Ensure that syntax highlighting is enabled while in Org Mode
 #+BEGIN_SRC emacs-lisp
   (add-hook 'org-mode-hook 'turn-on-font-lock) ; not needed when `global-font-lock-mode' is on
 #+END_SRC
-* Syntax Highlighting in Code Blocks
-The following uses "native fontification" to enable syntax highlighting in code blocks.
+* Org Src (Code Blocks)
+** Syntax Highlighting
+The following uses "native fontification" to enable syntax highlighting in code
+blocks.
 #+BEGIN_SRC emacs-lisp
   (setq org-src-fontify-natively t)
 #+END_SRC
+** Tab Behavior
+Next we make sure =[TAB]= behaves the way we'd expect inside code blocks,
+indenting the code in a way that's appropriate for each block's language.
+#+BEGIN_SRC emacs-lisp
+  (setq org-src-tab-acts-natively t)
+#+END_SRC
+** Avoid Flycheck's checkdoc warnings
+#+SRC_NAME org-src_disable_flycheck_checkdoc
+#+BEGIN_SRC emacs-lisp
+  (defun disable-flycheck-in-org-src-block ()
+    (setq-local flycheck-disabled-checkers '(emacs-lisp-checkdoc)))
+
+  (add-hook 'org-src-mode-hook 'disable-flycheck-in-org-src-block)
+#+END_SRC
 * Load Minor Modes
 ** Auto Fill Mode
-auto-fill-mode works beautifully in Org files, and we enable it
+=auto-fill-mode= works beautifully in Org files, and we enable it
 accordingly.
 #+BEGIN_SRC emacs-lisp
   (add-hook 'org-mode-hook 'auto-fill-mode)
@@ -452,7 +617,7 @@ accordingly.
   ;;; Switch to another org buffer with "C-c b"
   ;;;
   ;;;     Switches to the org buffer with a given name.
-  (global-set-key "\C-cb" 'org-iswitchb)
+  ; (global-set-key "\C-cb" 'org-iswitchb)
 #+END_SRC
 
 * Create Custom Easy Templates
@@ -482,3 +647,10 @@ entire block start or end tag. Better still, we can create our own!
                  ("\\subsection\{%s\}" . "\\subsection*\{%s\}")
                  ("\\subsubsection\{%s\}" . "\\subsubsection*\{%s\}")))
 #+END_EXAMPLE
+* Org Ref
+#+SRC_NAME org-ref_use-package
+#+BEGIN_SRC emacs-lisp
+  (use-package org-ref :ensure t
+    :init (setq org-ref-default-bibliography reftex-default-bibliography
+                bibtex-completion-bibliography reftex-default-bibliography))
+#+END_SRC

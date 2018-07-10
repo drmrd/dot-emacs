@@ -12,6 +12,68 @@
 | Section             | [[help:LaTeX-current-section][LaTeX-current-section]]        |
 | Indentation         | [[help:LaTeX-current-indentation][LaTeX-current-indentation]]    |
 | Verbatim Macro      | [[help:LaTeX-current-verbatim-macro][LaTeX-current-verbatim-macro]] |
+** Setting names related to SyncTeX
+Most, if not all, of these are prefixed with ~TeX-source-correlate~. You +might+
+probably will also need to set up the ~TeX-view-program-list~ to suit your
+needs.
+* SyncTeX
+#+SRC_NAME
+#+BEGIN_SRC emacs-lisp
+  ;; Tells emacs where to find LaTeX.
+  (let ((my-path (expand-file-name "/usr/local/bin:/usr/local/texlive/2017/bin/x86_64-darwin")))
+    (setenv "PATH" (concat my-path ":" (getenv "PATH")))
+    (add-to-list 'exec-path my-path))
+
+  ;; AucTeX settings
+
+  ;; (setq TeX-PDF-mode t)
+
+  ;; (add-hook 'LaTeX-mode-hook
+  ;;           (lambda ()
+  ;;             (add-to-list 'TeX-command-list
+  ;;                          '("latexmk" "latexmk -pdf %s"
+  ;;                            TeX-run-TeX nil t
+  ;;                            :help "Run latexmk on file"))))
+
+  ;; (add-hook 'TeX-mode-hook '(lambda () (setq TeX-command-default "latexmk")))
+
+  ;; (setq TeX-view-program-selection '((output-pdf "PDF Viewer")))
+  ;; (setq TeX-view-program-list
+  ;;       '(("PDF Viewer" "/Applications/Skim.app/Contents/SharedSupport/displayline -b -g %n %o %b")))
+
+  (use-package pdf-tools
+    :pin manual ;; Manually updated from GitHub source
+    :config
+    (progn (pdf-tools-install)
+           (setq-default pdf-view-display-size 'fit-page)
+           (setq pdf-annot-activate-created-annotations t)
+           (setq pdf-view-resize-factor 1.1)
+           (unless (assoc "PDF Tools" TeX-view-program-list-builtin)
+             (add-to-list 'TeX-view-program-list-builtin
+                          '("PDF Tools" TeX-pdf-tools-sync-view))
+             (add-to-list 'TeX-view-program-selection
+                          '(output-pdf "PDF Tools")))
+
+           (setq TeX-view-program-selection '((output-pdf "PDF Tools"))
+                 TeX-source-correlate-start-server t)
+
+           (add-hook 'TeX-after-compilation-finished-functions
+                     #'TeX-revert-document-buffer)
+
+           (add-hook 'pdf-view-mode-hook
+                     (lambda() (nlinum-mode -1))))
+
+    :bind (:map pdf-view-mode-map
+                ("h" . pdf-annot-add-highlight-markup-annotation)
+                ("t" . pdf-annot-add-text-annotation)
+                ("D" . pdf-annot-delete)))
+
+
+  (custom-set-variables
+   '(TeX-source-correlate-method 'synctex)
+   '(TeX-source-correlate-mode t)
+   '(TeX-source-correlate-start-server t))
+#+END_SRC
 * Startup
 #+SRC_NAME LaTeX_config_start_notification
 #+BEGIN_SRC emacs-lisp
@@ -34,13 +96,9 @@ update this variable to pass this test (using the symbolic link to
 AucTeX is the bread-and-butter LaTeX editor for Emacs and should always be
 enabled to complement the built-in modes.
 
-#+SRC_NAME use-package_auctex
+#+SRC_NAME auctex_use-package
 #+BEGIN_SRC emacs-lisp
-    (use-package tex :ensure auctex
-;      :init
-;        (when (eq system-type 'darwin)
-;          (add-to-list 'exec-path "/Library/TeX/texbin" t))
-)
+    (use-package tex :ensure auctex)
 #+END_SRC
 ** AUCTeX Initialization/Configuration
 *** Parse Document on Load and Save
@@ -50,8 +108,7 @@ enabled to complement the built-in modes.
 #+END_SRC
 
 *** Multi-file Document Support
-Make AUCTeX search for a master file instead of assuming it's the
-current file.
+Make AUCTeX search for a master file instead of assuming it's the current file.
 
 #+BEGIN_SRC emacs-lisp
   (setq-default TeX-master nil)
@@ -82,7 +139,7 @@ since I've been using Skim/external viewers instead.
 #+END_SRC
 * General Settings
 ** Ensure binaries are in =PATH= and =exec-path=
-#+SRC_NAME latex_add-binaries
+#+SRC_NAME latex_add-binaries-to-path
 #+BEGIN_SRC emacs-lisp
   (setenv "PATH" (concat "/usr/texbin" ":"
                          "/usr/local/bin" ":"
@@ -94,17 +151,12 @@ As was the case in [[file:~/.emacs.d/init.org::*Enable%20"Advanced"%20Commands][
 non-beginner-friendly AucTeX commands that I use regularly.
 #+SRC_NAME latex-mode_re-enable_advanced_commands
 #+BEGIN_SRC emacs-lisp
-  (put 'LaTeX-narrow-to-environment 'disabled nil)
+  (cl-dolist (disabled-function '(TeX-narrow-to-group
+                                  LaTeX-narrow-to-environment))
+    (put disabled-function 'disabled nil))
 #+END_SRC
 * Editor Features
-** Line Numbers
-Display line numbers using [[help:nlinum-mode][=nlinum-mode=]].
-#+SRC_NAME latex-mode-hook_add_nlinum-mode
-#+BEGIN_SRC emacs-lisp
-  (dolist (hook '(TeX-mode-hook LaTeX-mode-hook))
-      (add-hook hook #'nlinum-mode))
-#+END_SRC
-** Code Folding
+** Code Folding                            :code_folding:outline_minor_mode:
 Enabling [[help:outline-minor-mode][=outline-minor-mode=]] allows us to fold sections/environments akin to
 the way we do so in Org Mode.
 *** Add outline-minor-mode to (La)TeX hooks
@@ -113,53 +165,197 @@ the way we do so in Org Mode.
   (add-hook 'TeX-mode-hook #'outline-minor-mode)
   (add-hook 'LaTeX-mode-hook #'outline-minor-mode)
 #+END_SRC
-*** Configure sane keybindings for outline-minor-mode
+*** Configure sane keybindings for outline-minor-mode              :hydras:
 By default the prefix for outline-minor-mode is the insanely
 inconvenient C-c @, so we change it to M-o instead. We also add
 suffixes for just about every command we could ask for.
 #+SRC_NAME outline-minor-mode_keymap_configuration
 #+BEGIN_SRC emacs-lisp
-  ; Outline-minor-mode key map
-  (define-prefix-command 'cm-map nil "Outline-")
-  ; HIDE
-  (define-key cm-map "q" 'outline-hide-sublevels)    ; Hide everything but the top-level headings
-  (define-key cm-map "\M-q" 'outline-hide-sublevels)
-  (define-key cm-map "t" 'outline-hide-body)         ; Hide everything but headings (all body lines)
-  (define-key cm-map "\M-t" 'outline-hide-body)
-  (define-key cm-map "o" 'outline-hide-other)        ; Hide other branches
-  (define-key cm-map "\M-o" 'outline-hide-other)
-  (define-key cm-map "c" 'outline-hide-entry)        ; Hide this entry's body
-  (define-key cm-map "\M-c" 'outline-hide-entry)
-  (define-key cm-map "l" 'outline-hide-leaves)       ; Hide body lines in this entry and sub-entries
-  (define-key cm-map "\M-l" 'outline-hide-leaves)
-  (define-key cm-map "d" 'outline-hide-subtree)      ; Hide everything in this entry and sub-entries
-  (define-key cm-map "\M-d" 'outline-hide-subtree)
-  ; SHOW
-  (define-key cm-map "a" 'outline-show-all)          ; Show (expand) everything
-  (define-key cm-map "\M-a" 'outline-show-all)
-  (define-key cm-map "e" 'outline-show-entry)        ; Show this heading's body
-  (define-key cm-map "\M-e" 'outline-show-entry)
-  (define-key cm-map "i" 'outline-show-children)     ; Show this heading's immediate child sub-headings
-  (define-key cm-map "\M-i" 'outline-show-children)
-  (define-key cm-map "k" 'outline-show-branches)     ; Show all sub-headings under this heading
-  (define-key cm-map "\M-k" 'outline-show-branches)
-  (define-key cm-map "s" 'outline-show-subtree)      ; Show (expand) everything in this heading & below
-  (define-key cm-map "\M-s" 'outline-show-subtree)
-  ; MOVE
-  (define-key cm-map "u" 'outline-up-heading)                ; Up
-  (define-key cm-map "\M-u" 'outline-up-heading)
-  (define-key cm-map "n" 'outline-next-visible-heading)      ; Next
-  (define-key cm-map "\M-n" 'outline-next-visible-heading)
-  (define-key cm-map "p" 'outline-previous-visible-heading)  ; Previous
-  (define-key cm-map "\M-p" 'outline-previous-visible-heading)
-  (define-key cm-map "f" 'outline-forward-same-level)        ; Forward - same level
-  (define-key cm-map "\M-f" 'outline-forward-same-level)
-  (define-key cm-map "b" 'outline-backward-same-level)       ; Backward - same level
-  (define-key cm-map "\M-b" 'outline-backward-same-level)
-  (global-set-key "\M-o" cm-map)
+  (defhydra hydra-outline (:color blue :hint nil)
+    "
+  ^Hide^             ^Show^           ^Move
+  ^^^^^^------------------------------------------------------
+  _h_: _h_ide menu     _s_: _s_how menu   _u_: up (parent)
+                                  _n_: next
+  _q_: sublevels     _a_: all         _p_: previous
+  _t_: body          _e_: entry
+  _o_: other         _i_: children    _f_: forward sibling
+  _c_: entry         _k_: branches    _b_: backward sibling
+  _l_: leaves        _S_: subtree
+  _d_: subtree
+
+  "
+    ;; Hiding things
+    ("h" hydra-outline/hide/body)
+    ("q" hide-sublevels)    ;
+    ("t" hide-body)         ;
+    ("o" hide-other)        ; Hide other branches
+    ("c" hide-entry)        ; Hide this entry's body
+    ("l" hide-leaves)       ; Hide body lines in this entry and sub-entries
+    ("d" hide-subtree)      ; Hide everything in this entry and sub-entries
+
+    ;; Showing things
+    ("s" hydra-outline/show/body)
+    ("a" show-all)          ; Show (expand) everything
+    ("e" show-entry)        ; Show this heading's body
+    ("i" show-children)     ; Show this heading's immediate child sub-headings
+    ("k" show-branches)     ; Show all sub-headings under this heading
+    ("S" show-subtree)      ; Show (expand) everything in this heading & below
+
+    ;; Movement
+    ("u" outline-up-heading)                ; Up
+    ("n" outline-next-visible-heading)      ; Next
+    ("p" outline-previous-visible-heading)  ; Previous
+    ("f" outline-forward-same-level)        ; Forward - same level
+    ("b" outline-backward-same-level)       ; Backward - same level
+    ("z" nil "leave")
+
+    ;; Hiding things
+    ("M-h" hydra-outline/hide/body)
+    ("M-q" hide-sublevels)    ;
+    ("M-t" hide-body)         ;
+    ("M-o" hide-other)        ; Hide other branches
+    ("M-c" hide-entry)        ; Hide this entry's body
+    ("M-l" hide-leaves)       ; Hide body lines in this entry and sub-entries
+    ("M-d" hide-subtree)      ; Hide everything in this entry and sub-entries
+
+    ;; Showing things
+    ("M-s" hydra-outline/show/body)
+    ("M-a" show-all)          ; Show (expand) everything
+    ("M-e" show-entry)        ; Show this heading's body
+    ("M-i" show-children)     ; Show this heading's immediate child sub-headings
+    ("M-k" show-branches)     ; Show all sub-headings under this heading
+    ("M-S" show-subtree)      ; Show (expand) everything in this heading & below
+
+    ;; Movement
+    ("M-u" outline-up-heading)                ; Up
+    ("M-n" outline-next-visible-heading)      ; Next
+    ("M-p" outline-previous-visible-heading)  ; Previous
+    ("M-f" outline-forward-same-level)        ; Forward - same level
+    ("M-b" outline-backward-same-level)       ; Backward - same level
+    ("M-z" nil "leave"))
+
+
+  (defhydra hydra-outline/hide (:color blue :hint nil)
+  "
+  ^Hide^
+  ^^^^^^
+  _S_: Hide all _S_ubheadings (and bodies)
+  _B_: Hide all _B_odies (everything but headings) (hides _L_eaves in all trees)
+  _O_: Hide all _O_ther branches (everything but current tree)
+
+  _e_: Hide _c_urrent _e_ntry's _b_ody
+  _l_: Hide all _l_eaves (bodies in subtree)
+  _s_: Hide _s_ubtree
+
+  "
+  ("S" outline-hide-sublevels)
+  ("B" outline-hide-body)
+  ("L" outline-hide-body)
+  ("O" outline-hide-other)
+
+  ("e" outline-hide-entry)
+  ("c" outline-hide-entry)
+  ("b" outline-hide-entry)
+  ("l" outline-hide-leaves)
+  ("s" outline-hide-subtree)
+
+  ("M-S" outline-hide-sublevels)
+  ("M-B" outline-hide-body)
+  ("M-L" outline-hide-body)
+  ("M-O" outline-hide-other)
+
+  ("M-e" outline-hide-entry)
+  ("M-c" outline-hide-entry)
+  ("M-b" outline-hide-entry)
+  ("M-l" outline-hide-leaves)
+  ("M-s" outline-hide-subtree))
+
+  (defhydra hydra-outline/show (:color blue :hint nil)
+  "
+  ^Show^
+  ------
+  _A_: _a_ll
+
+  _e_: _c_urrent _e_ntry's _b_ody
+  _C_: _C_hildren
+  _B_: _B_ranches
+  _s_: _s_ub_t_ree (starting at point)
+
+  "
+  ("A" outline-show-all)
+  ("a" outline-show-all)
+
+  ("e" outline-show-entry)
+  ("c" outline-show-entry)
+  ("b" outline-show-entry)
+  ("C" outline-show-children)
+  ("B" outline-show-branches)
+  ("s" outline-show-subtree)
+  ("t" outline-show-subtree)
+
+  ("M-A" outline-show-all)
+  ("M-a" outline-show-all)
+
+  ("M-e" outline-show-entry)
+  ("M-c" outline-show-entry)
+  ("M-b" outline-show-entry)
+  ("M-C" outline-show-children)
+  ("M-B" outline-show-branches)
+  ("M-s" outline-show-subtree)
+  ("M-t" outline-show-subtree))
+
+  (global-set-key "\M-o" 'hydra-outline/body)
+
+  ;; ; Outline-minor-mode key map
+  ;; (define-prefix-command 'drmrd/LaTeX/outline-minor-mode-map nil "Outline-")
+
+  ;; ; HIDE
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "q" 'outline-hide-sublevels)
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "\M-q" 'outline-hide-sublevels)
+
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "t" 'outline-hide-body)
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "\M-t" 'outline-hide-body)
+
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "o" 'outline-hide-other)
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "\M-o" 'outline-hide-other)
+
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "c" 'outline-hide-entry)
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "\M-c" 'outline-hide-entry)
+
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "l" 'outline-hide-leaves)
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "\M-l" 'outline-hide-leaves)
+
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "d" 'outline-hide-subtree)
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "\M-d" 'outline-hide-subtree)
+
+  ;; ; SHOW
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "a" 'outline-show-all)
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "\M-a" 'outline-show-all)
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "e" 'outline-show-entry)
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "\M-e" 'outline-show-entry)
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "i" 'outline-show-children)
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "\M-i" 'outline-show-children)
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "k" 'outline-show-branches)
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "\M-k" 'outline-show-branches)
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "s" 'outline-show-subtree)
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "\M-s" 'outline-show-subtree)
+
+  ;; ; MOVE
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "u" 'outline-up-heading)
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "\M-u" 'outline-up-heading)
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "n" 'outline-next-visible-heading)
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "\M-n" 'outline-next-visible-heading)
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "p" 'outline-previous-visible-heading)
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "\M-p" 'outline-previous-visible-heading)
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "f" 'outline-forward-same-level)
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "\M-f" 'outline-forward-same-level)
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "b" 'outline-backward-same-level)
+  ;; (define-key drmrd/LaTeX/outline-minor-mode-map "\M-b" 'outline-backward-same-level)
+  ;; (global-set-key "\M-o" drmrd/LaTeX/outline-minor-mode-map)
 #+END_SRC
 **** TODO Move to init.org
-*** Load outline-magic and bind outline-cycle to C-tab
+*** Load ~outline-magic~ and bind ~outline-cycle~ to ~C-tab~ :outline_magic:outline_cycle:
 This allows for org-like cycling of folded regions. Note the =:after=
 keyword in the use-package call ensures that outline-magic is only
 loaded after outline. This is the (MUCH) cleaner version of the old
@@ -180,26 +376,46 @@ but things that are not compiled by LaTeX (comments)), and I'm dead
 set on trying this out. Frankly, I can't believe I hadn't thought of
 this myself!
 #+BEGIN_SRC emacs-lisp
-  ;; extra outline headers
+  ;; Extra outline headers
   (setq TeX-outline-extra
-        '(("^\\s-*%chapter" 1)
+        '(
+          ;; Fake preamble headers
+          ("^\\s-*%meta" 1) ; for code sections (e.g., Local Variables)
+          ("^\\s-*%psection" 2)
+          ("^\\s-*%psubsection" 3)
+
+          ;; Fake body headers
+          ("^\\s-*%chapter" 1)
           ("^\\s-*%section" 2)
           ("^\\s-*%subsection" 3)
           ("^\\s-*%subsubsection" 4)
           ("^\\s-*%paragraph" 5)
           ("^\\s-*%proof" 5)))
 
-  ;; add font locking to the headers
-  (font-lock-add-keywords
-   'latex-mode
-   '(("^%\\(chapter\\|\\(sub\\|subsub\\)?section\\|paragraph\\|proof\\)"
-      0 'font-lock-keyword-face t)
-     ("^\\s-*%chapter{\\(.*\\)}"       1 'font-latex-sectioning-1-face t)
-     ("^\\s-*%section{\\(.*\\)}"       1 'font-latex-sectioning-2-face t)
-     ("^\\s-*%subsection{\\(.*\\)}"    1 'font-latex-sectioning-3-face t)
-     ("^\\s-*%subsubsection{\\(.*\\)}" 1 'font-latex-sectioning-4-face t)
-     ("^\\s-*%paragraph{\\(.*\\)}"     1 'font-latex-sectioning-5-face t)
-     ("^\\s-*%proof{\\(.*\\)}"         1 'font-latex-sectioning-5-face t)))
+  (add-hook 'LaTeX-mode-hook
+            (lambda ()
+              ;; Add font locking to the fake preamble headers
+              (font-lock-add-keywords
+               'latex-mode
+               '(("^\\s-*\\(%\\(meta\\|psection\\|psubsection\\)\\)"
+                  1 'font-lock-keyword-face t)
+                 ("^\\s-*%meta{\\(.*\\)}" 'font-latex-sectioning-1-face t)
+                 ("^\\s-*%psection{\\(.*\\)}" 'font-latex-sectioning-2-face t)
+                 ("^\\s-*%psubsection{\\(.*\\)}" 'font-latex-sectioning-3-face t)))
+
+              ;; Add font locking to the fake headers
+              (font-lock-add-keywords
+               'latex-mode
+               '(("^\\s-*\\(%\\(chapter\\|\\(\\(sub\\)\\{0,4\\}\\)?section\\|paragraph\\|proof\\)\\)"
+                  1 'font-lock-keyword-face t)
+
+                 ("^\\s-*%chapter{\\(.*\\)}"       1 'font-latex-sectioning-1-face t)
+                 ("^\\s-*%section{\\(.*\\)}"       1 'font-latex-sectioning-2-face t)
+                 ("^\\s-*%subsection{\\(.*\\)}"    1 'font-latex-sectioning-3-face t)
+                 ("^\\s-*%subsubsection{\\(.*\\)}" 1 'font-latex-sectioning-4-face t)
+                 ("^\\s-*%subsubsubsection{\\(.*\\)}" 1 'font-latex-sectioning-4-face t)
+                 ("^\\s-*%paragraph{\\(.*\\)}"     1 'font-latex-sectioning-5-face t)
+                 ("^\\s-*%proof{\\(.*\\)}"         1 'font-latex-sectioning-5-face t)))))
 #+END_SRC
 **** TODO Consider expanding on this
 For instance, we could add support for TODO comments that appear like
@@ -213,7 +429,7 @@ line you are on in the current file).
 
 #+SRC_NAME enable_visual-line-mode_in_TeX-mode_and_LaTeX-mode
 #+BEGIN_SRC emacs-lisp
-  (dolist (hook '(TeX-mode-hook LaTeX-mode-hook))
+  (cl-dolist (hook '(TeX-mode-hook LaTeX-mode-hook))
     (add-hook hook #'visual-line-mode))
 #+END_SRC
 
@@ -318,10 +534,14 @@ buggy.
 
 #+SRC_NAME visual-fill-column_use-package
 #+BEGIN_SRC emacs-lisp
-  (use-package visual-fill-column :ensure t
-    :init (global-visual-fill-column-mode))
+  (use-package visual-fill-column :ensure t)
 #+END_SRC
 
+*Update: (2018-03-22)* I used to enable ~global-visual-fill-column-mode~ when
+ loading this package, but now I prefer leaving it disabled until requested. The
+ reason is that ~visual-fill-column-mode~ conflicts with ~nlinum-mode~, with the
+ effect that line numbers in the current buffer disappear when window changes
+ occur.
 ** LaTeX Math Mode
 Load [[help:LaTeX-math-mode][LaTeX Math Mode]] by default. This is usually bound to 'C-c ~' (and
 can still be toggled using that keybinding, but it's useful enough to
@@ -436,7 +656,7 @@ for every file you open in Emacs, you can be more selective with when this
 occurs by turning on =save-place-local-mode= instead on a per file or major mode
 basis.  #+SRC_NAME latex_hook_to_save-place-local-mode
 #+BEGIN_SRC emacs-lisp
-  (dolist (hook '(TeX-mode-hook LaTeX-mode-hook))
+  (cl-dolist (hook '(TeX-mode-hook LaTeX-mode-hook))
     (add-hook hook #'save-place-local-mode))
 #+END_SRC
 * Appearance
@@ -477,10 +697,25 @@ Note the "Polish-style" use of =|= as a /prefix/ to the alternatives ={= and
 =\=. I missed this when first reading the documentation.
 
 #+NAME setup_font-latex-user-keyword-classes
+#+BEGIN_SRC emacs-lisp :tangle no
+  (with-eval-after-load "font-latex"
+    (setq font-latex-user-keyword-classes
+          '(("idxdefs"
+             (("idxdef" "[{")
+              ("NewIndexableMathObject" "{{{{{{"))
+             bold command))))
+#+END_SRC
+
+#+SRC_NAME font-latex-match-reference-keywords_configuration
 #+BEGIN_SRC emacs-lisp
-  (setq font-latex-user-keyword-classes
-        '(("idxdefs"  (("idxdef" "[{")
-                       ("NewIndexableMathObject" "{{{{{{")) bold command)))
+  (setq font-latex-match-reference-keywords
+        '(("indexed" "[{")
+          ("autocites" "[[{[[{[[{[[{[[{[[{")
+          ("autocites" "[[{[[{[[{[[{[[{")
+          ("autocites" "[[{[[{[[{[[{")
+          ("autocites" "[[{[[{[[{")
+          ("autocites" "[[{[[{")
+          ("compoundcref" "{{")))
 #+END_SRC
 * TODO Improving Help Commands
 Wouldn't it be amazing if there was a =describe-latex-macro= command
@@ -528,6 +763,73 @@ is bound to =C-c /=.
 *** TODO Create a RefTeX mode hydra, possibly bound to =C-c r=
 There are so many amazing RefTeX mode commands I forget about that it's probably
 worth collecting them somewhere.
+** Support for NewIndexableMathObject & the macros it generates
+#+SRC_NAME latex_NewIndexableMathObject_support
+#+BEGIN_SRC emacs-lisp
+  ;; % \NewIndexableMathObject{#1=ObjectName}{#2=Expansion}%
+  ;; %                        {#3=IndexParent}{#4=SortKey}%
+  ;; %                        {#5=IndexPrefix}{#6=IndexSuffix}
+  ;; %
+  ;; % Defines
+  ;; %
+  ;; %     1. A macro with name <ObjectName> and expansion <Expansion>.
+  ;; %     2. A macro with name <ObjectName>SortKey and expansion <SortKey> for use
+  ;; %        in calls to indexing macros. (This should be the string used by the
+  ;; %        index to find the right lexicographic place for this object's entry in
+  ;; %        the index.
+  ;; %     3. A macro with name mention<ObjectName> that should be called at any
+  ;; %        point in the text where this object is discussed/referenced that you'd
+  ;; %        like included in the index.
+  ;; %
+  ;; % The <IndexParent> is the parent (or ancestors) of this object in the index.
+  ;; % The <IndexPrefix> and <IndexSuffix> are math expressions (with or without
+  ;; % dollar signs) that should be prepended and appended to <Expansion> in the
+  ;; % index entry for the object. (For example, if you defined an object with
+  ;; % expansion C_c^\infty, you might want to set <IndexSuffix> equal to (G).)
+  ;; \newcommand{\NewIndexableMathObject}[6]{%
+  ;;     \expandafter\newcommand\csname #1\endcsname{#2}
+  ;;     \expandafter\newcommand\csname #1SortKey\endcsname{#4}
+  ;;     \def\temp{#3}\ifx\temp\empty
+  ;;         \def\indexParentString{\temp!}%
+  ;;     \else
+  ;;         \def\indexParentString{}%
+  ;;     \fi
+  ;;     \expandafter\newcommand\csname mention#1\endcsname{\expandafter\index{\indexParentString{}#4@\expandafter\ensuremath{#5\csname #1\endcsname#6}}}%
+  ;; }
+
+  ;; (defvar drmrd/LaTeX/macro-pattern/NewIndexableMathObject
+  ;;   '("\\\\NewIndexableMathObject{\\([a-zA-Z]+\\)}" (1 2) TeX-auto-multi)
+  ;;   "A regex matching \NewIndexableMathObject definitions.")
+
+  ;; (defvar TeX-auto-multi nil
+  ;;   "Temporary for parsing \\newmacro definitions.")
+
+  ;; (defun TeX-macro-cleanup ()
+  ;;   "Move symbols from `TeX-auto-multi' to `TeX-auto-symbol'."
+  ;;   (mapcar (lambda (list)
+  ;; 	    (mapcar (lambda (symbol)
+  ;; 		      (setq TeX-auto-symbol
+  ;; 			    (cons symbol TeX-auto-symbol)))
+  ;; 		    list))
+  ;; 	  TeX-auto-multi))
+
+  ;; (defun TeX-macro-prepare ()
+  ;;   "Clear `Tex-auto-multi' before use."
+  ;;   (setq TeX-auto-multi nil))
+
+  ;; (add-hook 'TeX-auto-prepare-hook 'TeX-macro-prepare)
+  ;; (add-hook 'TeX-auto-cleanup-hook 'TeX-macro-cleanup)
+
+  ;; (TeX-add-style-hook
+  ;;  "macro"
+  ;;  (lambda ()
+  ;;    (TeX-auto-add-regexp TeX-newmacro-regexp)
+  ;;    (TeX-add-symbols '("newmacro"
+  ;; 		      TeX-arg-macro
+  ;; 		      (TeX-arg-macro "Capitalized macro: \\")
+  ;; 		      t
+  ;; 		      "BibTeX entry: "
+  ;; 		      nil))))
 #+END_SRC
 * Custom Functions
 ** TODO Forward/Backward Token/Mode/Environment Boundary Functions
@@ -616,6 +918,34 @@ delimiters*, although reserve the right to change this name later.
 
 
 *** TODO Decide on a name for these functions
+** Replace display math wrapper \[…\] with an environment
+The following function adds a piece of functionality complementary AucTeX's that
+I've been missing for some time.  I'd like to genericize it for other use
+cases.  It's based on giordano's lovely [[https://tex.stackexchange.com/a/179306/14062][answer]] to a question on TeX.SE.
+#+SRC_NAME drmrd/latex/displaymath->environment_defn
+#+BEGIN_SRC emacs-lisp
+  (defun drmrd/latex/displaymath<->align*-toggle ()
+    "Swap between displayed math and an align* environment."
+    (interactive)
+    (save-excursion
+      (when (texmathp)
+        (cond
+         ((equal (car texmathp-why) "\\[")
+          (goto-char (cdr texmathp-why))
+          (delete-char 2)
+          (push-mark)
+          (search-forward "\\]")
+          (delete-char -2)
+          (exchange-point-and-mark)
+          (LaTeX-insert-environment "align*"))
+         ((equal (car texmathp-why) "align*")
+          (LaTeX-find-matching-begin)
+          (re-search-forward "\\\\begin{align\\\*}")
+          (replace-match "\\\\\[")
+          (LaTeX-find-matching-end)
+          (re-search-backward "\\\\end{align\\\*}")
+          (replace-match "\\\\\]"))))))
+#+END_SRC
 * Indentation
 ** Set default indentation level to 4 spaces
 #+BEGIN_SRC emacs-lisp
