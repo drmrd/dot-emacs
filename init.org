@@ -1774,6 +1774,13 @@ file variable when needed.
 
   ;; Make y and n suffice for answers to yes or no questions
   (fset 'yes-or-no-p 'y-or-n-p)
+
+  ;; MAYBE: (2017-06-04) Create a custom predicate function that's more
+  ;;                     fine-grained.
+
+  ;; Make Emacs confirm when you kill it.  If you've ever fat fingered C-x C-[...]
+  ;; commands as C-x C-w [...], you know why this is here.
+  (setq confirm-kill-emacs 'y-or-n-p)
 #+END_SRC
 ** Compilation Behavior                              :Keybindings:Compiling:
 The following is brough to us by bpalmer and zigler on the
