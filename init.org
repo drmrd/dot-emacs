@@ -1041,7 +1041,7 @@ Highlights the current line in every buffer by default
   (global-hl-line-mode 1); Highlight current line in buffer
 #+END_SRC
 ** Set Default Frame Dimensions                                   :FrameSize:
-#+SRCNAME set_default_frame_dimensions
+#+SRC_NAME set_default_frame_dimensions
 #+BEGIN_SRC emacs-lisp
   (add-to-list 'default-frame-alist '(width  . 90))
   (add-to-list 'default-frame-alist '(height . 50))
@@ -1105,10 +1105,10 @@ Enable Ido Mode for a much improved buffer and file switching/finding
 experience. Configuring Ido Mode, based on the settings in [[http://xgarrido.github.io/emacs-starter-kit/starter-kit-ido.html][xgarrido's
 Emacs Starter Kit]].
 *** Enable Ido Mode
-#+srcname: enable-ido-mode
-#+begin_src emacs-lisp
+#+SRC_NAME: enable-ido-mode
+#+BEGIN_SRC emacs-lisp
   (ido-mode t)
-#+end_src
+#+END_SRC
 *** Basic Configuration
 Next, we change some basic settings to make our lives easier. The
 following table describes each setting. Note that, for Boolean
@@ -1155,7 +1155,7 @@ the behavior being the opposite if nil (unless otherwise specified).
 | recently-closed buffers after you exit and re-open Emacs.                                |
 |------------------------------------------------------------------------------------------|
 
-#+SRCNAME: ido-mode-basic-config
+#+SRC_NAME: ido-mode-basic-config
 #+BEGIN_SRC emacs-lisp
   (setq ido-everywhere            t
         ido-enable-prefix         nil
@@ -1175,7 +1175,7 @@ Since we will configure Ido Mode to [[*Order%20Results%20Vertically][order resul
 rather than horizontally, we will also make the up and down arrow keys
 move up and down the list of results for easy browsing.
 
-#+SRCNAME: ido-mode-custom-keybindings
+#+SRC_NAME: ido-mode-custom-keybindings
 #+BEGIN_SRC emacs-lisp
   (defun ido-my-keys ()
     (define-key ido-completion-map (kbd "<up>")   'ido-prev-match)
@@ -1186,17 +1186,17 @@ move up and down the list of results for easy browsing.
 
 *** Order File Extensions
 Set the order in which Ido displays files based on their extensions.
-#+srcname: ido-mode-extension-order
+#+SRC_NAME: ido-mode-extension-order
 #+BEGIN_SRC emacs-lisp
-  (setq ido-file-extensions-order     '(".tex" ".org" ".log" ".cc"
-                                        ".h" ".sh" ".el" ".png"))
+  (setq ido-file-extensions-order '(".tex" ".org" ".log" ".cc"
+                                    ".h" ".sh" ".el" ".png"))
 #+END_SRC
 
 *** Set Ignored File Extensions and Buffers
 The following settings tell Ido Mode to ignore various types of files
 and buffers that we never actually look up/attempt to switch to.
 
-#+SRCNAME: ido-mode-ignored-extensions-and-buffers
+#+SRC_NAME: ido-mode-ignored-extensions-and-buffers
 #+BEGIN_SRC emacs-lisp
   (setq completion-ignored-extensions '(".o" ".elc" "~" ".bin" ".bak"
                                         ".obj" ".map" ".a" ".so"
@@ -1225,7 +1225,7 @@ which makes it difficult to search with several words that you know
 occur in the file name. This snippet changes this behavior to be more
 intuitive.
 
-#+SRCNAME: ido-mode-enable-spaces
+#+SRC_NAME: ido-mode-enable-spaces
 #+BEGIN_SRC emacs-lisp
   (add-hook 'ido-make-file-list-hook
             (lambda ()
@@ -1237,7 +1237,7 @@ By default Ido Mode displays results in a multi-line horizontal list,
 which is, frankly, difficult to read at times. This code makes Ido
 list results in a vertical list instead.
 
-#+SRCNAME: ido-mode-list-results-vertically
+#+SRC_NAME: ido-mode-list-results-vertically
 #+BEGIN_SRC emacs-lisp
   (setq ido-decorations (quote ("\n-> "   ""      ; The "brackets" around the
                                                   ; entire prospect list
@@ -1273,7 +1273,7 @@ Replace the usual M-x keybinding with an equivalent that also list all
 completions of the partial command name you've typed in much the same
 way Ido Mode does for buffers and files.
 
-#+SRCNAME: configure-smex
+#+SRC_NAME: configure-smex
 #+BEGIN_SRC emacs-lisp
   (use-package smex
     :bind
@@ -1282,7 +1282,7 @@ way Ido Mode does for buffers and files.
 #+END_SRC
 
 ** Recentf (Track Recent Files, Load via C-x C-r)   :recentf:FileNavigation:
-#+SRCNAME load-and-configure-recentf
+#+SRC_NAME load-and-configure-recentf
 #+BEGIN_SRC emacs-lisp
   (use-package recentf
     :init
@@ -1426,7 +1426,7 @@ comment in the scratch buffer.
 ** Change Where Customizations are Stored
 By default, Emacs adds settings set via the customizations menu to the
 end of the .emacs file.
-#+SRCNAME set_customizations_file
+#+SRC_NAME set_customizations_file
 #+BEGIN_SRC emacs-lisp
   (setq custom-file "~/.emacs.d/customizations.el")
   (load custom-file)
@@ -1460,7 +1460,7 @@ Bind init.org, .emacs.d/lib/latex.org, and Preferences.el to the
 registers "e", "l", and "p" (resp.) so that they can be opened easily with
 "C-x r j <register>".
 
-#+SRCNAME set-config-registers
+#+SRC_NAME set-config-registers
 #+BEGIN_SRC emacs-lisp
   (set-register ?e '(file . "~/.emacs.d/init.org"))
   (set-register ?h '(file . "~/.emacs.d/lib/helm.org"))
@@ -2174,7 +2174,7 @@ different styles of regular expressions (see the documentation), but
 has been configured here to use the one that's probably the most
 natural to me (and involves the fewest number of excess backslashes).
 
-#+SRCNAME enable-re-builder
+#+SRC_NAME enable-re-builder
 #+BEGIN_SRC emacs-lisp
   (use-package re-builder
       :init (setq reb-re-syntax 'string))
@@ -2443,7 +2443,7 @@ just wrap this command in a version check.
   (c-set-offset 'case-label '+)
 #+END_SRC
 ** Info Mode: Adding custom sections to =*info*=
-#+SRCNAME info-mode-custom-directories
+#+SRC_NAME info-mode-custom-directories
 #+BEGIN_SRC emacs-lisp
   ;; Add `[.emacs.d/]info/' to the Info-mode directory list, a custom
   ;; directory containing documentation that we'd like to add to
@@ -2539,7 +2539,7 @@ I think I'll stick with it this time around.
 ** (La)TeX Mode
 Next we load the file ~/.emacs.d/lib/latex.org, which contains and/or
 dynamically loads all of our custom LaTeX settings.
-#+SRCNAME load-latex-config
+#+SRC_NAME load-latex-config
 #+BEGIN_SRC emacs-lisp
   ;;; (La)TeX Mode
   ;;;
@@ -2553,7 +2553,7 @@ dynamically loads all of our custom LaTeX settings.
 ** Org Mode
 Our Org mode configuration has been slowly but surely growing to a
 size where it now deserves its own config library.
-#+SRCNAME load-org-config
+#+SRC_NAME load-org-config
 #+BEGIN_SRC emacs-lisp
   ;;; Org-Mode
   ;;;
@@ -2572,7 +2572,7 @@ Use "s" to stage a file, "c c" to start a commit, "C-c C-c" to finish
 a commit, "b b" to switch branches, "P P" to do a git push, and "F F"
 to do a git pull. [Tab] is also a nice key.
 
-#+SRCNAME load-and-configure-magit
+#+SRC_NAME load-and-configure-magit
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package magit
     :init (remove-hook 'find-file-hook 'vc-find-file-hook)
