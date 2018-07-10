@@ -2991,24 +2991,25 @@ First we replace the usual email command bound to "C-x m" with
            ("U" . eww-lnum-universal)))
 #+END_SRC
 *** Usage Notes
-- =eww= will only run on versions of Emacs compiled with libxml2. (In
-  fact, you can tell whether or not your emacsen are running libxml2
-  by trying to use =eww= to access a website; it should complain about
-  it almost immediately.) It also appears that the version of Emacs
-  attainable through =apt-get= (at least on Linux Mint, between
-  early-2015 and mid-2016) was not compiled with libxml2.
+- =eww= will only run on versions of Emacs compiled with libxml2. (In fact, you
+  can tell whether or not your emacsen are running libxml2 by trying to use
+  =eww= to access a website; it should complain about it almost immediately.) It
+  also appears that the version of Emacs attainable through =apt-get= (at least
+  on Linux Mint, between early-2015 and mid-2016) was not compiled with libxml2.
+*** Future Projects
+**** TODO Get =C-x m= to handle other link types (including org-links) appropriately
 ** TODO Change Log Mode
-[[help:change-log-mode][=change-log-mode=]] is enabled by default for files case-insensitively
-entitled =CHANGELOG=. While I'm sure this is a wonderful mode for
-certain changelogs, it defaults to 8 spaces of indentation in the body.
+[[help:change-log-mode][=change-log-mode=]] is enabled by default for files case-insensitively entitled
+=CHANGELOG=. While I'm sure this is a wonderful mode for certain changelogs, it
+defaults to 8 spaces of indentation in the body.
 ** Emacs-Lisp Mode
-We use the built-in emacs-lisp-mode for editing .el files, but with a
-couple quality of life tweaks incorporated.
+We use the built-in emacs-lisp-mode for editing .el files, but with a couple
+quality of life tweaks incorporated.
 *** Fix electric-indent-mode when in Emacs-Lisp mode
-The following code addresses an oddity in the interaction between
-Electric Indent Mode and Emacs-Lisp Mode. Without it, hitting return
-on a line beginning with a semi-colon in an elisp file will result in
-that line being indented by 40-ish characters.
+The following code addresses an oddity in the interaction between Electric
+Indent Mode and Emacs-Lisp Mode. Without it, hitting return on a line beginning
+with a semi-colon in an elisp file will result in that line being indented by
+40-ish characters.
 
 See the following if similar issues arise in other modes:
     http://emacs.stackexchange.com/q/3322
