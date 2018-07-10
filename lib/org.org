@@ -190,6 +190,10 @@ with Org mode, so it makes some sense to configure it here.
           ("wiki"   . "https://en.wikipedia.org/wiki/")
           ("github" . "https://github.com/")))
 #+END_SRC
+*** TODO Test these further and improve with %(some-function) calls
+For instance, check to see if I need to change the "wiki" linkkey's
+expansion to either %h or something like %(drmrd/spaces-to-underlines)
+to ensure that Wikipedia links are working as expected.
 ** PDF Support                                            :PDFs:org_pdfview:
 The following package allows links to lines in PDF files to be opened in
 ~pdf-view~ mode instead of an external viewer.
