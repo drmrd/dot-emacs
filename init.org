@@ -2714,7 +2714,6 @@ made other changes to. This is amazingly useful when committing to a repo.
     :config (ws-butler-global-mode))
 #+END_SRC
 ** TODO Color-identifiers-mode (Unique display colors for unique variables)
-** TODO Origami: A Multi-Language Folding Mode
 ** TODO Visible-Mark: Make the Current Mark Visible
 ** DISABLED Packages
 Here is a list of packages that I used to load globally but whose
