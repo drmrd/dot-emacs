@@ -1821,9 +1821,12 @@ compilation and binds the new function to F5.
               parent-dir (file-name-directory (directory-file-name parent-dir))))
       nearest-compilation-file))
 
-  ;; bind compiling with get-nearest-compilation-file to f5
-  (global-set-key [f5] (lambda () (interactive) (compile (format
-             "make -f %s" (get-nearest-compilation-file)))))
+  ;; Bind compiling with get-nearest-compilation-file to F5.
+  (global-set-key
+   [f5]
+   (lambda ()
+     (interactive)
+     (compile (format "make -f %s" (get-nearest-compilation-file)))))
 #+END_SRC
 ** Indentation & Whitespace Settings
 This deserves its own section, since it is always the part of text
