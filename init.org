@@ -3059,14 +3059,13 @@ size where it now deserves its own config library.
   ;;;     addition to general org tweaks.
   (org-babel-load-file (expand-file-name "~/.emacs.d/lib/org.org"))
 #+END_SRC
-** Magit                                          :magit:Git:VersionControl:
-[[info:magit#Top][Magit]] is a Git porcelain (aka frontend) for Emacs. We load Magit and
-bind C-x g to the magit-status function (really the only command
-you'll ever invoke).
+** Magit                                          :Magit:Git:VersionControl:
+[[info:magit#Top][Magit]] is a Git porcelain (aka frontend) for Emacs. We load Magit and bind C-x g
+to the magit-status function (really the only command you'll ever invoke).
 
-Use "s" to stage a file, "c c" to start a commit, "C-c C-c" to finish
-a commit, "b b" to switch branches, "P P" to do a git push, and "F F"
-to do a git pull. [Tab] is also a nice key.
+Use "s" to stage a file, "c c" to start a commit, "C-c C-c" to finish a commit,
+"b b" to switch branches, "P P" to do a git push, and "F F" to do a git
+pull. [Tab] is also a nice key.
 
 #+SRC_NAME load-and-configure-magit
 #+BEGIN_SRC emacs-lisp :tangle yes
