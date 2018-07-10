@@ -1535,18 +1535,40 @@ preserving highlighting and the location of the current match.
 #+BEGIN_SRC emacs-lisp
   (setq isearch-allow-scroll t)
 #+END_SRC
-* Global Settings
-** Personal Information
-*** Email Address
 #+BEGIN_SRC emacs-lisp
-  (setq user-mail-address "contact@drmrd.xyz")
 #+END_SRC
-*** Paradox GitHub Token
+
+* General Settings
+** Personal Information                                           :Personal:
+*** Name & Email Address                           :Name:Email:ContactInfo:
+If the full name you provided to your current operating system (/e.g./, as part
+of creating your user account) differs from the one you'd like Emacs (and most
+of its packages) to use when personalizing contents for you, set the
+=user-full-name= variable to whatever you'd prefer to see. I do this for
+consistency and to ensure that everything is consistent on shared computers.
+
+#+SRC_NAME: set_name_and_email_address_variables
 #+BEGIN_SRC emacs-lisp
-  ;; Retrieve the Paradox Package Manager's GitHub Token
-  ;;
-  ;; Loads a file containing a single instruction, which sets the GitHub token for
-  ;; Paradox.  Do not store that file in a public repo.
+  (setq user-full-name "Dan Moore")
+  (setq user-mail-address "hello@danielmoore.xyz")
+
+  ;; For ChangeLogs...
+  (setq add-log-full-name "Daniel R. Moore")
+  (setq add-log-mailing-address "changes@danielmoore.xyz")
+#+END_SRC
+*** Paradox GitHub Token                                   :GitHub:Secrets:
+One of the cooler features of the [[help:paradox-menu-mode][Paradox package manager]] is its ability to star
+and unstar GitHub repositories for packages as you browse. Enabling this
+requires providing Paradox an access token for your GitHub account, the setup
+process for which you're guided through after initially installing the
+package. (You can also refer to the documentation of the [[help:paradox-github-token][paradox-github-token]]
+(the variable wherein the token is stored) for more information.
+
+The following code loads a file containing a single instruction, which sets
+the =paradox-github-token= to the token value. I store it in my =secure=
+subdirectory, which is not a part of this repository to avoid sharing it with
+the world. You should always avoid storing access tokens in a public place.
+#+BEGIN_SRC emacs-lisp
   (org-babel-load-file
       (expand-file-name "~/.emacs.d/secure/paradox-github-token.org"))
 #+END_SRC
