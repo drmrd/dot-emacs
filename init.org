@@ -3111,6 +3111,9 @@ to do a git pull. [Tab] is also a nice key.
               ?R "refspecs to origin HEAD:refs/for/develop"
               '(lambda () (interactive)
                  (magit-push-refspecs "origin" "HEAD:refs/for/develop" nil)))
+        ;; Prevent the built-in VC package from doing work in the background by
+        ;; disabling it in Git repositories.
+        (setq vc-handled-backends (delq 'Git vc-handled-backends))
     :bind ("C-x g" . magit-status))
 #+END_SRC
 ** mu4e
