@@ -306,47 +306,77 @@ which require (and can only contain) the key and description entries.)
 #+SRC_NAME set_org-capture-templates
 #+BEGIN_SRC emacs-lisp
   (setq org-capture-templates
-        '(("d" "Dissertating-related templates")
+        `(("a" "Got an Ansible-related defect? Shove that SOB in here!" entry
+           (file+olp ,(drmrd/org-file-to-path "ansible.org") "PR Opportunities")
+           "** %^{Short Summary}\n%^{Description (optional)}\n"
+           :prepend t :immediate-finish nil :kill-buffer t)
+
+          ("b" "Bits")
+          ("be" "Dan's Roadside Emporium Ideas" entry
+           (file ,(drmrd/org-file-to-path "refile.org"))
+           ,(s-concat "* %^{Roadside Emporium Idea} %^g:DansRoadsideEmporium:Bits:\n"
+                      "%^{Description (optional)}\n")
+           :prepend t :kill-buffer t)
+
+          ("d" "Dissertating-related templates")
+          ("da" "acknowledgments" entry
+           (file+olp ,(drmrd/org-file-to-path "dissertating.org") "Refile")
+           ,(s-concat "* Acknowledgment for %^{Name to Acknowledge} :Acknowledgments:\n"
+                      "%^{Message}\n")
+           :prepend t :immediate-finish nil :kill-buffer t)
           ("dc" "citation needed" entry
-                (file+olp "~/org/dissertating.org" "Refile")
-                "* TODO Citation Needed: [[%l][%^{(Short) Cite Link Name|Here}]] :CITEME:\nCreated: %u\n%^{Comments|}\n"
-                :prepend t :immediate-finish nil :kill-buffer t)
+           (file+olp ,(drmrd/org-file-to-path "dissertating.org") "Refile")
+           ,(s-concat "* TODO Citation Needed: [[%l][%^{(Short) Cite Link Name|Here}]] :CITEME:\n"
+                      "Created: %u\n%^{Comments|}\n")
+           :prepend t :immediate-finish nil :kill-buffer t)
           ("dn" "note" entry
-                (file+olp "~/org/dissertating.org" "Refile")
-                "* TODO %u %^{Note Headline} %^g:NOTE:\n%^{Description (optional)}\n"
-                :prepend t :kill-buffer t)
+           (file+olp ,(drmrd/org-file-to-path "dissertating.org") "Refile")
+           ,(s-concat "* %^{Note Headline} %^g:NOTE:\n"
+                      "%^{Description (optional)}\n")
+           :prepend t :kill-buffer t)
           ("dq" "quickref" entry
-                (file+olp "~/org/dissertating.org" "QuickRefs")
-                "** %^{Result Description}\n:PROPERTIES:\n:Citation: %^{BibTeX Key}\n:Result: %^{Result}\n:END:"
-                :kill-buffer t)
+           (file+olp ,(drmrd/org-file-to-path "dissertating.org") "QuickRefs")
+           ,(s-concat "** %^{Result Description}\n"
+                      ":PROPERTIES:\n"
+                      ":Citation: %^{BibTeX Key}\n"
+                      ":Result: %^{Result}\n"
+                      ":END:")
+           :kill-buffer t)
           ("dt" "task" entry
-                (file "~/org/dissertating.org" "Refile")
-                "* TODO [[%l][Link]] %^{Task Headline} %^g\n%^{Description (optional)}\n"
-                :prepend t :kill-buffer t)
+           (file+olp ,(drmrd/org-file-to-path "dissertating.org") "Refile")
+           ,(s-concat "* TODO [[%l][Link]] %^{Task Headline} %^g\n"
+                      "%^{Description (optional)}\n")
+           :prepend t :kill-buffer t)
+
           ("t" "General task and note templates")
           ("tm" "maybe" entry
-                (file "~/org/refile.org")
-                "* MAYBE [[%l][Link]] %^{Task Headline} %^g\n%^{Description (optional)}\n"
-                :prepend t :kill-buffer t)
+           (file ,(drmrd/org-file-to-path "refile.org"))
+           "* MAYBE [[%l][Link]] %^{Task Headline} %^g\n%^{Description (optional)}\n"
+           :prepend t :kill-buffer t)
           ("tt" "todo" entry
-                (file "~/org/refile.org")
-                "* TODO [[%l][Link]] %^{Task Headline} %^g\n%^{Description (optional)}\n"
-                :prepend t :kill-buffer t)
+           (file ,(drmrd/org-file-to-path "refile.org"))
+           "* TODO [[%l][Link]] %^{Task Headline} %^g\n%^{Description (optional)}\n"
+           :prepend t :kill-buffer t)
+
           ("n" "Learn something new? Jot it down here!")
           ("nn" "anything and everything" entry
-                (file "~/org/refile.org")
-                "* TODO %u %^{Note Headline} %^g:NOTE:\n%^{Description (optional)}\n"
-                :prepend t :immediate-finish nil :kill-buffer t)
+           (file ,(drmrd/org-file-to-path "refile.org"))
+           "* %u %^{Note Headline} %^g:NOTE:\n%^{Description (optional)}\n"
+           :prepend t :immediate-finish nil :kill-buffer t)
+
           ("e" "event" entry
-               (file+olp "~/org/calendar.org" "Default")
-               "* %^{Brief description} %^g\nSCHEDULED: %t\n%i\n%a")
+           (file+olp ,(drmrd/org-file-to-path "calendar.org") "Default")
+           "* %^{Brief description} %^g\nSCHEDULED: %t\n%i\n%a")
+
           ("H" "habit" entry
-               (file+olp "~/org/habits.org" "Default")
-               "** TODO %^{Brief habit description} %^g\nSCHEDULED: %(format-time-string \"%<<%Y-%m-%d %a .+1d/3d>>\")\n:PROPERTIES:\n:STYLE: habit\n:END:")
+           (file+olp ,(drmrd/org-file-to-path "habits.org") "Default")
+           "** TODO %^{Brief habit description} %^g\nSCHEDULED: %(format-time-string \"%<<%Y-%m-%d %a .+1d/3d>>\")\n:PROPERTIES:\n:STYLE: habit\n:END:")
+
           ("h" "heart" table-line
-               (file+olp "~/org/health.org" "Blood Pressure & Heart Rate")
-               "| %T | %^{Systolic (Upper #)} | %^{Diastolic (Lower #)} | %^{Pulse (beats / min)} | %^{Comments} |"
-               :immediate-finish t :kill-buffer t)
+           (file+olp ,(drmrd/org-file-to-path "health.org") "Blood Pressure & Heart Rate")
+           "| %T | %^{Systolic (Upper #)} | %^{Diastolic (Lower #)} | %^{Pulse (beats / min)} | %^{Comments} |"
+           :immediate-finish t :kill-buffer t)
+
           ))
 #+END_SRC
 ** Remove empty logbook entries when capturing                     :Logbook:
