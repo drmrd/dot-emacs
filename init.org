@@ -2508,6 +2508,56 @@ current usage counts.
       :config (keyfreq-mode 1)
               (keyfreq-autosave-mode 1))
 #+END_SRC
+** math-symbol-list                          :Editing:InputMethods:Math:TeX:
+This is really cool but hard to categorize.  I've taken the code in
+[[https://emacs.stackexchange.com/a/3404/8643][this Emacs.SE answer]] with some slight modifications.  It enables a new =math=
+input method similar to the =TeX= input method =C-\= but with basically every
+math-related unicode symbol bound to something.  The actual symbols aren't
+associated to their familiar LaTeX macro names at times, but whenever you're
+bothered by that, you can just add the macro name to the =quail-define-rules=
+command below with the appropriate Unicode code-point.  On the other hand,
+they're consistently named, with, for instance, the negation of a relation
+=\foo= usually bound to =\nfoo=. The bound code-points are also conveniently all
+contained in the symbol table in the =ac-math= package.
+
+We're also playing around with a modified form of Clark Grubb's excellent
+[[https://github.com/clarkgrubb/latex-input][latex-input]] project, which we've named the "LaTeX" input source and store in its
+own library file.
+
+#+SRC_NAME math-symbol-list_use-package
+#+BEGIN_SRC emacs-lisp
+  (use-package math-symbol-lists :ensure t
+    :config
+    (progn
+      (use-package ac-math :ensure t)
+      (quail-define-package "math" "UTF-8" "Ω" t)
+      (quail-define-rules ; whatever extra rules you want to define...
+       ("\\from"    #X2190)
+       ("\\to"      #X2192)
+       ("\\lhd"     #X22B2)
+       ("\\rhd"     #X22B3)
+       ("\\unlhd"   #X22B4)
+       ("\\unrhd"   #X22B5)
+       ("\\CC"      #X2102)
+       ("\\NN"      #X2115)
+       ("\\PP"      #X2119)
+       ("\\QQ"      #X211A)
+       ("\\RR"      #X211D)
+       ("\\ZZ"      #X2124)
+       ("\\impliedby" #X21D0)
+       ("\\implies" #X21D2)
+       ("\\iff"     #X21D4)
+       ("\\notimpliedby" #X21CD)
+       ("\\notimply" #X21CF)
+       ("\\notiff"     #X21CE))
+      (mapc (lambda (x)
+              (if (cddr x)
+                  (quail-defrule (cadr x) (car (cddr x)))))
+            (append math-symbol-list-basic math-symbol-list-extended))
+      (drmrd/load-library "LaTeX-input-method.org")))
+#+END_SRC
+
+*** TODO Support superscripts, subscripts, etc.
 ** paradox                                                  :paradox:PkgMgmt:
 An updated package manager with better support for GitHub metadata. See the
 documentation. Run it by calling M-x paradox-list-packages.  Note that the
