@@ -1695,10 +1695,6 @@ registers "e", "l", and "p" (resp.) so that they can be opened easily with
   (set-register ?o '(file . "~/.emacs.d/lib/org.org"))
   (set-register ?L '(file . "~/.emacs.d/lib/"))
   (set-register ?W '(file . "~/workspace/"))
-
-  ;; Also set a register for Preferences.el if on a Mac
-  (if (eq system-type 'darwin)
-    (set-register ?p (cons 'file "~/Library/Preferences/Aquamacs Emacs/Preferences.el")))
 #+END_SRC
 
 *** DONE Determine how to evaluate this file without reloading Aquamacs
