@@ -480,7 +480,9 @@ change this by configuring [[help:org-refile-targets][org-refile-targets]] appro
            ("C-c C-x h" . habitrpg-add)))
 #+END_SRC
 * Org Pomodoro                       :org_pomodoro:GTD:TaskMgmt:Productivity:
-#+BEGIN_SRC emacs-lisp
+#+SRC_NAME org-pomodoro_use-package
+#+BEGIN_SRC emacs-lisp :tangle no
+; (unless (boundp 'spacemacs-version) "yes")
   (use-package org-pomodoro)
 #+END_SRC
 * M-Return Settings
