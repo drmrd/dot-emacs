@@ -1079,11 +1079,12 @@ code. We load it in all programming modes by default.
 #+BEGIN_SRC emacs-lisp
   (use-package rainbow-delimiters
     :ensure t
-    :init (dolist (hook '(prog-mode-hook tex-mode-hook latex-mode-hook
-                                         TeX-mode-hook LaTeX-mode-hook))
-            (add-hook hook #'rainbow-delimiters-mode)))
+    :init
+    (progn
+      (cl-dolist (mode-hook '(prog-mode-hook tex-mode-hook latex-mode-hook
+                                             TeX-mode-hook LaTeX-mode-hook))
+        (add-hook mode-hook #'rainbow-delimiters-mode))))
 #+END_SRC
-
 ** Visual Error Sounds (Visual Alarm Bell)
 Among Emacs's most celebrated, modern features is the obnoxious audible bell it
 plays at every error. This informs you of your own egregious errors, triggering
