@@ -194,13 +194,15 @@ The following package allows links to lines in PDF files to be opened in
 #+END_SRC
 * Org Agenda
 ** Set Agenda & Note Files
-#+BEGIN_SRC emacs-lisp
-  (setq org-agenda-files '("~/org/refile.org"
-                           "~/org/calendar.org"
-                           "~/org/habits.org"
-                           "~/org/tasks.org"
-                           ;"~/org/dissertating.org"
-                           ))
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (require 'org-agenda)
+  (setq org-agenda-files
+        (mapcar 'drmrd/org-file-to-path
+                '("calendar.org"
+                  "habits.org"
+                  "tasks.org"
+                  "dissertating.org"
+                  )))
 
   (setq org-agenda-include-diary      t
         org-agenda-timegrid-use-ampm  t
