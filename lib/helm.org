@@ -6,6 +6,11 @@
 
 #+SRC_NAME helm_use-package
 #+BEGIN_SRC emacs-lisp
+  (use-package ag :ensure t)
+  (use-package helm-ag
+    :ensure t
+    :after (ag helm)
+    :init (setq helm-ag-fuzzy-match t))
   (use-package helm
       :ensure t
       :diminish helm-mode
@@ -13,8 +18,6 @@
         (require 'helm-config)
 
         ;; (use-package ace-jump-helm-line :ensure t)
-        (use-package helm-ag :ensure t
-          :init (use-package ag :ensure t))
         (use-package helm-bibtex :ensure t)
         ;; (use-package helm-c-yasnippet :ensure t)
         ;; (use-package helm-clojuredocs :ensure t)
@@ -84,7 +87,6 @@
               helm-echo-input-in-header-line        t
     ;          helm-exit-idle-delay                  0
               helm-M-x-fuzzy-match                  t
-              helm-ag-fuzzy-match                   t
               helm-apropos-fuzzy-match              t
               helm-buffers-fuzzy-matching           nil
               helm-completion-in-region-fuzzy-match t
