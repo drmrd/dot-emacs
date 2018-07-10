@@ -2143,7 +2143,7 @@ is especially useful when working with regular expressions.
 #+END_SRC
 ** org-babel-reload-file: org-babel-load-file but defaulting to the current file
 #+BEGIN_SRC emacs-lisp
-  (defun org-babel-reload-file (FILE &optional COMPILE)
+  (defun org-babel-reload-file (file &optional compile)
     "Tangle and load a specified file, with the current buffer's file as
     default.
 
@@ -2160,7 +2160,7 @@ is especially useful when working with regular expressions.
                                             (if buffer
                                                 (format " [Default: %s]" buffer))))
                        (list (read-file-name prompt nil (if buffer buffer)))))
-    (org-babel-load-file FILE COMPILE))
+    (org-babel-load-file file compile))
 #+END_SRC
 
 *** DONE Finish implementing this function
