@@ -513,10 +513,26 @@ are not displayed in a new element.
 #+BEGIN_SRC emacs-lisp
   (add-hook 'org-mode-hook 'turn-on-font-lock) ; not needed when `global-font-lock-mode' is on
 #+END_SRC
-* Syntax Highlighting in Code Blocks
-The following uses "native fontification" to enable syntax highlighting in code blocks.
+* Org Src (Code Blocks)
+** Syntax Highlighting
+The following uses "native fontification" to enable syntax highlighting in code
+blocks.
 #+BEGIN_SRC emacs-lisp
   (setq org-src-fontify-natively t)
+#+END_SRC
+** Tab Behavior
+Next we make sure =[TAB]= behaves the way we'd expect inside code blocks,
+indenting the code in a way that's appropriate for each block's language.
+#+BEGIN_SRC emacs-lisp
+  (setq org-src-tab-acts-natively t)
+#+END_SRC
+** Avoid Flycheck's checkdoc warnings
+#+SRC_NAME org-src_disable_flycheck_checkdoc
+#+BEGIN_SRC emacs-lisp
+  (defun disable-flycheck-in-org-src-block ()
+    (setq-local flycheck-disabled-checkers '(emacs-lisp-checkdoc)))
+
+  (add-hook 'org-src-mode-hook 'disable-flycheck-in-org-src-block)
 #+END_SRC
 * Load Minor Modes
 ** Auto Fill Mode
