@@ -1528,7 +1528,7 @@ value of ~split-window-preferred-function~ to a custom function.
   (global-set-key (kbd "C-x C-|") 'transpose-window-split)
 #+END_SRC
 * Search                                                             :Search:
-** Enable Scrolling in isearch               :isearch:Highlighting:Scrolling:
+** Enable scrolling in isearch               :isearch:Highlighting:Scrolling:
 This allows you to scroll with your mouse in a buffer with an active =isearch=,
 preserving highlighting and the location of the current match.
 #+SRC_NAME enable_scrolling_in_isearch
