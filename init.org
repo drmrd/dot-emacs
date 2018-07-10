@@ -1296,7 +1296,7 @@ way Ido Mode does for buffers and files.
     :init
       (setq recentf-max-menu-items 50)
     :config
-      (recentf-mode 1)
+      (recentf-mode)
       (add-to-list 'recentf-exclude "ido.last")
     :bind
       ("C-x C-r" . recentf-open-files))
