@@ -3068,7 +3068,7 @@ Use "s" to stage a file, "c c" to start a commit, "C-c C-c" to finish a commit,
 "b b" to switch branches, "P P" to do a git push, and "F F" to do a git
 pull. [Tab] is also a nice key.
 
-#+SRC_NAME load-and-configure-magit
+#+SRC_NAME magit_use-package
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package magit
     :init (remove-hook 'find-file-hook 'vc-find-file-hook)
