@@ -674,6 +674,34 @@ delimiters*, although reserve the right to change this name later.
 
 
 *** TODO Decide on a name for these functions
+** Replace display math wrapper \[…\] with an environment
+The following function adds a piece of functionality complementary AucTeX's that
+I've been missing for some time.  I'd like to genericize it for other use
+cases.  It's based on giordano's lovely [[https://tex.stackexchange.com/a/179306/14062][answer]] to a question on TeX.SE.
+#+SRC_NAME drmrd/latex/displaymath->environment_defn
+#+BEGIN_SRC emacs-lisp
+  (defun drmrd/latex/displaymath<->align*-toggle ()
+    "Swap between displayed math and an align* environment."
+    (interactive)
+    (save-excursion
+      (when (texmathp)
+        (cond
+         ((equal (car texmathp-why) "\\[")
+          (goto-char (cdr texmathp-why))
+          (delete-char 2)
+          (push-mark)
+          (search-forward "\\]")
+          (delete-char -2)
+          (exchange-point-and-mark)
+          (LaTeX-insert-environment "align*"))
+         ((equal (car texmathp-why) "align*")
+          (LaTeX-find-matching-begin)
+          (re-search-forward "\\\\begin{align\\\*}")
+          (replace-match "\\\\\[")
+          (LaTeX-find-matching-end)
+          (re-search-backward "\\\\end{align\\\*}")
+          (replace-match "\\\\\]"))))))
+#+END_SRC
 * Indentation
 ** Set default indentation level to 4 spaces
 #+BEGIN_SRC emacs-lisp
