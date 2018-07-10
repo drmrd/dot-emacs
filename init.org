@@ -2280,7 +2280,6 @@ priority-based navigation) is increased by adding more of the last
 letter to the end of a tag. (For example FIXMEEEE has higher priority
 than FIXME.)
 
-Note that
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package fixmee
     :init
