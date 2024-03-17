@@ -683,18 +683,23 @@ reducing load time.
 
 #+SRC_NAME use-package_bootstrap
 #+BEGIN_SRC emacs-lisp
-  ;; Install `use-package' (if not already done)
-  (unless (package-installed-p 'use-package)
-    (package-refresh-contents)
-    (package-install 'use-package))
+    ;; Install `use-package' (if not already done)
+    (unless (package-installed-p 'use-package)
+      (package-refresh-contents)
+      (package-install 'use-package))
 
-  ;; Lazily load use-package, and also load the diminish and bind-key
-  ;; packages for hiding messages from active modes in the modeline with
-  ;; :diminish and easily setting keybindings with :bind.
-  (eval-when-compile
-    (require 'use-package))
-  (require 'diminish)
-  (require 'bind-key)
+    ;; Lazily load use-package, and also load the diminish and bind-key
+    ;; packages for hiding messages from active modes in the modeline with
+    ;; :diminish and easily setting keybindings with :bind.
+    (eval-when-compile
+      (require 'use-package))
+
+    (unless (package-installed-p 'diminish)
+      (package-refresh-contents)
+      (package-install 'diminish))
+
+    (require 'diminish)
+    (require 'bind-key)
 #+END_SRC
 
 We also ensure that all packages we ~use~ through ~use-package~ are downloaded
@@ -726,7 +731,7 @@ itself. The following code is their recommended install and auto-upgrade
 logic:
 
 #+SRC_NAME quelpa_bootstrap
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (ignore-errors
     (if (require 'quelpa nil t)
         (quelpa-self-upgrade)
@@ -744,7 +749,7 @@ We also install ~quelpa-use-package~, which adds a ~:quelpa~ keyword to
 ~use-package~, which enables ~use-package~ to install from source, as well.
 
 #+SRC_NAME quelpa-use-package_quelpa_install
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (quelpa
    '(quelpa-use-package
      :fetcher github
@@ -761,7 +766,7 @@ version, since conditional keywords in the ~body~ won't work as expected unless
 they occur prior to the ~quelpa~ line.
 
 #+SRC_NAME use-github-package_defmacro
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (defmacro use-github-package (name repo &rest body)
     "Fetch package NAME from GitHub repository REPO, and use it.
 
@@ -890,7 +895,7 @@ see in the mode line.
 #+BEGIN_SRC emacs-lisp
   (defcustom drmrd/adjusted-mode-lighters
     '((button-lock-mode nil "button-lock")
-      (fixmee-mode nil "fixmee")
+      ; (fixmee-mode nil "fixmee")
       (git-gutter-mode nil "git-gutter")
       (guide-key-mode nil "guide-key")
       (outline-minor-mode nil "outline")
@@ -955,7 +960,8 @@ Emacs24's built-in custom themes.
   (use-package lush-theme :ensure t)
   (use-package molokai-theme :ensure t)
   (use-package monokai-theme :ensure t)
-  (use-package spacemacs-common :ensure spacemacs-theme)
+  ;; FIXME (2024-03-03): Unable to find spacemacs-common during init.
+  ;; (use-package spacemacs-common :ensure spacemacs-theme)
 #+END_SRC
 
 Now we load our current favorite theme. This changes regularly.
@@ -1116,11 +1122,20 @@ error notifications altogether, like I've done below.
 Enable Ido Mode for a much improved buffer and file switching/finding
 experience. Configuring Ido Mode, based on the settings in [[http://xgarrido.github.io/emacs-starter-kit/starter-kit-ido.html][xgarrido's
 Emacs Starter Kit]].
+
+*** Update (2024-03-03): Replaced with Helm mode
+I've replaced Ido mode with Helm mode in my configuration. Since Helm now
+returns an error if Ido mode is enabled, I'm no longer tangling any Ido mode
+configuration. It remains in this section as a useful reference for now, but
+I'll be removing it once I am confident my Helm configuration is working as
+desired.
+
 *** Enable Ido Mode
 #+SRC_NAME: enable-ido-mode
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (ido-mode t)
 #+END_SRC
+
 *** Basic Configuration
 Next, we change some basic settings to make our lives easier. The
 following table describes each setting. Note that, for Boolean
@@ -1166,7 +1181,7 @@ the behavior being the opposite if nil (unless otherwise specified).
 |------------------------------------------------------------------------------------------|
 
 #+SRC_NAME: ido-mode-basic-config
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (setq ido-everywhere            t
         ido-enable-prefix         nil
         ido-enable-flex-matching  t
@@ -1184,7 +1199,7 @@ rather than horizontally, we will also make the up and down arrow keys
 move up and down the list of results for easy browsing.
 
 #+SRC_NAME: ido-mode-custom-keybindings
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (defun ido-my-keys ()
     (define-key ido-completion-map (kbd "<up>")   'ido-prev-match)
     (define-key ido-completion-map (kbd "<down>") 'ido-next-match))
@@ -1195,7 +1210,7 @@ move up and down the list of results for easy browsing.
 *** Order File Extensions
 Set the order in which Ido displays files based on their extensions.
 #+SRC_NAME: ido-mode-extension-order
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (setq ido-file-extensions-order '(".tex" ".org" ".log" ".cc"
                                     ".h" ".sh" ".el" ".png"))
 #+END_SRC
@@ -1205,7 +1220,7 @@ The following settings tell Ido Mode to ignore various types of files
 and buffers that we never actually look up/attempt to switch to.
 
 #+SRC_NAME: ido-mode-ignored-extensions-and-buffers
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (setq completion-ignored-extensions '(".o" ".elc" "~" ".bin" ".bak"
                                         ".obj" ".map" ".a" ".so"
                                         ".mod" ".aux" ".out" ".pyg"
@@ -1234,7 +1249,7 @@ occur in the file name. This snippet changes this behavior to be more
 intuitive.
 
 #+SRC_NAME: ido-mode-enable-spaces
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (add-hook 'ido-make-file-list-hook
             (lambda ()
               (define-key ido-file-dir-completion-map (kbd "SPC") 'self-insert-command)))
@@ -1246,7 +1261,7 @@ which is, frankly, difficult to read at times. This code makes Ido
 list results in a vertical list instead.
 
 #+SRC_NAME: ido-mode-list-results-vertically
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (setq ido-decorations (quote ("\n-> "   ""      ; The "brackets" around the
                                                   ; entire prospect list
                                 "\n "             ; The prospect separator
@@ -1304,7 +1319,7 @@ way Ido Mode does for buffers and files.
 
 ** Bookmarks+                           :bookmarks+:Bookmarks:FileNavigation:
 #+SRC_NAME bookmark+_use-package
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (use-package bookmark+ :ensure t)
 #+END_SRC
 ** TODO Dired+: Extensions to Dired               :diredplus:FileNavigation:
@@ -1356,7 +1371,7 @@ running a command that shifts windows around.
 A comprehensive package for manipulating frames interactively and
 programmatically.
 #+SRC_NAME frame-cmds_use-package
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (use-package frame-cmds :ensure t)
 #+END_SRC
 ** TRAMP                             :TRAMP:SSH:Tunneling:Remote_Connection:
@@ -1609,7 +1624,7 @@ consistency and to ensure that everything is consistent on shared computers.
   (setq add-log-full-name "Daniel R. Moore")
   (setq add-log-mailing-address "changes@danielmoore.xyz")
 #+END_SRC
-*** Paradox GitHub Token                                   :GitHub:Secrets:
+*** TODO Paradox GitHub Token                              :GitHub:Secrets:
 One of the cooler features of the [[help:paradox-menu-mode][Paradox package manager]] is its ability to star
 and unstar GitHub repositories for packages as you browse. Enabling this
 requires providing Paradox an access token for your GitHub account, the setup
@@ -1621,7 +1636,7 @@ The following code loads a file containing a single instruction, which sets
 the =paradox-github-token= to the token value. I store it in my =secure=
 subdirectory, which is not a part of this repository to avoid sharing it with
 the world. You should always avoid storing access tokens in a public place.
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (org-babel-load-file
       (expand-file-name "~/.emacs.d/secure/paradox-github-token.org"))
 #+END_SRC
@@ -1659,10 +1674,10 @@ of text to store there.
 #+BEGIN_SRC emacs-lisp
   (setq kill-ring-max 1000)
 #+END_SRC
-** What to Display at Startup
+** TODO What to Display at Startup
 Disable the welcome screen and instead display a welcome message as a
 comment in the scratch buffer.
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (setq inhibit-startup-screen t)   ; Disable Emacs's welcome screen
   (use-package fortune-cookie :ensure t
     :init (setq fortune-cookie-cowsay-enable nil)
@@ -1673,8 +1688,11 @@ By default, Emacs adds settings set via the customizations menu to the
 end of the .emacs file.
 #+SRC_NAME set_customizations_file
 #+BEGIN_SRC emacs-lisp
-  (setq custom-file "~/.emacs.d/customizations.el")
-  (load custom-file)
+  (defconst custom-file (expand-file-name "customizations.el" user-emacs-directory))
+
+  ;; Setting NOERROR to non-nil to make Emacs create `custom-file' if it doesn't
+  ;; exist rather than raise an error.
+  (load custom-file t)
 #+END_SRC
 
 ** Load Third-Party Elisp not Managed by *Package*
@@ -1690,7 +1708,7 @@ registers "e", "l", and "p" (resp.) so that they can be opened easily with
 #+BEGIN_SRC emacs-lisp
   (set-register ?e '(file . "~/.emacs.d/init.org"))
   (set-register ?h '(file . "~/.emacs.d/lib/helm.org"))
-  (set-register ?i '(file . "~/.emacs.d/.emacs"))
+  (set-register ?i '(file . "~/.emacs.d/init.el"))
   (set-register ?l '(file . "~/.emacs.d/lib/latex.org"))
   (set-register ?o '(file . "~/.emacs.d/lib/org.org"))
   (set-register ?L '(file . "~/.emacs.d/lib/"))
@@ -2179,7 +2197,7 @@ format-time-string calls without overriding anything.
       "%d"
       (if (memq n '(11 12 13)) "th"
         (let ((last-digit (% n 10)))
-          (case last-digit
+          (cl-case last-digit
             (1 "st")
             (2 "nd")
             (3 "rd")
@@ -2288,7 +2306,7 @@ See [[https://github.com/rmuslimov/jenkins.el][this GitHub repo]].
 ** TODO Spock                                                        :Spock:
 ** Grails                                                :Grails:Projectile:
 #+SRC_NAME grails-projectile-mode_use-package
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (use-package grails-projectile-mode
     :diminish  grails-projectile-mode)
 #+END_SRC
@@ -2321,8 +2339,8 @@ long enough to edit one of those) and Fish scripts. We also need to make
 that =.zsh= files are a thing
 
 #+SRC_NAME batch-mode_use-package
-#+BEGIN_SRC emacs-lisp
-  (use-package batch-mode :ensure    t
+#+BEGIN_SRC emacs-lisp :tangle no
+  (use-package batch-mode :ensure t
     :mode ("\\.\\(bat\\)$" . batch-mode))
 #+END_SRC
 
@@ -2385,7 +2403,7 @@ that =.zsh= files are a thing
 The /de facto/ standard for working with Scala in Emacs is through the ENSIME
 (ENhanced Scala Interaction Mode for Emacs ) package.
 #+SRC_NAME scala_ensime_use-package
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (use-package ensime :ensure t :pin melpa-stable)
 #+END_SRC
 * Misc. Packages                                                   :Packages:
@@ -2402,7 +2420,7 @@ more information. It's currently enabled for registers (=C-x r=), dired mode
 #+END_SRC
 ** fasd                                              :emacs_fasd:find_files:
 #+SRC_NAME fasd_use-package
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (use-package fasd :ensure t
     ;; TODO: (2017-11-19) ":if (shell-command-p "fasd")"
     ;;                    or ":if (package-installed-p \"fasd\")"
@@ -2423,7 +2441,7 @@ priority-based navigation) is increased by adding more of the last
 letter to the end of a tag. (For example FIXMEEEE has higher priority
 than FIXME.)
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle no
   (use-package button-lock
     :ensure t
     :config
@@ -2711,7 +2729,7 @@ which takes what's currently in a =re-builder= buffer and runs a
 #+END_SRC
 ** strings                                           :strings:Lisp:Internals:
 Add various string manipulation functions to Emacs
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (use-package strings
     :config
       (add-hook 'pre-command-hook 'erase-nonempty-inactive-minibuffer))
@@ -2723,7 +2741,9 @@ tree, naturally), change branches, etc.
 #+BEGIN_SRC emacs-lisp
   (use-package undo-tree
     :diminish undo-tree-mode
-    :init     (global-undo-tree-mode))
+    :init (global-undo-tree-mode)
+    :config
+      (setq undo-tree-history-directory-alist '(("." . "~/.emacs.d/.caches/undo-tree"))))
 #+END_SRC
 ** TODO yasnippet                          :yasnippet:Completion:Templating:
 Yet Another Snippet is a templating package for Emacs, enabling rapid template
@@ -2933,7 +2953,7 @@ made other changes to. This is amazingly useful when committing to a repo.
 ** TODO Color-identifiers-mode (Unique display colors for unique variables)
 ** Visible-Mark: Make the Current Mark Visible
 #+SRC_NAME enable_visible-mark-mode_globally
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (global-visible-mark-mode 1)
 #+END_SRC
 ** DISABLED Packages
@@ -3088,8 +3108,12 @@ OS X/macOS (=darwin= systems).
 popup window. Our configuration is based on (if not taken /verbatim/ from)
 [[https://github.com/kaushalmodi/.emacs.d/blob/master/setup-files/setup-which-key.el][kaushalmodi's .emacs.d repo]].
 
+*Update (2024-03-03):* I'm getting an error on startup when attempting to use
+~which-key~ mode and ~helm-descbinds-mode~ simultaneously, since they try to do
+the same thing and conflict. I'm disabling ~which-key~ mode accordingly.
+
 #+SRC_NAME which-key_use-package
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (use-package which-key
     :defer 10
     :config
