@@ -1,4 +1,3 @@
-
 .cask
 /**/*.bak
 auto-save-list
@@ -36,3 +35,5 @@ request
 quelpa
 magithub
 /ido.last
+transient
+/.caches/
