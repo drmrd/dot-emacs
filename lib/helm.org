@@ -130,11 +130,9 @@
       :config
         ;; Write $<FOO>/ in helm-find-files to expand any of the following folder
         ;; shortcuts (just like ~/)
-        (setenv "ED"   "/Users/dan/.emacs.d")
-        (setenv "EL"   "/Users/dan/.emacs.d/lib")
-        (setenv "MD"   "/Users/dan/workspace/merged_draft")
-        (setenv "DISS" "/Users/dan/workspace/merged_draft")
-        (setenv "ORG"  "/Users/dan/org")
+        (setenv "ED"   user-emacs-directory)
+        (setenv "EL"   (concat user-emacs-directory "lib"))
+        (setenv "ORG"  (concat drmrd/home-directory "/org"))
         (setenv "SECRETS" (expand-file-name drmrd/secrets-directory))
         (org-babel-load-file (concat drmrd/secrets-directory
                                      "environment_variables.org"))

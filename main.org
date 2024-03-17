@@ -590,6 +590,31 @@ changes).
     :group 'emacs
     :version "25.1")
 
+  (defcustom drmrd/home-directory
+    (let ((home-envvar (getenv "HOME"))
+          (user-emacs-directory-parent
+           (file-name-directory (directory-file-name user-emacs-directory))))
+      (if (and home-envvar (file-directory-p home-envvar))
+          home-envvar
+        (progn
+          (display-warning
+           'drmrd
+           (concat "Your HOME environment variable is not set. "
+                   "We highly recommend setting this variable to avoid surprises "
+                   "when using these Emacs configuration files. As a fallback, "
+                   "we are setting your home directory "
+                   "(in `drmrd/home-directory') to the parent of your Emacs "
+                   "configuration directory: \""
+                   user-emacs-directory-parent "\".")))))
+    "The home directory for the current user.
+
+  This is set to the value of the HOME environment variable by default.  If no
+  HOME environment variable exists, a warning is displayed, and
+  `drmrd/home-directory' will be set to the parent of `user-emacs-directory'."
+    :type '(directory)
+    :group 'drmrd
+    :version "25.1")
+
   (defcustom drmrd/secrets-directory (concat user-emacs-directory "secure/")
     "A directory that contains private information.
 
