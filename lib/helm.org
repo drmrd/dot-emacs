@@ -134,8 +134,16 @@
         (setenv "EL"   (concat user-emacs-directory "lib"))
         (setenv "ORG"  (concat drmrd/home-directory "/org"))
         (setenv "SECRETS" (expand-file-name drmrd/secrets-directory))
-        (org-babel-load-file (concat drmrd/secrets-directory
-                                     "environment_variables.org"))
+
+        (let ((secret-envvars-file (concat drmrd/secrets-directory
+                                           "environment_variables.org")))
+          ;; FIXME: If the loaded .org file is non-empty but tangling produces no
+          ;;        .el file, `org-babel-load-file' raises an error. We haven't
+          ;;        fully addressed this with the `unless' checks here.
+          (unless (or (not (file-readable-p secret-envvars-file))
+                      (f-empty-p secret-envvars-file))
+            (org-babel-load-file secret-envvars-file)))
+
 
         (add-to-list 'helm-sources-using-default-as-input 'helm-source-man-pages)
 
