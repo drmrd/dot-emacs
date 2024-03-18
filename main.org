@@ -882,6 +882,12 @@ Display current location in buffer as a magical rainbow behind a poptart cat
 #+SRC_NAME nyan-mode-setup
 #+BEGIN_SRC emacs-lisp
   (use-package nyan-mode :ensure t)
+  (use-package nyan-mode
+    :init
+    (setq nyan-wavy-trail t
+          nyan-minimum-window-width 80
+          nyan-bar-length 20)
+    (nyan-mode))
 #+END_SRC
 *** TODO smart-mode-line (sml)                          :sml:smartmodeline:
 Extend and customize the modeline. Use =sml/customize= (or go to the customize
