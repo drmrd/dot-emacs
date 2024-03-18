@@ -344,45 +344,10 @@ which require (and can only contain) the key and description entries.)
 #+SRC_NAME set_org-capture-templates
 #+BEGIN_SRC emacs-lisp
   (setq org-capture-templates
-        `(("a" "Got an Ansible-related defect? Shove that SOB in here!" entry
-           (file+olp ,(drmrd/org-file-to-path "ansible.org") "PR Opportunities")
-           "** %^{Short Summary}\n%^{Description (optional)}\n"
-           :prepend t :immediate-finish nil :kill-buffer t)
-
-          ("b" "Bits")
+        `(("b" "Bits")
           ("be" "Dan's Roadside Emporium Ideas" entry
            (file ,(drmrd/org-file-to-path "refile.org"))
            ,(s-concat "* %^{Roadside Emporium Idea} %^g:DansRoadsideEmporium:Bits:\n"
-                      "%^{Description (optional)}\n")
-           :prepend t :kill-buffer t)
-
-          ("d" "Dissertating-related templates")
-          ("da" "acknowledgments" entry
-           (file+olp ,(drmrd/org-file-to-path "dissertating.org") "Refile")
-           ,(s-concat "* Acknowledgment for %^{Name to Acknowledge} :Acknowledgments:\n"
-                      "%^{Message}\n")
-           :prepend t :immediate-finish nil :kill-buffer t)
-          ("dc" "citation needed" entry
-           (file+olp ,(drmrd/org-file-to-path "dissertating.org") "Refile")
-           ,(s-concat "* TODO Citation Needed: [[%l][%^{(Short) Cite Link Name|Here}]] :CITEME:\n"
-                      "Created: %u\n%^{Comments|}\n")
-           :prepend t :immediate-finish nil :kill-buffer t)
-          ("dn" "note" entry
-           (file+olp ,(drmrd/org-file-to-path "dissertating.org") "Refile")
-           ,(s-concat "* %^{Note Headline} %^g:NOTE:\n"
-                      "%^{Description (optional)}\n")
-           :prepend t :kill-buffer t)
-          ("dq" "quickref" entry
-           (file+olp ,(drmrd/org-file-to-path "dissertating.org") "QuickRefs")
-           ,(s-concat "** %^{Result Description}\n"
-                      ":PROPERTIES:\n"
-                      ":Citation: %^{BibTeX Key}\n"
-                      ":Result: %^{Result}\n"
-                      ":END:")
-           :kill-buffer t)
-          ("dt" "task" entry
-           (file+olp ,(drmrd/org-file-to-path "dissertating.org") "Refile")
-           ,(s-concat "* TODO [[%l][Link]] %^{Task Headline} %^g\n"
                       "%^{Description (optional)}\n")
            :prepend t :kill-buffer t)
 
