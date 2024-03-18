@@ -1738,7 +1738,7 @@ registers "e", "l", and "p" (resp.) so that they can be opened easily with
 
 #+SRC_NAME set-config-registers
 #+BEGIN_SRC emacs-lisp
-  (set-register ?e '(file . "~/.emacs.d/init.org"))
+  (set-register ?e '(file . "~/.emacs.d/main.org"))
   (set-register ?h '(file . "~/.emacs.d/lib/helm.org"))
   (set-register ?i '(file . "~/.emacs.d/init.el"))
   (set-register ?l '(file . "~/.emacs.d/lib/latex.org"))
