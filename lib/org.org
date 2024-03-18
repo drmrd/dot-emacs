@@ -47,7 +47,7 @@ readily be modified to a list of subdirectories, files, etc. if
 necessary.
 
 #+SRC_NAME set_drmrd/org-directory
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp
   (defcustom drmrd/org-directory
     (expand-file-name "org/"
                       (if (boundp 'user-home-directory)
@@ -65,7 +65,7 @@ necessary.
 #+END_SRC
 
 #+SRC_NAME drmrd/org-file-to-path_defun
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp
   (defun drmrd/org-file-to-path (relative-org-file-name)
     "Get an absolute path to an Org file given a relative file name."
     (concat drmrd/org-directory relative-org-file-name))
@@ -197,7 +197,7 @@ The following package allows links to lines in PDF files to be opened in
 #+END_SRC
 * Org Agenda
 ** Set Agenda & Note Files
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp
   (require 'org-agenda)
   (setq org-agenda-files
         (mapcar 'drmrd/org-file-to-path
