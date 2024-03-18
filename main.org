@@ -832,7 +832,8 @@ while on Linux we employ DejaVu Sans Mono.
       "DejaVu Sans Mono"
       "inconsolata"
       "Lucida Console"
-      "courier")
+      "courier"
+      "Menlo")
     "The list of font families to attempt to use by default.
 
   Font family names should be listed in descending order of preference."
