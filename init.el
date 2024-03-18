@@ -17,6 +17,15 @@
 (if (locate-library "package")
     (progn
       (require 'package)
+      (setq package-archives '(("melpa" . "https://melpa.org/packages/")
+                               ("org" . "https://orgmode.org/elpa/")
+                               ("gnu" . "https://elpa.gnu.org/packages/")
+                               ("melpa-stable" . "https://stable.melpa.org/packages/"))
+            package-archive-priorities '(("org"          . 30)
+                                         ("melpa-stable" . 25) ; lower than melpa for now due to weird bugs
+                                         ("gnu"          . 20)
+                                         ("melpa"        . 15))
+	    package-menu-hide-low-priority t)
       (package-initialize)
       (unless (package-installed-p 'use-package)
         (package-refresh-contents)
@@ -24,25 +33,7 @@
       (require 'use-package))
   (message "WARNING: Ancient Emacs version! No advice-add, package.el")
   (defmacro advice-add (&rest body))
-  (defmacro use-package (&rest body))
-  )
-
-;; FIXME (2024-03-03): Incorporate package settings into the previous sexp.
-;; ;; Initialize package before calling Org Mode to ensure the ELPA version of Org
-;; ;; is loaded instead of the built-in one.
-;; (require 'package)
-;; (setq package-enable-at-startup nil
-;;       package-archives
-;;         '(("melpa"        . "http://melpa.org/packages/")
-;;           ("org"          . "http://orgmode.org/elpa/")
-;;           ("gnu"          . "http://elpa.gnu.org/packages/")
-;;           ("melpa-stable" . "https://stable.melpa.org/packages/"))
-;;       package-archive-priorities
-;;         '(("org"          . 30)
-;;           ("melpa-stable" . 15) ; lower than melpa for now due to weird bugs
-;;           ("gnu"          . 20)
-;;           ("melpa"        . 25))
-;;       package-menu-hide-low-priority t)
+  (defmacro use-package (&rest body)))
 
 ;; On macOS, ensure that the environment variables Emacs is seeing are what
 ;; they're supposed to be. There's a package for that.
