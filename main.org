@@ -5,8 +5,8 @@
 #+STARTUP: indent
 
 * General Information/Notes
-** What should go into init.org?
-The init.org file is loaded at startup, rather than on demand. Hence
+** What should go into main.org?
+The main.org file is loaded at startup, rather than on demand. Hence
 it should contain any and all Emacs settings that you'd like loaded
 every session. Accordingly, good examples of what code this file
 should contain are
@@ -18,7 +18,7 @@ should contain are
 - Global theme customizations
 
 ** Emacs Configuration Files Hierarchy
-At present, init.org loads files written by me from _one_ place:
+At present, main.org loads files written by me from _one_ place:
 *** ~/.emacs.d/lib
 The new folder for storing .org files, intended to contain libraries
 meant for customizing, e.g., specific major modes (in ways that go
@@ -26,11 +26,11 @@ beyond the scope of this file). For instance, the file [[~/workspace/elisp/emacs
 from the folder ~/workspace/elisp is being converted into a human
 readable .org file [[~/.emacs.d/lib/latex.org][latex.org]] in this new directory.
 
-init.org loads all .org files in this directory by default, unless
+main.org loads all .org files in this directory by default, unless
 told to do otherwise.
 
 This is also the location best suited for large functions or
-collections thereof whose contents is appropriate for init.org but
+collections thereof whose contents is appropriate for main.org but
 would add hundreds or thousands of lines of code unnecessarily.
 
 **** TODO List all libraries of the latter type here
@@ -59,7 +59,7 @@ install them from the command line as byte-compiled elisp files.
 This is the old location for storing .el files. It should be replaced
 by literate programming .org files in the folder ~/.emacs.d/lib/
 
-init.org loads all .el files in this directory, unless told to do
+main.org loads all .el files in this directory, unless told to do
 otherwise.
 
 **** DONE List any exceptions to this loading rule here.
@@ -1732,7 +1732,7 @@ end of the .emacs file.
   (add-to-list 'load-path "~/elisp")
 #+END_SRC
 ** Bind Settings Files to Registers                            :Keybindings:
-Bind init.org, .emacs.d/lib/latex.org, and Preferences.el to the
+Bind main.org, .emacs.d/lib/latex.org, and Preferences.el to the
 registers "e", "l", and "p" (resp.) so that they can be opened easily with
 "C-x r j <register>".
 
@@ -1748,7 +1748,7 @@ registers "e", "l", and "p" (resp.) so that they can be opened easily with
 #+END_SRC
 
 *** DONE Determine how to evaluate this file without reloading Aquamacs
-Invoke org-babel-load-file on init.org to retangle and reload this
+Invoke org-babel-load-file on main.org to retangle and reload this
 file.
 
 To modify and re-evaluate a single code block, use C-c C-c inside the block.
