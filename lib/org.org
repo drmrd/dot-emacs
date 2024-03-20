@@ -607,9 +607,11 @@ entire block start or end tag. Better still, we can create our own!
   ;;;         #+BEGIN_SRC emacs-lisp
   ;;;           [Cursor Here]
   ;;;         #+END_SRC
-  (add-to-list 'org-structure-template-alist
-       '("el" "#+SRC_NAME ?\n#+BEGIN_SRC emacs-lisp\n\n#+END_SRC" ""))
+  (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+
+  (require 'org-tempo)
 #+END_SRC
+
 * Org-Latex Configuration
 #+BEGIN_EXAMPLE
   (require 'ox-latex)
