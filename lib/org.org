@@ -25,6 +25,12 @@ cost to the structure of my config files.) Some org libraries must be
 loaded prior to tangling [[file:~/.emacs.d/init.org][init.org]] (org-crypt, for instance), and so a
 minimal configuration for these is provided in my [[file:~/.emacs.d/.emacs][.emacs]] file.
 * General Settings & Keybindings                                :Keybindings:
+** Appearance
+#+src_name org-mode/always-enable-org-indent-mode
+#+begin_src emacs-lisp
+  (setq org-startup-indented t)
+#+end_src
+
 ** Navigation                                                   :Navigation:
 #+SRC_NAME org-mode/general-settings/navigation
 #+BEGIN_SRC emacs-lisp
