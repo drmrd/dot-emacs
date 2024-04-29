@@ -3312,6 +3312,7 @@ mode: file permissions!
 *** TODO Create custom info files for modes that don't supply them (and personal notes)
 ** Use Terminals within Emacs                                       :Eshell:
 Use [[help:eshell][eshell]]!
+
 ** eww: Internet browser integrated into Emacs              :eww:Keybindings:
 Beginning in v24.4, Emacs comes equipped with an internet browser =eww= that
 supports basic HTML and CSS. Our config was inspired by [[https://github.com/dakrone/eos/blob/master/eos-web.org][dakrone's]].
@@ -3328,17 +3329,6 @@ First we replace the usual email command bound to "C-x m" with
   (use-package eww
     :defer t
     :init
-      ;; Determine which external program to use by default for browsing URLs that
-      ;; eww can't handle.
-      (setq browse-url-generic-program (executable-find "firefox"))
-      (setq browse-url-browser-function
-            '(;; Browse Google Maps links in an external browser
-              ("\(.*\(\.\|\/\)\)*maps\.google\.com/?.*" . browse-url-generic)
-              ;; Browse stackexchange links in an external browser
-              ("stackexchange\.com" . browse-url-generic)
-              ("stackoverflow\.com" . browse-url-generic)
-              ;; Default to browsing with `eww'
-              ("." . eww-browse-url)))
       ;; Improve eww's readability
       (add-hook 'eww-mode-hook #'toggle-word-wrap)
       (add-hook 'eww-mode-hook #'visual-line-mode))
