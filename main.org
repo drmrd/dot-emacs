@@ -1033,45 +1033,16 @@ added here.
   ;(color-theme-subtle-hacker)
 #+END_SRC
 ** Display Line Numbers                                 :nlinum:LineNumbers:
-Ah yes, the somewhat notorious problem of displaying line numbers in Emacs in a
-way that doesn't break/get terribly affected by different modes and font locking
-schemes. Most recently I've been using nlinum mode for this purpose, but I can't
-seem to use it while loading multiple frames. This is only an issue on my
-laptop, not at the office, so I'm now testing to see if it's some kind of timing
-issue.
+Since Emacs version 26.1, ~display-line-numbers-mode~ is a built-in
+replacement for ~linum-mode~, ~nlinum-mode~, etc. that Just Works™. I enable it
+globally.
 
-#+SRC_NAME nlinum-mode_use-package
+#+SRC_NAME display-line-numbers
 #+BEGIN_SRC emacs-lisp
-  (use-package nlinum :ensure t
-    :config ;; (add-hook 'prog-mode-hook (lambda () (nlinum-mode t)))
-    (if (< emacs-major-version 25)
-        (progn
-          (message "emacs version < 25, will not use nlinum globally,
-        using workaround")
-          ;; nlinum workaround
-          (defun initialize-nlinum (&optional frame)
-            (require 'nlinum)
-            (add-hook 'prog-mode-hook 'nlinum-mode))
-          (when (daemonp)
-            (add-hook 'window-setup-hook 'initialize-nlinum)
-            (defadvice make-frame (around toggle-nlinum-mode compile activate)
-              (nlinum-mode -1) ad-do-it (nlinum-mode 1))))
-      (progn
-        (message "emacs version >= 25, will use nlinum globally")
-        (require 'nlinum)
-        (global-nlinum-mode 1)
-        ;; specify line number format
-        (unless window-system
-          (setq nlinum-format "%d "))))
-    :bind (("C-c t l" . nlinum-mode)))
-
-    ;; (defun initialize-nlinum (&optional frame)
-    ;;        (require 'nlinum)
-    ;;        (add-hook 'prog-mode-hook 'nlinum-mode))
-
-    ;; (add-hook 'window-setup-hook 'initialize-nlinum)
-    ;; (defadvice make-frame (around toggle-nlinum-mode compile activate)
-    ;;            (nlinum-mode -1) ad-do-it (nlinum-mode 1))
+  (if (version< emacs-version "26.1")
+      (display-warning 'drmrd
+                       (format-message "You are using Emacs version %s, which is quite old. Too old to use display-line-numbers mode." emacs-version))
+    (global-display-line-numbers-mode 1))
 #+END_SRC
 ** Highlight the Current Line                      :hlline:LineHighlighting:
 Highlights the current line in every buffer by default
