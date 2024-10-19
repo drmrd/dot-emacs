@@ -76,6 +76,18 @@ necessary.
     "Get an absolute path to an Org file given a relative file name."
     (concat drmrd/org-directory relative-org-file-name))
 #+END_SRC
+* Easily Add Headers to New Files
+#+begin_src emacs-lisp
+  (define-skeleton
+    org-headers-default
+    "Standard headers for a new Org file."
+    "Title " "#+TITLE: " str "\n"
+    "#+AUTHOR: " user-full-name "\n"
+    "#+EMAIL: " user-mail-address "\n"
+    "#+DATE: " (format-time-string "%Y-%m-%d") "\n\n")
+
+  (global-set-key [C-S-f1] 'org-headers-default)
+#+end_src
 * Task Management (TODO Keywords, Tags, etc.)
 ** Settings for TODOs
 *** Set the TODO keywords
