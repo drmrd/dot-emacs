@@ -38,3 +38,4 @@ magithub
 transient
 main.el
 /.caches/
+.DS_Store
