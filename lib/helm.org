@@ -53,7 +53,10 @@
         (use-package helm-swoop :ensure t
           :bind (("C-c h M-S" . helm-multi-swoop)
                  ("C-c h S"   . helm-multi-swoop-projectile)))
-        (use-package helm-themes :ensure t)
+        ;; TODO (2025-06-11): Determine a suitable replacement for helm-themes
+        ;;                    in light of recent changes to helm removing the
+        ;;                    helm-config package.
+        ;; (use-package helm-themes :ensure t)
 
         ;;; Global Keybindings
 

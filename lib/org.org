@@ -647,9 +647,14 @@ entire block start or end tag. Better still, we can create our own!
                  ("\\subsection\{%s\}" . "\\subsection*\{%s\}")
                  ("\\subsubsection\{%s\}" . "\\subsubsection*\{%s\}")))
 #+END_EXAMPLE
-* Org Ref
+
+* TODO (Disabled) Org Ref
+Update (2025-06-11): I'm switching from using org-ref to the built-in org-cite
+module for the time being. This also circumvents an issue loading helm-related
+code in org-ref.
+
 #+SRC_NAME org-ref_use-package
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (use-package org-ref :ensure t
     :init (setq org-ref-default-bibliography reftex-default-bibliography
                 bibtex-completion-bibliography reftex-default-bibliography))
