@@ -39,3 +39,5 @@ transient
 main.el
 /.caches/
 .DS_Store
+/eln-cache/
+/org-persist/
